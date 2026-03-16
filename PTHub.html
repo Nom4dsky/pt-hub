@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PT Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f1ee;--white:#ffffff;--card:#ffffff;--sidebar:#0f0e0c;--border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.14);--text:#0f0e0c;--text2:#6b6760;--text3:#b0ada8;--accent:#d4f54e;--accent-dark:#0f0e0c;--green:#22c55e;--red:#ef4444;--amber:#f59e0b;--blue:#3b82f6;--orange:#f97316;--rad:16px;--rad-sm:10px;--rad-xs:6px;--shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);--shadow-lg:0 4px 24px rgba(0,0,0,.10);}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;overflow:hidden;}
+#app{display:flex;height:100vh;}
+#sidebar{width:64px;background:var(--sidebar);display:flex;flex-direction:column;align-items:center;padding:20px 0;gap:4px;flex-shrink:0;z-index:10;}
+#main{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+#topbar{height:64px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;gap:16px;flex-shrink:0;}
+#content{flex:1;overflow-y:auto;padding:28px;}
+.sb-logo{width:36px;height:36px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;cursor:pointer;}
+.sb-item{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.3);transition:all .15s;position:relative;}
+.sb-item:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);}
+.sb-item.active{background:rgba(255,255,255,.12);color:#fff;}
+.sb-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--accent);border-radius:0 2px 2px 0;}
+.sb-item svg{width:18px;height:18px;}
+.sb-div{width:24px;height:1px;background:rgba(255,255,255,.08);margin:8px 0;}
+.sb-bot{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.sb-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--accent-dark);font-family:'Syne',sans-serif;cursor:pointer;}
+.tbar-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:600;}
+.tbar-sub{font-size:11px;color:var(--text3);}
+.tbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.tbar-btn{width:34px;height:34px;border-radius:var(--rad-xs);border:1px solid var(--border);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);transition:all .15s;}
+.tbar-btn:hover{background:var(--bg);color:var(--text);}
+.tbar-search{background:var(--bg);border:1px solid var(--border);border-radius:var(--rad-xs);padding:7px 12px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;width:200px;transition:border-color .15s;}
+.tbar-search:focus{border-color:var(--border2);}
+.tbar-search::placeholder{color:var(--text3);}
+.page{display:none;}
+.page.active{display:block;animation:fadeUp .18s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--rad-xs);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;border:none;transition:all .15s;font-weight:500;}
+.btn-accent{background:var(--accent);color:var(--accent-dark);}
+.btn-accent:hover{background:#c8ef40;}
+.btn-dark{background:var(--sidebar);color:#fff;}
+.btn-dark:hover{background:#1f1e1c;}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);}
+.btn-ghost:hover{background:var(--bg);color:var(--text);}
+.btn-danger{background:#fef2f2;color:var(--red);border:1px solid #fecaca;}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.card{background:var(--card);border-radius:var(--rad);padding:20px 22px;box-shadow:var(--shadow);}
+.card-sm{padding:14px 16px;}
+.card-dark{background:var(--sidebar);color:#fff;}
+.card-accent{background:var(--accent);color:var(--accent-dark);}
+.card-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.kpi{background:var(--card);border-radius:var(--rad);padding:18px 20px;box-shadow:var(--shadow);}
+.kpi-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;font-weight:600;}
+.kpi-value{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;letter-spacing:-1px;line-height:1;}
+.kpi-sub{font-size:11px;color:var(--text3);margin-top:5px;}
+.badge{display:inline-flex;align-items:center;font-size:10px;padding:3px 9px;border-radius:20px;font-weight:600;letter-spacing:.02em;}
+.b-green{background:#dcfce7;color:#16a34a;}
+.b-amber{background:#fef3c7;color:#d97706;}
+.b-red{background:#fee2e2;color:#dc2626;}
+.b-blue{background:#eff6ff;color:#2563eb;}
+.b-gray{background:var(--bg);color:var(--text2);}
+.b-dark{background:var(--sidebar);color:#fff;}
+.b-accent{background:var(--accent);color:var(--accent-dark);}
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{font-size:10px;color:var(--text3);text-align:left;padding:8px 12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);}
+.tbl td{padding:11px 12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
+.tbl tbody tr{cursor:pointer;transition:background .1s;}
+.tbl tbody tr:hover{background:var(--bg);}
+.tbl tr:last-child td{border-bottom:none;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.g2-1{display:grid;grid-template-columns:2fr 1fr;gap:16px;}
+.mb12{margin-bottom:12px;}
+.mb16{margin-bottom:16px;}
+.mb20{margin-bottom:20px;}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.pg-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;letter-spacing:-.5px;margin-bottom:4px;}
+.pg-sub{font-size:13px;color:var(--text2);}
+.client-card{background:var(--card);border-radius:var(--rad);padding:18px 20px;box-shadow:var(--shadow);cursor:pointer;transition:all .15s;border:1.5px solid transparent;}
+.client-card:hover{border-color:var(--border2);transform:translateY(-1px);box-shadow:var(--shadow-lg);}
+.cc-top{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.cc-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:'Syne',sans-serif;flex-shrink:0;}
+.cc-name{font-weight:600;font-size:14px;font-family:'Syne',sans-serif;letter-spacing:-.2px;}
+.cc-phase{font-size:11px;color:var(--text3);margin-top:1px;line-height:1.3;}
+.cc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;}
+.cc-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding-top:12px;border-top:1px solid var(--border);}
+.cc-stat-l{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;}
+.cc-stat-v{font-size:13px;font-weight:600;font-family:'Syne',sans-serif;}
+.client-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.fg-full{grid-column:1/-1;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;}
+.fg input,.fg select,.fg textarea{background:var(--bg);border:1px solid var(--border2);border-radius:var(--rad-xs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:9px 12px;outline:none;transition:border-color .15s;width:100%;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--text);background:var(--white);}
+.fg textarea{resize:vertical;min-height:80px;}
+.fg select option{background:var(--white);}
+.form-actions{display:flex;gap:8px;margin-top:20px;}
+.modal-overlay{position:fixed;inset:0;background:rgba(15,14,12,.5);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:var(--white);border-radius:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;letter-spacing:-.3px;}
+.modal-close{background:var(--bg);border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--text2);}
+.modal-close:hover{background:var(--border2);color:var(--text);}
+.body-view{position:relative;display:flex;justify-content:center;align-items:center;min-height:280px;}
+.body-svg{width:140px;opacity:.1;}
+.body-pin{position:absolute;display:flex;align-items:center;gap:6px;}
+.bp-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 3px rgba(255,255,255,.9);}
+.bp-label{font-size:11px;font-weight:500;white-space:nowrap;background:var(--white);border:1px solid var(--border2);padding:3px 9px;border-radius:20px;box-shadow:var(--shadow);color:var(--text);}
+.sr-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.sr-label{font-size:12px;color:var(--text2);width:95px;flex-shrink:0;}
+.sr-track{flex:1;height:5px;background:var(--bg);border-radius:3px;overflow:hidden;}
+.sr-fill{height:100%;border-radius:3px;transition:width .5s ease;}
+.sr-val{font-size:12px;font-weight:600;font-family:'DM Mono',monospace;width:50px;text-align:right;flex-shrink:0;}
+.log-bar{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:var(--rad);padding:16px 20px;margin-bottom:14px;box-shadow:var(--shadow);flex-wrap:wrap;}
+.log-sel{background:var(--bg);border:1px solid var(--border2);border-radius:var(--rad-xs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 12px;outline:none;transition:border-color .15s;}
+.log-sel:focus{border-color:var(--text);}
+.ex-block{background:var(--card);border-radius:var(--rad);padding:18px 20px;margin-bottom:10px;box-shadow:var(--shadow);}
+.ex-inp{background:transparent;border:none;border-bottom:1.5px solid var(--border2);color:var(--text);font-family:'Syne',sans-serif;font-size:14px;font-weight:600;padding:4px 0;outline:none;flex:1;width:100%;transition:border-color .15s;}
+.ex-inp:focus{border-color:var(--text);}
+.set-inp{background:var(--bg);border:1px solid var(--border);border-radius:var(--rad-xs);color:var(--text);font-family:'DM Mono',monospace;font-size:13px;padding:7px 8px;text-align:center;width:100%;outline:none;transition:all .15s;}
+.set-inp:focus{border-color:var(--text);background:var(--white);}
+.add-set-btn{background:none;border:1.5px dashed var(--border2);border-radius:var(--rad-xs);color:var(--text3);cursor:pointer;font-size:12px;padding:7px;width:100%;margin-top:8px;transition:all .15s;font-family:'DM Sans',sans-serif;}
+.add-set-btn:hover{border-color:var(--accent);color:var(--accent-dark);background:rgba(212,245,78,.08);}
+.set-num-c{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;text-align:center;padding:7px 4px;}
+.sets-tbl{width:100%;border-collapse:collapse;}
+.sets-tbl th{font-size:10px;color:var(--text3);text-align:center;padding:4px 6px;text-transform:uppercase;letter-spacing:.07em;font-weight:600;}
+.mb16{margin-bottom:16px;}
+.timer-card{background:var(--sidebar);border-radius:var(--rad);padding:16px 20px;margin-bottom:14px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.timer-num{font-family:'Syne',sans-serif;font-size:30px;font-weight:700;letter-spacing:-1.5px;color:rgba(255,255,255,.3);min-width:75px;transition:color .3s;}
+.timer-num.running{color:var(--accent);}
+.timer-num.resting{color:var(--orange);}
+.timer-div{width:1px;height:40px;background:rgba(255,255,255,.1);}
+.timer-lbl{font-size:10px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;}
+.rest-btn{padding:6px 12px;border-radius:var(--rad-xs);border:1px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.45);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.rest-btn:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);}
+.info-row{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.info-row:last-child{border-bottom:none;}
+.info-key{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
+.back-btn{display:inline-flex;align-items:center;gap:6px;color:var(--text3);font-size:13px;cursor:pointer;margin-bottom:20px;background:none;border:none;font-family:'DM Sans',sans-serif;transition:color .15s;padding:0;}
+.back-btn:hover{color:var(--text);}
+.divider{height:1px;background:var(--border);margin:16px 0;}
+.empty{text-align:center;padding:48px 20px;color:var(--text3);}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+::-webkit-scrollbar-track{background:transparent;}
+.detail-hero{display:flex;align-items:flex-start;gap:16px;margin-bottom:20px;}
+.d-av{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;font-family:'Syne',sans-serif;flex-shrink:0;}
+.detail-acts{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;}
+.setup-step{display:flex;gap:14px;margin-bottom:22px;}
+.step-circle{width:28px;height:28px;border-radius:50%;background:var(--bg);border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'DM Mono',monospace;flex-shrink:0;margin-top:1px;color:var(--text2);font-weight:600;}
+.step-circle.done{background:var(--accent);border-color:var(--accent);color:var(--accent-dark);}
+.ci-row{margin-bottom:16px;}
+.ci-hdr{display:flex;justify-content:space-between;margin-bottom:5px;}
+.ci-name{font-size:12px;font-weight:500;color:var(--text2);}
+.ci-val{font-size:12px;color:var(--text3);}
+input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;}
+.filter-btn.active{background:var(--sidebar);color:#fff;border-color:var(--sidebar);}
+.body-wrap{display:flex;justify-content:center;align-items:flex-start;gap:16px;padding:8px 0;min-height:260px;}
+.body-figure{position:relative;flex-shrink:0;}
+.body-lbl{font-size:10px;color:var(--text3);text-align:center;margin-top:4px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;}
+.bp-dot{width:9px;height:9px;border-radius:50%;background:var(--red);position:absolute;transform:translate(-50%,-50%);box-shadow:0 0 0 3px rgba(255,255,255,.9),0 0 0 5px rgba(239,68,68,.3);animation:ppulse 2s ease-in-out infinite;}
+@keyframes ppulse{0%,100%{box-shadow:0 0 0 3px rgba(255,255,255,.9),0 0 0 5px rgba(239,68,68,.3);}50%{box-shadow:0 0 0 3px rgba(255,255,255,.9),0 0 0 9px rgba(239,68,68,.08);}}
+.body-legend{display:flex;flex-direction:column;justify-content:center;gap:8px;padding-top:8px;}
+.bl-item{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:500;color:var(--text2);}
+.bl-dot{width:7px;height:7px;border-radius:50%;background:var(--red);flex-shrink:0;}
+.week-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;}
+.week-tab{padding:7px 16px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--border2);background:transparent;color:var(--text2);transition:all .15s;font-family:"DM Sans",sans-serif;}
+.week-tab:hover{border-color:var(--text3);color:var(--text);}
+.week-tab.active{background:var(--sidebar);color:#fff;border-color:var(--sidebar);}
+.week-tab-add{border-style:dashed;color:var(--text3);}
+.week-tab-add:hover{border-color:var(--accent-dark);background:rgba(212,245,78,.08);color:var(--accent-dark);}
+.program-grid{display:flex;gap:0;overflow-x:auto;border:1px solid var(--border);border-radius:var(--rad);background:var(--white);box-shadow:var(--shadow);}
+.program-grid::-webkit-scrollbar{height:4px;}
+.program-grid::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.day-col{flex:0 0 220px;border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.day-col:last-child{border-right:none;}
+.day-col-hdr{padding:14px 16px 12px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:1;}
+.day-col-num{font-size:10px;font-weight:700;font-family:"DM Mono",monospace;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.day-col-num.filled{color:var(--accent-dark);background:var(--accent);display:inline-block;padding:1px 6px;border-radius:4px;}
+.day-name-inp{background:transparent;border:none;font-family:"Syne",sans-serif;font-size:13px;font-weight:600;color:var(--text);outline:none;width:100%;padding:0;line-height:1.3;}
+.day-name-inp::placeholder{color:var(--text3);}
+.day-col-body{padding:10px 12px;flex:1;display:flex;flex-direction:column;gap:0;}
+.day-add-col{flex:0 0 60px;border-left:1px dashed var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);font-size:20px;transition:all .15s;background:transparent;}
+.day-add-col:hover{background:rgba(212,245,78,.06);color:var(--accent-dark);}
+.ex-block-full{border-bottom:1px solid var(--border);padding:8px 0;}
+.ex-block-full:last-child{border-bottom:none;}
+.ex-num{font-size:10px;font-weight:700;font-family:"DM Mono",monospace;color:var(--text3);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;}
+.ex-name-full{background:transparent;border:none;border-bottom:1px solid transparent;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:500;color:var(--text);outline:none;width:100%;padding:2px 0;transition:border-color .15s;margin-bottom:6px;}
+.ex-name-full:focus{border-color:var(--border2);}
+.ex-name-full::placeholder{color:var(--text3);}
+.ex-meta-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;}
+.ex-meta-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:2px;text-align:center;}
+.ex-inp-meta{background:var(--bg);border:1px solid var(--border);border-radius:5px;font-family:"DM Mono",monospace;font-size:12px;color:var(--text);text-align:center;padding:5px 4px;outline:none;width:100%;transition:border-color .15s;}
+.ex-inp-meta:focus{border-color:var(--text);background:var(--white);}
+.ex-notes-inp{background:transparent;border:none;border-top:1px solid var(--border);font-family:"DM Sans",sans-serif;font-size:11px;color:var(--text2);outline:none;width:100%;padding:5px 0 0;resize:none;line-height:1.4;margin-top:5px;}
+.ex-notes-inp::placeholder{color:var(--text3);}
+.ex-del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:0;line-height:1;}
+.ex-del-btn:hover{color:var(--red);}
+.add-ex-btn{margin-top:8px;background:none;border:1.5px dashed var(--border2);border-radius:var(--rad-xs);color:var(--text3);cursor:pointer;font-size:11px;padding:7px;width:100%;transition:all .15s;font-family:"DM Sans",sans-serif;font-weight:500;}
+.add-ex-btn:hover{border-color:var(--accent-dark);background:rgba(212,245,78,.06);color:var(--accent-dark);}
+.rest-badge{display:inline-block;background:var(--amberbg);color:var(--amber);font-size:9px;font-weight:600;padding:1px 5px;border-radius:3px;font-family:"DM Mono",monospace;}
+.prog-info-bar{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:20px;padding:14px 18px;background:var(--white);border-radius:var(--rad);box-shadow:var(--shadow);}
+.prog-chip{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:4px;}
+.prog-chip strong{color:var(--text);font-weight:500;}
+.zone-chip{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1.5px solid var(--border2);background:var(--white);color:var(--text2);transition:all .15s;user-select:none;display:inline-flex;align-items:center;gap:5px;}
+.zone-chip:hover{border-color:var(--text3);color:var(--text);}
+.zone-chip.active{background:var(--red);border-color:var(--red);color:#fff;}
+.zone-chip.active::before{content:"⚠ ";}
+.zone-chip.caution{background:var(--amberbg);border-color:var(--amber);color:var(--amber);}
+.zone-section-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);width:100%;margin-top:6px;margin-bottom:2px;}
+@media(max-width:640px){#sidebar{display:none;}#content{padding:16px;}.kpi-row{grid-template-columns:1fr 1fr;}.g2,.g2-1,.g3{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div id="app">
+<nav id="sidebar">
+  <div class="sb-logo" onclick="nav('dashboard')"><svg viewBox="0 0 18 18" fill="none" width="18" height="18"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="#0f0e0c"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="#0f0e0c"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="#0f0e0c"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="#0f0e0c"/></svg></div>
+  <div class="sb-item active" id="sb-dashboard" onclick="nav('dashboard')" title="Dashboard"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="6" height="6" rx="1"/><rect x="10" y="2" width="6" height="6" rx="1"/><rect x="2" y="10" width="6" height="6" rx="1"/><rect x="10" y="10" width="6" height="6" rx="1"/></svg></div>
+  <div class="sb-item" id="sb-clients" onclick="nav('clients')" title="Clients"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="6" r="3"/><path d="M2.5 16c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/></svg></div>
+  <div class="sb-item" id="sb-log" onclick="nav('log')" title="Log Session"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="9" r="6.5"/><path d="M9 6v3l2 2"/></svg></div>
+  <div class="sb-item" id="sb-sessions" onclick="nav('sessions')" title="Sessions"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="14" height="14" rx="2"/><path d="M5 9h8M5 6h8M5 12h5"/></svg></div>
+  <div class="sb-div"></div>
+  <div class="sb-item" id="sb-programs" onclick="nav('programs')" title="Programs"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2h10a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M6 7h6M6 10h6M6 13h3"/></svg></div>
+  <div class="sb-item" id="sb-assessments" onclick="nav('assessments')" title="Assessments"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="2,14 5,9 8,11 11,6 14,8 16,4"/></svg></div>
+  <div class="sb-bot">
+    <div class="sb-div"></div>
+    <div class="sb-item" id="sb-setup" onclick="nav('setup')" title="Setup"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="9" r="2"/><path d="M9 2v1.5M9 14.5V16M2 9h1.5M14.5 9H16M4.2 4.2l1 1M12.8 12.8l1 1M4.2 13.8l1-1M12.8 5.2l1-1"/></svg></div>
+    <div class="sb-avatar" id="sbAv">PT</div>
+  </div>
+</nav>
+<div id="main">
+  <div id="topbar">
+    <div><div class="tbar-title" id="tbTitle">Dashboard</div><div class="tbar-sub" id="tbSub"></div></div>
+    <div class="tbar-right">
+      <input class="tbar-search" placeholder="Search clients..." oninput="gSearch(this.value)" id="gSrch"/>
+      <div class="tbar-btn" id="injBtn" title="Injury flags" style="position:relative"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2a4.5 4.5 0 014.5 4.5c0 2.5.7 4 1.5 4.5H2c.8-.5 1.5-2 1.5-4.5A4.5 4.5 0 018 2z"/><path d="M6.5 11a1.5 1.5 0 003 0"/></svg><span id="injDot" style="display:none;position:absolute;top:6px;right:6px;width:6px;height:6px;background:var(--red);border-radius:50%;border:1.5px solid white"></span></div>
+      <button class="btn btn-accent btn-sm" onclick="nav('log')">+ Log session</button>
+    </div>
+  </div>
+  <div id="content">
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <div class="sec-hdr mb20">
+        <div><div class="pg-title" id="dashGreet">Good morning 👋</div><div class="pg-sub" id="dashDate"></div></div>
+        <button class="btn btn-dark btn-sm" onclick="exportAllCSV()">↓ Export all</button>
+      </div>
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-label">Active clients</div><div class="kpi-value" id="kpiC">—</div><div class="kpi-sub">total roster</div></div>
+        <div class="kpi"><div class="kpi-label">Sessions today</div><div class="kpi-value" id="kpiT">0</div><div class="kpi-sub" id="kpiTD">—</div></div>
+        <div class="kpi"><div class="kpi-label">This week</div><div class="kpi-value" id="kpiW">0</div><div class="kpi-sub">sessions logged</div></div>
+        <div class="kpi"><div class="kpi-label">All-time sessions</div><div class="kpi-value" id="kpiTot">—</div><div class="kpi-sub">across all clients</div></div>
+      </div>
+      <div class="g2 mb16">
+        <div class="card"><div class="card-label">Recent activity</div><div id="dRecent"><div style="color:var(--text3);font-size:13px;padding:8px 0">No sessions yet</div></div></div>
+        <div class="card card-dark"><div class="card-label" style="color:rgba(255,255,255,.3)">Injury flags</div><div id="dInj" style="display:flex;flex-direction:column;gap:8px;margin-top:4px"></div></div>
+      </div>
+      <div class="g2-1">
+        <div class="card">
+          <div class="sec-hdr"><div class="card-label" style="margin:0">Client overview</div><button class="btn btn-ghost btn-sm" onclick="nav('clients')">View all →</button></div>
+          <div id="dClientList"></div>
+        </div>
+        <div class="card"><div class="card-label">Needs attention</div><div id="dAttention"></div></div>
+      </div>
+    </div>
+
+    <!-- CLIENTS -->
+    <div id="page-clients" class="page">
+      <div class="sec-hdr mb20">
+        <div><div class="pg-title">Clients</div><div class="pg-sub" id="cCount"></div></div>
+        <div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" onclick="exportAllCSV()">↓ CSV</button><button class="btn btn-accent" onclick="openM('addClient')">+ Add client</button></div>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm filter-btn active" onclick="fStatus('',this)">All</button>
+        <button class="btn btn-ghost btn-sm filter-btn" onclick="fStatus('Active',this)">Active</button>
+        <button class="btn btn-ghost btn-sm filter-btn" onclick="fStatus('Check',this)">Needs check</button>
+        <button class="btn btn-ghost btn-sm filter-btn" onclick="fType('Online',this)">Online</button>
+        <button class="btn btn-ghost btn-sm filter-btn" onclick="fInj(this)">⚠ Has injury</button>
+      </div>
+      <div class="client-grid" id="cGrid"></div>
+    </div>
+
+    <!-- CLIENT DETAIL -->
+    <div id="page-clientDetail" class="page">
+      <button class="back-btn" onclick="nav('clients')"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 2L4 7l5 5"/></svg>Back to clients</button>
+      <div id="cDetailContent"></div>
+    </div>
+
+    <!-- LOG SESSION -->
+    <div id="page-log" class="page">
+      <div class="sec-hdr mb16">
+        <div><div class="pg-title">Log Session</div><div class="pg-sub" id="logDate"></div></div>
+      </div>
+
+      <!-- Client + session setup bar -->
+      <div class="log-bar mb16">
+        <div>
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;font-weight:600">Client</div>
+          <select class="log-sel" id="logClient" style="min-width:160px" onchange="updLogHdr()"><option value="">Select client...</option></select>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;font-weight:600">Type</div>
+          <select class="log-sel" id="logType"><option>Strength</option><option>Hypertrophy</option><option>Conditioning</option><option>Mobility</option><option>Deload</option><option>Mixed</option></select>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;font-weight:600">Session RPE</div>
+          <select class="log-sel" id="logRPE"><option value="">—</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select>
+        </div>
+        <div id="logCInfo" style="display:none;flex-direction:column;gap:4px">
+          <div style="font-size:11px;color:var(--text3)">Current phase</div>
+          <div style="font-size:12px;font-weight:500" id="logCPhase">—</div>
+        </div>
+      </div>
+
+      <!-- Program loader — shown when client has active program -->
+      <div id="progLoader" style="display:none" class="card mb16">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <div>
+            <div style="font-size:13px;font-weight:600;font-family:Syne,sans-serif;margin-bottom:2px" id="progLoaderName">Active program</div>
+            <div style="font-size:11px;color:var(--text3)" id="progLoaderSub"></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select class="log-sel" id="progLoaderWeek" style="font-size:12px" onchange="updProgLoaderDays()"></select>
+            <select class="log-sel" id="progLoaderDay" style="font-size:12px"></select>
+            <button class="btn btn-accent btn-sm" onclick="loadFromProgram()">Load workout ↓</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timer bar -->
+      <div class="timer-card mb16">
+        <div><div class="timer-lbl">Session time</div><div class="timer-num" id="sesTimer">00:00</div></div>
+        <div class="timer-div"></div>
+        <div><div class="timer-lbl">Rest timer</div><div class="timer-num resting" id="restTimer">00:00</div></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-left:8px">
+          <button class="btn btn-accent btn-sm" onclick="toggleSes()" id="sesBtn" style="font-size:12px">▶ Start</button>
+          <button class="rest-btn" onclick="startRest(60)">60s</button>
+          <button class="rest-btn" onclick="startRest(90)">90s</button>
+          <button class="rest-btn" onclick="startRest(120)">2min</button>
+          <button class="rest-btn" onclick="startRest(180)">3min</button>
+        </div>
+      </div>
+
+      <!-- Warm-up section -->
+      <div class="card mb16">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--orange)"></div>
+            <div class="card-label" style="margin:0">Warm-up</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="addWarmup()" style="font-size:11px">+ Add</button>
+        </div>
+        <div id="warmupBlocks">
+          <div style="color:var(--text3);font-size:12px;padding:4px 0" id="warmupEmpty">No warm-up logged — tap + Add or write freeform below</div>
+        </div>
+        <textarea id="warmupNotes" placeholder="e.g. 5 min bike, band work, hip circles..." style="background:var(--bg);border:1px solid var(--border);border-radius:var(--rad-xs);width:100%;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text);resize:none;outline:none;padding:8px 10px;margin-top:8px;line-height:1.5;height:52px"></textarea>
+      </div>
+
+      <!-- Main work -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--accent-dark)"></div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em">Main work</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="addEx()" style="font-size:11px">+ Add exercise</button>
+      </div>
+      <div id="exBlocks"></div>
+
+      <!-- Session notes -->
+      <div class="card mb16" style="margin-top:14px">
+        <div class="card-label">Session notes</div>
+        <textarea id="logNotes" placeholder="Coaching observations, technique cues, how client felt, what to adjust next time..." style="background:transparent;border:none;width:100%;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);resize:vertical;min-height:70px;outline:none;padding:0;line-height:1.6"></textarea>
+      </div>
+
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-accent" style="flex:1;justify-content:center" onclick="saveSes()">Save session</button>
+        <button class="btn btn-ghost" onclick="clearLog()">Clear</button>
+      </div>
+    </div>
+
+    <!-- SESSIONS -->
+    <div id="page-sessions" class="page">
+      <div class="sec-hdr mb20"><div class="pg-title">Session Log</div><select class="log-sel" id="sesFilter" onchange="renderSes()" style="font-size:13px"><option value="">All clients</option></select></div>
+      <div class="card"><table class="tbl"><thead><tr><th>Date</th><th>Client</th><th>Type</th><th>Duration</th><th>RPE</th><th>Exercises</th><th>Notes</th></tr></thead><tbody id="sesTbl"></tbody></table></div>
+    </div>
+
+    <!-- PROGRAMS -->
+    <div id="page-programs" class="page">
+      <div class="sec-hdr mb20"><div class="pg-title">Programs</div><button class="btn btn-accent" onclick="openM('addProgram')">+ New program</button></div>
+      <div id="progList"></div>
+    </div>
+
+    <!-- PROGRAM DETAIL -->
+    <div id="page-programDetail" class="page">
+      <button class="back-btn" onclick="nav('programs')"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 2L4 7l5 5"/></svg>Back to programs</button>
+      <div id="progDetailContent"></div>
+    </div>
+
+    <!-- ASSESSMENTS -->
+    <div id="page-assessments" class="page">
+      <div class="sec-hdr mb20"><div class="pg-title">Assessments</div><button class="btn btn-accent" onclick="openM('addAssessment')">+ New assessment</button></div>
+      <div class="card"><table class="tbl"><thead><tr><th>Date</th><th>Client</th><th>Weight</th><th>Squat 1RM</th><th>Deadlift 1RM</th><th>Bench 1RM</th><th>Waist</th><th>Notes</th></tr></thead><tbody id="assTbl"></tbody></table></div>
+    </div>
+
+    <!-- SETUP -->
+    <div id="page-setup" class="page">
+      <div class="sec-hdr mb20"><div><div class="pg-title">Notion Setup</div><div class="pg-sub">Connect your workspace to sync data</div></div></div>
+      <div style="max-width:520px">
+        <div class="card mb16">
+          <div class="setup-step"><div class="step-circle" id="step1">1</div><div><strong style="font-size:13px">Create a Notion integration</strong><p style="font-size:12px;color:var(--text2);margin-top:4px;line-height:1.6">Go to <strong>notion.so/my-integrations</strong> → New integration → name it "PT Hub" → copy the token.</p></div></div>
+          <div class="setup-step"><div class="step-circle" id="step2">2</div><div style="flex:1"><strong style="font-size:13px">Paste your API key</strong><div class="fg" style="margin-top:8px"><input type="password" id="notionKey" placeholder="secret_xxxxxxxxxxxxxx"/></div></div></div>
+          <div class="setup-step"><div class="step-circle" id="step3">3</div><div style="flex:1"><strong style="font-size:13px">Enter database IDs</strong><p style="font-size:12px;color:var(--text2);margin:4px 0 10px;line-height:1.6">The ID is in the Notion URL after the workspace name.</p><div style="display:flex;flex-direction:column;gap:8px"><div class="fg"><label>Client Hub</label><input type="text" id="dbClients" placeholder="30ed5b39586681a09179f5140ee0127a"/></div><div class="fg"><label>Session Log</label><input type="text" id="dbSessions" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"/></div><div class="fg"><label>Assessments</label><input type="text" id="dbAssessments" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"/></div><div class="fg"><label>Programs</label><input type="text" id="dbPrograms" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"/></div></div></div></div>
+          <div class="setup-step"><div class="step-circle" id="step4">4</div><div><strong style="font-size:13px">Share databases with integration</strong><p style="font-size:12px;color:var(--text2);margin-top:4px;line-height:1.6">In each database → ··· menu → Connections → add PT Hub.</p></div></div>
+          <div style="display:flex;gap:8px"><button class="btn btn-accent" style="flex:1;justify-content:center" onclick="saveNC()">Save & connect</button><button class="btn btn-ghost" onclick="clearNC()">Clear</button></div>
+          <div id="setupRes" style="margin-top:12px;font-size:13px;display:none"></div>
+        </div>
+        <div class="card" style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0" id="connDot"></div><div><div style="font-size:13px;font-weight:500" id="connStat">Local storage active</div><div style="font-size:11px;color:var(--text3)">All data saved in your browser automatically</div></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-addClient"><div class="modal"><div class="modal-hdr"><div class="modal-title">Add client</div><button class="modal-close" onclick="closeM('addClient')">×</button></div><div class="form-grid"><div class="fg"><label>Full name *</label><input type="text" id="nc-name" placeholder="e.g. Anna K"/></div><div class="fg"><label>Type</label><select id="nc-type"><option>In-person</option><option>Online</option><option>Hybrid</option></select></div><div class="fg"><label>Goal(s)</label><input type="text" id="nc-goal" placeholder="Fat loss, Strength..."/></div><div class="fg"><label>Status</label><select id="nc-status"><option>Active</option><option>Paused</option><option>Check</option><option>Archived</option></select></div><div class="fg"><label>Start date</label><input type="date" id="nc-start"/></div><div class="fg"><label>Next assessment</label><input type="date" id="nc-assess"/></div><div class="fg fg-full"><label>Injuries / limitations</label><input type="text" id="nc-inj" placeholder="e.g. Left knee, Tennis elbow — or use Edit client after adding to set body zones"/></div><div class="fg fg-full"><label>Current phase</label><input type="text" id="nc-phase" placeholder="e.g. Foundation Block"/></div><div class="fg"><label>Email</label><input type="email" id="nc-email"/></div><div class="fg"><label>App link</label><input type="text" id="nc-app" placeholder="https://..."/></div></div><div class="form-actions"><button class="btn btn-accent" onclick="addClient()">Add client</button><button class="btn btn-ghost" onclick="closeM('addClient')">Cancel</button></div></div></div>
+
+<div class="modal-overlay" id="modal-editClient">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-hdr"><div class="modal-title">Edit client</div><button class="modal-close" onclick="closeM('editClient')">×</button></div>
+    <input type="hidden" id="ec-id"/>
+    <div class="form-grid mb16">
+      <div class="fg"><label>Full name</label><input type="text" id="ec-name"/></div>
+      <div class="fg"><label>Type</label><select id="ec-type"><option>In-person</option><option>Online</option><option>Hybrid</option></select></div>
+      <div class="fg"><label>Goal(s)</label><input type="text" id="ec-goal"/></div>
+      <div class="fg"><label>Status</label><select id="ec-status"><option>Active</option><option>Paused</option><option>Check</option><option>Archived</option></select></div>
+      <div class="fg"><label>Start date</label><input type="date" id="ec-start"/></div>
+      <div class="fg"><label>Next assessment</label><input type="date" id="ec-assess"/></div>
+      <div class="fg fg-full"><label>Current phase</label><input type="text" id="ec-phase"/></div>
+      <div class="fg"><label>Email</label><input type="email" id="ec-email"/></div>
+      <div class="fg"><label>App link</label><input type="text" id="ec-app"/></div>
+    </div>
+
+    <!-- INJURY EDITOR -->
+    <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div>
+          <div style="font-size:12px;font-weight:600;font-family:Syne,sans-serif;margin-bottom:2px">Body awareness zones</div>
+          <div style="font-size:11px;color:var(--text3)">Click zones to toggle · Add notes below</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="clearAllZones()" style="font-size:11px">Clear all</button>
+      </div>
+
+      <!-- Zone chips — all body areas -->
+      <div id="zoneChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px"></div>
+
+      <!-- Freeform notes -->
+      <div class="fg">
+        <label>Additional notes / limitations</label>
+        <textarea id="ec-inj-notes" placeholder="e.g. No overhead pressing, avoid deep knee flexion, post-op protocol..." style="min-height:60px"></textarea>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-accent" onclick="saveEC()">Save changes</button>
+      <button class="btn btn-ghost" onclick="closeM('editClient')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-addProgram"><div class="modal"><div class="modal-hdr"><div class="modal-title">Add program</div><button class="modal-close" onclick="closeM('addProgram')">×</button></div><div class="form-grid"><div class="fg fg-full"><label>Program name *</label><input type="text" id="np-name" placeholder="e.g. Hilde – Strength Block 3"/></div><div class="fg"><label>Client</label><select id="np-client"></select></div><div class="fg"><label>Phase</label><select id="np-phase"><option>Foundation</option><option>Hypertrophy</option><option>Strength</option><option>Power</option><option>Deload</option><option>Maintenance</option></select></div><div class="fg"><label>Start date</label><input type="date" id="np-start"/></div><div class="fg"><label>End date</label><input type="date" id="np-end"/></div><div class="fg"><label>Status</label><select id="np-status"><option>Active</option><option>Completed</option><option>Paused</option></select></div><div class="fg fg-full"><label>Goal</label><textarea id="np-goal" placeholder="Main goal for this block..."></textarea></div><div class="fg fg-full"><label>App link</label><input type="text" id="np-link" placeholder="Everfit program URL..."/></div></div><div class="form-actions"><button class="btn btn-accent" onclick="addProg()">Save program</button><button class="btn btn-ghost" onclick="closeM('addProgram')">Cancel</button></div></div></div>
+
+<div class="modal-overlay" id="modal-addAssessment"><div class="modal"><div class="modal-hdr"><div class="modal-title">New assessment</div><button class="modal-close" onclick="closeM('addAssessment')">×</button></div><div class="form-grid"><div class="fg"><label>Client</label><select id="na-client"></select></div><div class="fg"><label>Date</label><input type="date" id="na-date"/></div><div class="fg"><label>Body weight (kg)</label><input type="number" id="na-weight" placeholder="—" step="0.1"/></div><div class="fg"><label>Body fat %</label><input type="number" id="na-bf" placeholder="—" step="0.1"/></div><div class="fg"><label>Squat 1RM (kg)</label><input type="number" id="na-squat" placeholder="—"/></div><div class="fg"><label>Deadlift 1RM (kg)</label><input type="number" id="na-dl" placeholder="—"/></div><div class="fg"><label>Bench 1RM (kg)</label><input type="number" id="na-bench" placeholder="—"/></div><div class="fg"><label>Hip thrust 1RM (kg)</label><input type="number" id="na-hip" placeholder="—"/></div><div class="fg"><label>Waist (cm)</label><input type="number" id="na-waist" placeholder="—"/></div><div class="fg"><label>Hip (cm)</label><input type="number" id="na-hipcm" placeholder="—"/></div><div class="fg fg-full"><label>Notes</label><textarea id="na-notes" placeholder="Coach observations..."></textarea></div></div><div class="form-actions"><button class="btn btn-accent" onclick="addAss()">Save assessment</button><button class="btn btn-ghost" onclick="closeM('addAssessment')">Cancel</button></div></div></div>
+
+<div class="modal-overlay" id="modal-addNote"><div class="modal"><div class="modal-hdr"><div class="modal-title">Coach note</div><button class="modal-close" onclick="closeM('addNote')">×</button></div><input type="hidden" id="nn-cid"/><div class="form-grid"><div class="fg"><label>Date</label><input type="date" id="nn-date"/></div><div class="fg"><label>Category</label><select id="nn-cat"><option>General</option><option>Injury/pain</option><option>Technique cue</option><option>Lifestyle flag</option><option>Progress win</option><option>Program adjustment</option></select></div><div class="fg fg-full"><label>Note *</label><textarea id="nn-text" placeholder="e.g. Left knee tracking inward on split squat — cued hip external rotation..."></textarea></div></div><div class="form-actions"><button class="btn btn-accent" onclick="saveNote()">Save</button><button class="btn btn-ghost" onclick="closeM('addNote')">Cancel</button></div></div></div>
+
+<div class="modal-overlay" id="modal-addCheckin"><div class="modal"><div class="modal-hdr"><div class="modal-title">Weekly check-in</div><button class="modal-close" onclick="closeM('addCheckin')">×</button></div><input type="hidden" id="ci-cid"/><div class="form-grid mb16"><div class="fg"><label>Date</label><input type="date" id="ci-date"/></div><div class="fg"><label>Compliance</label><select id="ci-comp"><option>Full</option><option>Partial</option><option>Poor</option><option>No session</option></select></div></div><div id="ciSliders"></div><div class="fg"><label>Notes</label><textarea id="ci-notes" placeholder="Client context — stress, sleep issues, life updates..."></textarea></div><div class="form-actions"><button class="btn btn-accent" onclick="saveCI()">Save check-in</button><button class="btn btn-ghost" onclick="closeM('addCheckin')">Cancel</button></div></div></div>
+
+<script>
+const DB={get:k=>{try{return JSON.parse(localStorage.getItem('pthub_'+k)||'null');}catch(e){return null;}},set:(k,v)=>localStorage.setItem('pthub_'+k,JSON.stringify(v))};
+const PALETTE=['#3b82f6','#22c55e','#f59e0b','#a855f7','#ec4899','#f97316','#06b6d4','#84cc16','#6366f1','#e11d48','#10b981','#64748b'];
+let curPage='dashboard',curCid=null;
+let sesRun=false,sesStart=null,sesInt=null,restEnd=null,restInt=null,exCnt=0;
+let cFilter={status:'',type:'',inj:false};
+
+function initData(){
+  if(DB.get('init'))return;
+  const cl=[
+    {id:'eli',name:'Eli V.S.',type:'In-person',goals:'General Fitness, Strength',injury:'Fatigue sensitive, Senior',status:'Active',start:'2025-10-27',phase:'Phase 2 – Strength Development (W14)',sessions:15,lastSession:'2026-03-09',color:'#3b82f6'},
+    {id:'veronika',name:'Veronika S.O.',type:'In-person',goals:'Strength, Mobility, Pull-up development',injury:'',status:'Active',start:'2025-10-01',phase:'Consolidation – Strength + Pull-up',sessions:39,lastSession:'2026-02-25',color:'#22c55e'},
+    {id:'hanne',name:'Hanne K',type:'In-person',goals:'General Fitness, Strength, Knee rehab',injury:'Knee problems',status:'Active',start:'2025-10-01',phase:'FBW Strength (post-knee rehab)',sessions:13,lastSession:'2026-03-12',color:'#f59e0b'},
+    {id:'hilde',name:'Hilde J',type:'In-person',goals:'Strength',injury:'',status:'Active',start:'2025-11-01',phase:'FBW A/B alternating (#12)',sessions:14,lastSession:'2026-03-10',color:'#a855f7'},
+    {id:'maxime',name:'Maxime L',type:'In-person',goals:'Fat Loss, Strength, Mobility, Pull-up',injury:'Thoracic flexion, forward shoulders',status:'Active',start:'2026-01-08',phase:'FBW + Pull-up bias (Phase 2)',sessions:17,lastSession:'2026-02-28',color:'#06b6d4'},
+    {id:'michal',name:'Michal N',type:'In-person',goals:'Strength',injury:'Low intensity – monitor tolerance',status:'Active',start:'2026-01-06',phase:'A/B/C 3-day split',sessions:15,lastSession:'2026-02-24',color:'#ec4899'},
+    {id:'zoltan',name:'Zoltan',type:'In-person',goals:'Strength',injury:'Tennis elbow',status:'Active',start:'2025-10-01',phase:'55-min PT sessions',sessions:11,lastSession:'2026-03-03',color:'#f97316'},
+    {id:'kristin',name:'Kristin F',type:'In-person',goals:'Hiking strength, Leg strength, Stability',injury:'Elbow fracture – upper body limited',status:'Active',start:'2026-02-02',phase:'Foundation – Lower body only (#4)',sessions:4,lastSession:'2026-03-12',color:'#64748b'},
+    {id:'alexandra',name:'Alexandra G',type:'In-person',goals:'Endurance, Fat Loss, General Fitness',injury:'Knee problems (meniscus)',status:'Active',start:'2026-02-09',phase:'Foundation – FBW',sessions:5,lastSession:'2026-03-11',color:'#e11d48'},
+    {id:'andre',name:'André H',type:'In-person',goals:'Hypertrophy, Strength, Conditioning',injury:'',status:'Active',start:'2025-10-01',phase:'Push/Pull/Legs split',sessions:10,lastSession:'2025-11-28',color:'#0ea5e9'},
+    {id:'bjarte',name:'Bjarte S',type:'In-person',goals:'Tennis performance, Strength, HYROX',injury:'',status:'Active',start:'2025-10-01',phase:'ME + RE block',sessions:5,lastSession:'2025-12-19',color:'#84cc16'},
+    {id:'elin',name:'Elin',type:'In-person',goals:'General Fitness, Strength',injury:'Hip replacement (resolved)',status:'Active',start:'2025-12-01',phase:'Early phase',sessions:2,lastSession:'2026-03-11',color:'#6366f1'},
+    {id:'cyprian',name:'Cyprian Konieczny',type:'Online',goals:'Ultra Endurance, Strength',injury:'Sport hernia (post-rehab)',status:'Active',start:'2026-02-23',phase:'14-week ultra base build',sessions:0,lastSession:'',color:'#f97316'},
+    {id:'jan',name:'Jan T',type:'In-person',goals:'Posture correction, Strength',injury:'Postural issues',status:'Active',start:'2025-11-01',phase:'FBW posture sessions',sessions:5,lastSession:'2025-12-17',color:'#8b5cf6'},
+    {id:'martine',name:'Martine S',type:'Online',goals:'General Strength, Upper body',injury:'Knee sensitivity (right), Lower back',status:'Check',start:'2026-01-01',phase:'Home workout – TRX + bands',sessions:1,lastSession:'',color:'#94a3b8'},
+    {id:'przemek',name:'Przemysław Kryś',type:'Hybrid',goals:'Strength',injury:'',status:'Active',start:'2026-02-23',phase:'New – calendar set up',sessions:0,lastSession:'',color:'#10b981'},
+    {id:'vlada',name:'Vlada D',type:'In-person',goals:'Glutes, Core',injury:'',status:'Check',start:'',phase:'1 session logged',sessions:1,lastSession:'',color:'#94a3b8'},
+  ];
+  DB.set('clients',cl);
+  DB.set('sessions',[]);
+  DB.set('programs',[
+    {id:'p1',clientId:'eli',name:'Phase 2 – Strength Development',phase:'Strength',start:'2025-11-24',end:'2026-03-20',status:'Active',goal:'Build free-weight strength, posterior chain, upper back'},
+    {id:'p2',clientId:'veronika',name:'Ascend & Anchor',phase:'Strength',start:'2025-10-01',end:'',status:'Active',goal:'Maintain strength, develop pull-ups, improve mobility'},
+    {id:'p3',clientId:'maxime',name:'FBW + Pull-up Bias',phase:'Hypertrophy',start:'2026-01-08',end:'',status:'Active',goal:'Upper body strength, first strict pull-up, fat loss'},
+  ]);
+  DB.set('assessments',[]);DB.set('notes',[]);DB.set('checkins',[]);
+  DB.set('init',true);
+}
+
+function nav(page,data){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(n=>n.classList.remove('active'));
+  const pg=document.getElementById('page-'+page);if(pg)pg.classList.add('active');
+  const sb=document.getElementById('sb-'+page);if(sb)sb.classList.add('active');
+  curPage=page;
+  document.getElementById('content').scrollTo(0,0);
+  const titles={dashboard:'Dashboard',clients:'Clients',clientDetail:'Client',log:'Log Session',sessions:'Session Log',programs:'Programs',assessments:'Assessments',setup:'Setup'};
+  document.getElementById('tbTitle').textContent=titles[page]||page;
+  document.getElementById('tbSub').textContent='';
+  if(page==='dashboard')renderDash();
+  if(page==='clients'){curCid=null;renderClients();}
+  if(page==='log')initLog(data);
+  if(page==='sessions')renderSes();
+  if(page==='programs')renderProgs();
+  if(page==='programDetail'){}
+  if(page==='assessments')renderAss();
+  if(page==='clientDetail'&&data){curCid=data;renderCD(data);}
+  if(page==='setup')checkSetup();
+}
+
+function gSearch(v){if(curPage==='clients')renderClients();}
+
+function ini(){return getInitials;}
+function getInitials(n){return n.split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2);}
+
+// ── DASHBOARD ──
+function renderDash(){
+  const cl=DB.get('clients')||[],ses=DB.get('sessions')||[];
+  const today=new Date().toISOString().split('T')[0];
+  const wAgo=new Date(Date.now()-7*86400000).toISOString().split('T')[0];
+  const h=new Date().getHours();
+  document.getElementById('dashGreet').textContent=(h<12?'Good morning':h<17?'Good afternoon':'Good evening')+' 👋';
+  document.getElementById('dashDate').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('kpiC').textContent=cl.filter(c=>c.status==='Active').length;
+  document.getElementById('kpiT').textContent=ses.filter(s=>s.date===today).length;
+  document.getElementById('kpiTD').textContent=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  document.getElementById('kpiW').textContent=ses.filter(s=>s.date>=wAgo).length;
+  document.getElementById('kpiTot').textContent=ses.length+cl.reduce((a,c)=>a+(c.sessions||0),0);
+  const wi=cl.filter(c=>c.injury&&c.status==='Active');
+  document.getElementById('injDot').style.display=wi.length?'block':'none';
+  const rec=[...ses].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  document.getElementById('dRecent').innerHTML=rec.length?rec.map(s=>`<div class="info-row" style="font-size:12px"><span style="font-weight:500">${s.clientName}</span><div style="display:flex;gap:8px;align-items:center"><span class="badge b-gray" style="font-size:9px">${s.type||'—'}</span><span style="color:var(--text3)">${fd(s.date)}</span></div></div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:8px 0">No sessions yet</div>';
+  document.getElementById('dInj').innerHTML=wi.length?wi.slice(0,5).map(c=>`<div onclick="nav('clientDetail','${c.id}')" style="cursor:pointer;display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:var(--rad-xs);background:rgba(255,255,255,.06);transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='rgba(255,255,255,.06)'"><div style="width:6px;height:6px;border-radius:50%;background:#ef4444;flex-shrink:0;margin-top:5px"></div><div><div style="font-size:12px;font-weight:500;color:#fff">${c.name}</div><div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:1px;line-height:1.4">${c.injury}</div></div></div>`).join(''):'<div style="color:rgba(255,255,255,.25);font-size:13px;padding:8px 0">No injury flags ✓</div>';
+  const active=cl.filter(c=>c.status==='Active').slice(0,8);
+  document.getElementById('dClientList').innerHTML=`<table class="tbl" style="font-size:12px"><thead><tr><th>Client</th><th>Phase</th><th>Sessions</th><th>Last</th><th>Status</th></tr></thead><tbody>${active.map(c=>`<tr onclick="nav('clientDetail','${c.id}')"><td><div style="display:flex;align-items:center;gap:8px"><div style="width:26px;height:26px;border-radius:50%;background:${c.color}18;color:${c.color};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:'Syne',sans-serif">${getInitials(c.name)}</div><span style="font-weight:500">${c.name}</span></div></td><td style="color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.phase||'—'}</td><td style="font-family:'DM Mono',monospace;font-weight:600">${c.sessions||0}</td><td style="color:var(--text3)">${c.lastSession?fd(c.lastSession):'—'}</td><td><span class="badge ${c.status==='Active'?'b-green':c.status==='Check'?'b-amber':'b-gray'}">${c.status}</span></td></tr>`).join('')}</tbody></table>`;
+  const att=cl.filter(c=>c.status==='Check'||(!c.lastSession&&c.sessions===0)||(c.lastSession&&c.lastSession<new Date(Date.now()-30*86400000).toISOString().split('T')[0])).slice(0,5);
+  document.getElementById('dAttention').innerHTML=att.length?att.map(c=>`<div onclick="nav('clientDetail','${c.id}')" style="padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer"><div style="font-size:12px;font-weight:500;margin-bottom:2px">${c.name}</div><div style="font-size:11px;color:var(--text3)">${c.status==='Check'?'⚠ Needs status check':!c.lastSession?'No sessions logged':'No session in 30+ days'}</div></div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:8px 0">All clients on track ✓</div>';
+}
+
+// ── CLIENTS ──
+function renderClients(){
+  const cl=DB.get('clients')||[];
+  const sv=document.getElementById('gSrch')?.value?.toLowerCase()||'';
+  let f=cl;
+  if(cFilter.status)f=f.filter(c=>c.status===cFilter.status);
+  if(cFilter.type)f=f.filter(c=>c.type===cFilter.type);
+  if(cFilter.inj)f=f.filter(c=>c.injury);
+  if(sv)f=f.filter(c=>c.name.toLowerCase().includes(sv)||(c.goals||'').toLowerCase().includes(sv));
+  document.getElementById('cCount').textContent=`${f.length} clients · ${cl.filter(c=>c.status==='Active').length} active`;
+  document.getElementById('cGrid').innerHTML=f.map(c=>{
+    const sb=c.status==='Active'?'b-green':c.status==='Check'?'b-amber':'b-gray';
+    const tb=c.type==='Online'?'b-blue':c.type==='Hybrid'?'b-dark':'b-gray';
+    return`<div class="client-card" onclick="nav('clientDetail','${c.id}')"><div class="cc-top"><div class="cc-av" style="background:${c.color}18;color:${c.color}">${getInitials(c.name)}</div><div style="flex:1;min-width:0"><div class="cc-name">${c.name}</div><div class="cc-phase">${c.phase||'No phase set'}</div></div></div><div class="cc-tags"><span class="badge ${sb}">${c.status}</span><span class="badge ${tb}">${c.type}</span>${c.injury?'<span class="badge b-red">⚠ Injury</span>':''}</div><div class="cc-stats"><div><div class="cc-stat-l">Sessions</div><div class="cc-stat-v">${c.sessions||0}</div></div><div><div class="cc-stat-l">Last session</div><div class="cc-stat-v" style="font-size:11px;font-weight:500">${c.lastSession?fd(c.lastSession):'—'}</div></div><div><div class="cc-stat-l">Started</div><div class="cc-stat-v" style="font-size:11px;font-weight:500">${c.start?fd(c.start):'—'}</div></div></div></div>`;
+  }).join('')||'<div class="empty"><div style="font-size:32px;opacity:.3;margin-bottom:10px">👤</div><p>No clients found</p></div>';
+}
+function fStatus(s,btn){cFilter={status:s,type:'',inj:false};document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderClients();}
+function fType(t,btn){cFilter={status:'',type:cFilter.type===t?'':t,inj:false};document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderClients();}
+function fInj(btn){cFilter={status:'',type:'',inj:!cFilter.inj};document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderClients();}
+
+// ── CLIENT DETAIL ──
+function buildStr(ass){
+  if(!ass||!ass.length)return`<div style="color:var(--text3);font-size:12px">No assessments yet — <span onclick="openM('addAssessment')" style="cursor:pointer;color:var(--blue)">add first →</span></div>`;
+  const lat=ass[0];
+  const lifts=[{l:'Squat 1RM',v:parseFloat(lat.squat),m:200,c:'#3b82f6'},{l:'Deadlift 1RM',v:parseFloat(lat.deadlift),m:250,c:'#22c55e'},{l:'Bench 1RM',v:parseFloat(lat.bench),m:150,c:'#f59e0b'},{l:'Hip thrust',v:parseFloat(lat.hipThrust),m:200,c:'#ec4899'}].filter(x=>x.v&&!isNaN(x.v));
+  if(!lifts.length)return'<div style="color:var(--text3);font-size:12px">No 1RM data yet — add an assessment with lift numbers</div>';
+  return lifts.map(l=>`<div class="sr-row"><div class="sr-label">${l.l}</div><div class="sr-track"><div class="sr-fill" style="width:${Math.min(100,Math.round(l.v/l.m*100))}%;background:${l.c}"></div></div><div class="sr-val">${l.v}kg</div></div>`).join('');
+}
+
+function renderCD(id){
+  const cl=DB.get('clients')||[],ses=DB.get('sessions')||[],prgs=DB.get('programs')||[],ass=DB.get('assessments')||[],nts=DB.get('notes')||[],cis=DB.get('checkins')||[];
+  const c=cl.find(x=>x.id===id);if(!c)return;
+  const cSes=ses.filter(s=>s.clientId===id).sort((a,b)=>b.date.localeCompare(a.date));
+  const cPrg=prgs.filter(p=>p.clientId===id);
+  const cAss=ass.filter(a=>a.clientId===id).sort((a,b)=>b.date.localeCompare(a.date));
+  const cNts=nts.filter(n=>n.clientId===id).sort((a,b)=>b.date.localeCompare(a.date));
+  const cCIs=cis.filter(ci=>ci.clientId===id).sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('tbTitle').textContent=c.name;
+  document.getElementById('tbSub').textContent=c.phase||'';
+  const wc=v=>v>=4?'var(--green)':v>=3?'var(--amber)':'var(--red)';
+  const ncC={'General':'b-gray','Injury/pain':'b-red','Technique cue':'b-blue','Lifestyle flag':'b-amber','Progress win':'b-green','Program adjustment':'b-dark'};
+  document.getElementById('cDetailContent').innerHTML=`
+    <div class="detail-hero">
+      <div class="d-av" style="background:${c.color}18;color:${c.color}">${getInitials(c.name)}</div>
+      <div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap"><h2 style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;letter-spacing:-.4px">${c.name}</h2><span class="badge ${c.status==='Active'?'b-green':c.status==='Check'?'b-amber':'b-gray'}">${c.status}</span><span class="badge ${c.type==='Online'?'b-blue':c.type==='Hybrid'?'b-dark':'b-gray'}">${c.type}</span>${c.injury?'<span class="badge b-red">⚠ Injury</span>':''}</div><div style="font-size:13px;color:var(--text2)">${c.goals||'No goals set'}</div></div>
+      <div class="detail-acts"><button class="btn btn-accent btn-sm" onclick="nav('log','${id}')">+ Session</button><button class="btn btn-ghost btn-sm" onclick="openCI('${id}')">+ Check-in</button><button class="btn btn-ghost btn-sm" onclick="openNote('${id}')">+ Note</button><button class="btn btn-ghost btn-sm" onclick="editC('${id}')">Edit</button><button class="btn btn-ghost btn-sm" onclick="expCSV('${id}')">↓ CSV</button></div>
+    </div>
+    <div class="kpi-row mb16">
+      <div class="kpi"><div class="kpi-label">Total sessions</div><div class="kpi-value">${(c.sessions||0)+cSes.length}</div></div>
+      <div class="kpi"><div class="kpi-label">Last session</div><div class="kpi-value" style="font-size:16px;padding-top:4px">${c.lastSession||cSes[0]?.date?fd(c.lastSession||cSes[0]?.date):'—'}</div></div>
+      <div class="kpi"><div class="kpi-label">Started</div><div class="kpi-value" style="font-size:16px;padding-top:4px">${c.start?fd(c.start):'—'}</div></div>
+      <div class="kpi"><div class="kpi-label">Check-ins</div><div class="kpi-value">${cCIs.length}</div></div>
+    </div>
+    <div class="g2 mb16">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="card-label" style="margin:0">Body map — awareness zones</div>
+          <button class="btn btn-ghost btn-sm" onclick="editC('${c.id}')" style="font-size:11px">Edit zones</button>
+        </div>
+        ${buildBody(c)}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card card-sm"><div class="card-label">Profile</div>
+          <div class="info-row"><span class="info-key">Goal(s)</span><span style="font-size:12px;text-align:right;max-width:180px">${c.goals||'—'}</span></div>
+          <div class="info-row"><span class="info-key">Phase</span><span style="font-size:12px">${c.phase||'—'}</span></div>
+          ${c.email?`<div class="info-row"><span class="info-key">Email</span><span style="font-size:12px;color:var(--blue)">${c.email}</span></div>`:''}
+          ${c.nextAssessment?`<div class="info-row"><span class="info-key">Next check</span><span style="font-size:12px;color:var(--amber)">${fd(c.nextAssessment)}</span></div>`:''}
+          ${c.appLink?`<div class="info-row"><span class="info-key">App</span><a href="${c.appLink}" target="_blank" style="font-size:12px;color:var(--blue)">Open →</a></div>`:''}
+        </div>
+        <div class="card card-sm"><div class="card-label">Strength levels</div>${buildStr(cAss)}</div>
+        <div class="card card-sm card-dark"><div class="card-label" style="color:rgba(255,255,255,.3)">Active program</div>${cPrg.filter(p=>p.status==='Active').map(p=>`<div><div style="font-weight:600;font-family:'Syne',sans-serif;font-size:13px;letter-spacing:-.2px;margin-bottom:3px">${p.name}</div><div style="font-size:11px;color:rgba(255,255,255,.4)">${p.phase} · ${p.start?fd(p.start):'—'} → ${p.end?fd(p.end):'ongoing'}</div>${p.goal?`<div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:3px">${p.goal}</div>`:''}</div>`).join('')||`<div style="font-size:13px;color:rgba(255,255,255,.25)">No active program — <span onclick="nav('programs')" style="cursor:pointer;color:var(--accent)">add one →</span></div>`}</div>
+      </div>
+    </div>
+    ${cCIs.length?`<div class="card mb16"><div class="sec-hdr"><div class="card-label" style="margin:0">Weekly check-ins</div><button class="btn btn-ghost btn-sm" onclick="openCI('${id}')">+ Add</button></div><table class="tbl" style="font-size:12px"><thead><tr><th>Week</th><th>Sleep</th><th>Stress</th><th>Soreness</th><th>Energy</th><th>Motivation</th><th>Compliance</th><th>Notes</th></tr></thead><tbody>${cCIs.slice(0,6).map(ci=>`<tr><td>${fd(ci.date)}</td>${['sleep','stress','soreness','energy','motivation'].map(k=>`<td><span style="font-weight:700;font-family:'DM Mono',monospace;color:${wc(ci[k])}">${ci[k]}</span></td>`).join('')}<td><span class="badge ${ci.compliance==='Full'?'b-green':ci.compliance==='Partial'?'b-amber':'b-red'}">${ci.compliance}</span></td><td style="color:var(--text3);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ci.notes||'—'}</td></tr>`).join('')}</tbody></table></div>`:`<div class="card mb16" style="display:flex;justify-content:space-between;align-items:center"><div><div class="card-label" style="margin-bottom:2px">Weekly check-ins</div><div style="font-size:13px;color:var(--text3)">No check-ins yet</div></div><button class="btn btn-ghost btn-sm" onclick="openCI('${id}')">+ Add first</button></div>`}
+    <div class="card mb16"><div class="sec-hdr"><div class="card-label" style="margin:0">Recent sessions</div><button class="btn btn-accent btn-sm" onclick="nav('log','${id}')">+ Log</button></div>${cSes.length?`<table class="tbl" style="font-size:12px"><thead><tr><th>Date</th><th>Type</th><th>Duration</th><th>RPE</th><th>Exercises</th><th>Notes</th></tr></thead><tbody>${cSes.slice(0,8).map(s=>`<tr><td>${fd(s.date)}</td><td><span class="badge b-gray" style="font-size:9px">${s.type||'—'}</span></td><td style="font-family:'DM Mono',monospace">${s.duration?s.duration+'m':'—'}</td><td>${s.rpe?`<span style="font-weight:700;font-family:'DM Mono',monospace;color:${s.rpe>=8?'var(--red)':s.rpe>=6?'var(--amber)':'var(--green)'}">${s.rpe}</span>`:'—'}</td><td style="color:var(--text2);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.exercises||'—'}</td><td style="color:var(--text2);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.notes||'—'}</td></tr>`).join('')}</tbody></table>`:'<div style="color:var(--text3);font-size:13px;padding:8px 0">No sessions yet</div>'}</div>
+    ${cAss.length?`<div class="card mb16"><div class="sec-hdr"><div class="card-label" style="margin:0">Assessments</div><button class="btn btn-ghost btn-sm" onclick="openM('addAssessment')">+ Add</button></div><table class="tbl" style="font-size:12px"><thead><tr><th>Date</th><th>Weight</th><th>Squat 1RM</th><th>Deadlift 1RM</th><th>Bench 1RM</th><th>Waist</th><th>Notes</th></tr></thead><tbody>${cAss.map(a=>`<tr><td>${fd(a.date)}</td><td>${a.weight?a.weight+'kg':'—'}</td><td>${a.squat?`<strong>${a.squat}kg</strong>`:'—'}</td><td>${a.deadlift?`<strong>${a.deadlift}kg</strong>`:'—'}</td><td>${a.bench?`<strong>${a.bench}kg</strong>`:'—'}</td><td>${a.waist?a.waist+'cm':'—'}</td><td style="color:var(--text2)">${a.notes||'—'}</td></tr>`).join('')}</tbody></table></div>`:''}
+    <div class="card mb16"><div class="sec-hdr"><div class="card-label" style="margin:0">Coach notes</div><button class="btn btn-ghost btn-sm" onclick="openNote('${id}')">+ Add</button></div>${cNts.length?cNts.map(n=>`<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start"><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span class="badge ${ncC[n.category]||'b-gray'}" style="font-size:9px">${n.category}</span><span style="font-size:11px;color:var(--text3)">${fd(n.date)}</span></div><div style="font-size:13px;line-height:1.55">${n.text}</div></div><button onclick="delNote('${n.id}','${id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;flex-shrink:0;padding:0 2px">×</button></div>`).join('')+'<div></div>':'<div style="color:var(--text3);font-size:13px">No notes yet</div>'}</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid var(--border)"><div style="font-size:12px;color:var(--text3)">ID: ${c.id}</div><button class="btn btn-danger btn-sm" onclick="delClient('${id}')">Delete client</button></div>
+  `;
+}
+
+function buildBody(c){
+
+  // ── FRONT VIEW: face features, chest line, abs, quads prominent ──
+  function frontSVG(dots){
+    return `<svg width="74" height="195" viewBox="0 0 74 195" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <style>
+          .bf{fill:rgba(0,0,0,.06);stroke:rgba(0,0,0,.16);stroke-width:1.1;stroke-linejoin:round;}
+          .bm{fill:rgba(0,0,0,.04);stroke:rgba(0,0,0,.1);stroke-width:.8;stroke-linejoin:round;}
+          .bl{fill:none;stroke:rgba(0,0,0,.1);stroke-width:.8;}
+        </style>
+      </defs>
+      <!-- Head -->
+      <ellipse cx="37" cy="12" rx="10" ry="12" class="bf"/>
+      <!-- Face details: eyes, nose hint -->
+      <ellipse cx="33" cy="10" rx="1.5" ry="1.5" fill="rgba(0,0,0,.15)"/>
+      <ellipse cx="41" cy="10" rx="1.5" ry="1.5" fill="rgba(0,0,0,.15)"/>
+      <line x1="37" y1="12" x2="37" y2="15" class="bl"/>
+      <!-- Neck -->
+      <path d="M32 23 L31 29 L43 29 L42 23 Z" class="bf"/>
+      <!-- Trapezius / collar -->
+      <path d="M31 29 C26 30 21 32 19 35 L22 35 C24 33 28 31 31 31 Z" class="bm"/>
+      <path d="M43 29 C48 30 53 32 55 35 L52 35 C50 33 46 31 43 31 Z" class="bm"/>
+      <!-- Torso -->
+      <path d="M19 35 L17 40 L16 75 C16 80 18 83 22 84 L52 84 C56 83 58 80 58 75 L57 40 L55 35 Z" class="bf"/>
+      <!-- Chest line (pec divide) -->
+      <line x1="37" y1="38" x2="37" y2="58" class="bl"/>
+      <!-- Pec curves -->
+      <path d="M19 38 Q28 48 37 46" class="bl"/>
+      <path d="M55 38 Q46 48 37 46" class="bl"/>
+      <!-- Abs lines -->
+      <line x1="30" y1="58" x2="44" y2="58" class="bl"/>
+      <line x1="29" y1="66" x2="45" y2="66" class="bl"/>
+      <line x1="29" y1="74" x2="45" y2="74" class="bl"/>
+      <line x1="37" y1="58" x2="37" y2="82" class="bl"/>
+      <!-- Left upper arm -->
+      <path d="M17 37 C12 39 10 43 9 48 L8 65 C8 68 9 70 12 71 L15 71 C17 70 18 68 18 65 L19 48 L19 37 Z" class="bf"/>
+      <!-- Left forearm -->
+      <path d="M9 71 C7 73 6 76 6 79 L6 97 C6 100 7 102 10 102 L14 102 C16 101 17 99 17 96 L17 79 C17 76 16 73 14 71 Z" class="bf"/>
+      <!-- Left hand -->
+      <ellipse cx="11" cy="106" rx="5" ry="6" class="bf"/>
+      <!-- Right upper arm -->
+      <path d="M57 37 C62 39 64 43 65 48 L66 65 C66 68 65 70 62 71 L59 71 C57 70 56 68 56 65 L55 48 L55 37 Z" class="bf"/>
+      <!-- Right forearm -->
+      <path d="M65 71 C67 73 68 76 68 79 L68 97 C68 100 67 102 64 102 L60 102 C58 101 57 99 57 96 L57 79 C57 76 58 73 60 71 Z" class="bf"/>
+      <!-- Right hand -->
+      <ellipse cx="63" cy="106" rx="5" ry="6" class="bf"/>
+      <!-- Hip area -->
+      <path d="M22 84 L20 86 L20 95 L54 95 L54 86 L52 84 Z" class="bf"/>
+      <!-- Left thigh -->
+      <path d="M20 95 L18 97 L16 130 C16 134 18 137 22 137 L28 137 C31 136 33 133 32 130 L31 97 L29 95 Z" class="bf"/>
+      <!-- Quad line left -->
+      <path d="M20 100 Q24 118 23 130" class="bl"/>
+      <!-- Right thigh -->
+      <path d="M54 95 L56 97 L58 130 C58 134 56 137 52 137 L46 137 C43 136 41 133 42 130 L43 97 L45 95 Z" class="bf"/>
+      <!-- Quad line right -->
+      <path d="M54 100 Q50 118 51 130" class="bl"/>
+      <!-- Left shin -->
+      <path d="M16 132 L15 158 L15 172 C15 176 17 178 21 179 L26 179 C29 178 31 176 31 172 L31 158 L32 132 Z" class="bf"/>
+      <!-- Right shin -->
+      <path d="M58 132 L59 158 L59 172 C59 176 57 178 53 179 L48 179 C45 178 43 176 43 172 L43 158 L42 132 Z" class="bf"/>
+      <!-- Left foot -->
+      <path d="M14 179 L11 184 C10 187 12 189 15 190 L25 190 C28 189 30 187 29 184 L27 179 Z" class="bf"/>
+      <!-- Right foot -->
+      <path d="M60 179 L63 184 C64 187 62 189 59 190 L49 190 C46 189 44 187 45 184 L47 179 Z" class="bf"/>
+      <!-- Kneecap hints -->
+      <ellipse cx="24" cy="136" rx="5" ry="4" class="bm"/>
+      <ellipse cx="50" cy="136" rx="5" ry="4" class="bm"/>
+      ${dots}
+    </svg>`;
+  }
+
+  // ── BACK VIEW: no face, traps wide, spine line, glutes, hamstrings ──
+  function backSVG(dots){
+    return `<svg width="74" height="195" viewBox="0 0 74 195" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <style>
+          .bf{fill:rgba(0,0,0,.06);stroke:rgba(0,0,0,.16);stroke-width:1.1;stroke-linejoin:round;}
+          .bm{fill:rgba(0,0,0,.04);stroke:rgba(0,0,0,.1);stroke-width:.8;stroke-linejoin:round;}
+          .bl{fill:none;stroke:rgba(0,0,0,.1);stroke-width:.8;}
+        </style>
+      </defs>
+      <!-- Head (back — wider ears implied, no face) -->
+      <ellipse cx="37" cy="12" rx="10" ry="12" class="bf"/>
+      <!-- Ear bumps -->
+      <ellipse cx="27" cy="13" rx="2" ry="3" class="bm"/>
+      <ellipse cx="47" cy="13" rx="2" ry="3" class="bm"/>
+      <!-- Neck -->
+      <path d="M32 23 L31 29 L43 29 L42 23 Z" class="bf"/>
+      <!-- Wide traps -->
+      <path d="M31 29 C26 28 18 32 14 37 L19 37 C22 33 28 31 31 31 Z" class="bf"/>
+      <path d="M43 29 C48 28 56 32 60 37 L55 37 C52 33 46 31 43 31 Z" class="bf"/>
+      <!-- Torso back — wider shoulders, lat flare -->
+      <path d="M14 37 L12 42 L13 55 C13 60 16 65 21 67 L16 75 C16 80 18 83 22 84 L52 84 C56 83 58 80 58 75 L53 67 C58 65 61 60 61 55 L62 42 L60 37 Z" class="bf"/>
+      <!-- Spine line -->
+      <line x1="37" y1="30" x2="37" y2="82" class="bl"/>
+      <!-- Rhomboid / scapula hints -->
+      <path d="M24 40 Q30 45 32 54 Q26 52 22 47 Z" class="bm"/>
+      <path d="M50 40 Q44 45 42 54 Q48 52 52 47 Z" class="bm"/>
+      <!-- Lat lines -->
+      <path d="M16 56 Q22 68 22 82" class="bl"/>
+      <path d="M58 56 Q52 68 52 82" class="bl"/>
+      <!-- Left upper arm (back) -->
+      <path d="M13 39 C8 41 6 45 5 50 L4 67 C4 70 5 72 8 73 L11 73 C13 72 14 70 14 67 L15 50 L15 39 Z" class="bf"/>
+      <!-- Left forearm -->
+      <path d="M5 73 C3 75 2 78 2 81 L2 99 C2 102 3 104 6 104 L10 104 C12 103 13 101 13 98 L13 81 C13 78 12 75 10 73 Z" class="bf"/>
+      <!-- Left hand -->
+      <ellipse cx="7" cy="108" rx="5" ry="6" class="bf"/>
+      <!-- Right upper arm (back) -->
+      <path d="M61 39 C66 41 68 45 69 50 L70 67 C70 70 69 72 66 73 L63 73 C61 72 60 70 60 67 L59 50 L59 39 Z" class="bf"/>
+      <!-- Right forearm -->
+      <path d="M69 73 C71 75 72 78 72 81 L72 99 C72 102 71 104 68 104 L64 104 C62 103 61 101 61 98 L61 81 C61 78 62 75 64 73 Z" class="bf"/>
+      <!-- Right hand -->
+      <ellipse cx="67" cy="108" rx="5" ry="6" class="bf"/>
+      <!-- Glutes -->
+      <path d="M22 84 L19 88 L19 102 C19 106 22 109 26 109 L37 109 L48 109 C52 109 55 106 55 102 L55 88 L52 84 Z" class="bf"/>
+      <!-- Glute divide -->
+      <line x1="37" y1="84" x2="37" y2="108" class="bl"/>
+      <!-- Glute curve hints -->
+      <path d="M22 88 Q30 100 37 98" class="bl"/>
+      <path d="M52 88 Q44 100 37 98" class="bl"/>
+      <!-- Left hamstring -->
+      <path d="M19 102 L17 105 L15 132 C15 136 17 138 21 138 L27 138 C30 137 32 134 32 130 L31 105 L29 102 Z" class="bf"/>
+      <!-- Hamstring line left -->
+      <path d="M20 108 Q22 120 22 132" class="bl"/>
+      <!-- Right hamstring -->
+      <path d="M55 102 L57 105 L59 132 C59 136 57 138 53 138 L47 138 C44 137 42 134 42 130 L43 105 L45 102 Z" class="bf"/>
+      <!-- Hamstring line right -->
+      <path d="M54 108 Q52 120 52 132" class="bl"/>
+      <!-- Left calf -->
+      <path d="M15 133 L14 158 L14 173 C14 177 16 179 20 180 L26 180 C29 179 31 177 31 173 L31 158 L32 133 Z" class="bf"/>
+      <!-- Calf muscle hint left -->
+      <path d="M16 138 Q20 150 19 162" class="bl"/>
+      <!-- Right calf -->
+      <path d="M59 133 L60 158 L60 173 C60 177 58 179 54 180 L48 180 C45 179 43 177 43 173 L43 158 L42 133 Z" class="bf"/>
+      <!-- Calf muscle hint right -->
+      <path d="M58 138 Q54 150 55 162" class="bl"/>
+      <!-- Left foot (pointing forward from behind) -->
+      <path d="M13 180 L10 186 C9 189 11 191 14 191 L24 191 C27 190 29 188 27 185 L26 180 Z" class="bf"/>
+      <!-- Right foot -->
+      <path d="M61 180 L64 186 C65 189 63 191 60 191 L50 191 C47 190 45 188 47 185 L48 180 Z" class="bf"/>
+      ${dots}
+    </svg>`;
+  }
+
+  const t = (c.injury||'').toLowerCase();
+
+  // Zones with separate front/back coords matching new SVG layout
+  const zones = [
+    {keys:['knee','meniscus'],              label:'Knee',     f:{x:24,y:136},  b:{x:24,y:136}},
+    {keys:['elbow','tennis elbow'],         label:'Elbow',    f:{x:11,y:84},   b:{x:8,y:86}},
+    {keys:['shoulder','rotator'],           label:'Shoulder', f:{x:15,y:42},   b:{x:13,y:42}},
+    {keys:['back','spine','thoracic','lumbar'], label:'Back', f:null,           b:{x:37,y:65}},
+    {keys:['hip','pelvi','hernia','pubalgi'],label:'Hip',     f:{x:29,y:92},   b:{x:37,y:96}},
+    {keys:['ankle','achilles'],             label:'Ankle',   f:{x:21,y:175},  b:{x:21,y:175}},
+    {keys:['neck','cerv'],                  label:'Neck',     f:{x:37,y:27},   b:{x:37,y:27}},
+    {keys:['wrist','hand'],                 label:'Wrist',    f:{x:9,y:100},   b:{x:6,y:102}},
+    {keys:['hamstring','posterior chain'],  label:'Hamstring',f:null,           b:{x:24,y:118}},
+    {keys:['quad','thigh'],                 label:'Quad',     f:{x:24,y:114},  b:null},
+    {keys:['glute','glut'],                 label:'Glute',    f:null,           b:{x:27,y:100}},
+    {keys:['calf'],                         label:'Calf',     f:{x:21,y:160},  b:{x:20,y:155}},
+    {keys:['chest','pec'],                  label:'Chest',    f:{x:26,y:50},   b:null},
+    {keys:['trap','upper back'],            label:'Traps',    f:null,           b:{x:25,y:38}},
+    {keys:['foot','plantar'],               label:'Foot',     f:{x:19,y:187},  b:{x:19,y:188}},
+    {keys:['lat','lats'],                   label:'Lats',     f:null,           b:{x:18,y:65}},
+  ];
+
+  // Match from structured injuryZones array (new) or fallback to text parsing (legacy)
+  let matched = [];
+  if(c.injuryZones && c.injuryZones.length){
+    // Use structured zone names to find body zone definitions
+    matched = zones.filter(z => c.injuryZones.some(iz =>
+      z.keys.some(k => iz.toLowerCase().includes(k)) || z.label.toLowerCase() === iz.toLowerCase()
+    ));
+  } else if(t){
+    matched = zones.filter(z=>z.keys.some(k=>t.includes(k)));
+  }
+
+  const dot = coord => coord
+    ? `<circle cx="${coord.x}" cy="${coord.y}" r="5" fill="#ef4444" fill-opacity=".9" stroke="white" stroke-width="2.5">
+        <animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite"/>
+        <animate attributeName="fill-opacity" values=".9;.6;.9" dur="2s" repeatCount="indefinite"/>
+       </circle>` : '';
+
+  const frontDots = matched.map(z=>dot(z.f)).join('');
+  const backDots  = matched.map(z=>dot(z.b)).join('');
+
+  return `
+    <div class="body-wrap">
+      <div class="body-figure">
+        ${frontSVG(frontDots)}
+        <div class="body-lbl">Front</div>
+      </div>
+      <div class="body-figure">
+        ${backSVG(backDots)}
+        <div class="body-lbl">Back</div>
+      </div>
+      ${matched.length
+        ? `<div class="body-legend">${matched.map(z=>`<div class="bl-item"><div class="bl-dot"></div>${z.label}</div>`).join('')}</div>`
+        : `<div style="align-self:center;font-size:12px;color:var(--text3);padding:8px">No injury flags ✓</div>`}
+    </div>`;
+}
+
+// ── SESSIONS ──
+// ── SESSION LOGGER ──
+function initLog(cid){
+  const cl=DB.get('clients')||[];
+  const sel=document.getElementById('logClient');
+  sel.innerHTML='<option value="">Select client...</option>'+cl.filter(c=>c.status==='Active').map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  if(cid){sel.value=cid;}
+  updLogHdr();
+  document.getElementById('logDate').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+  if(!document.getElementById('exBlocks').children.length)addEx();
+}
+
+function updLogHdr(){
+  const cl=DB.get('clients')||[];
+  const prgs=DB.get('programs')||[];
+  const id=document.getElementById('logClient').value;
+  const c=cl.find(x=>x.id===id);
+  const info=document.getElementById('logCInfo');
+  const loader=document.getElementById('progLoader');
+
+  if(!c){info.style.display='none';loader.style.display='none';return;}
+
+  // Show current phase
+  document.getElementById('logCPhase').textContent=c.phase||'No phase set';
+  info.style.display='flex';
+
+  // Check for active program
+  const activeProg=prgs.find(p=>p.clientId===id&&p.status==='Active'&&(p.weeks||[]).length>0);
+  if(activeProg){
+    document.getElementById('progLoaderName').textContent=activeProg.name;
+    document.getElementById('progLoaderSub').textContent=`${activeProg.weeks.length} weeks · ${activeProg.phase}`;
+    loader.style.display='flex';
+    loader.dataset.pid=activeProg.id;
+    // Populate week select
+    const wSel=document.getElementById('progLoaderWeek');
+    wSel.innerHTML=activeProg.weeks.map((w,i)=>`<option value="${i}">${w.name||'Week '+(i+1)}</option>`).join('');
+    updProgLoaderDays();
+  } else {
+    loader.style.display='none';
+  }
+}
+
+function updProgLoaderDays(){
+  const pid=document.getElementById('progLoader').dataset.pid;
+  const prgs=DB.get('programs')||[];
+  const p=prgs.find(x=>x.id===pid);
+  if(!p)return;
+  const wi=+document.getElementById('progLoaderWeek').value;
+  const week=p.weeks[wi];
+  const dSel=document.getElementById('progLoaderDay');
+  dSel.innerHTML=(week?.days||[]).map((d,i)=>`<option value="${i}">${d.name||'Day '+(i+1)} (${(d.exercises||[]).length} ex)</option>`).join('');
+}
+
+function loadFromProgram(){
+  const pid=document.getElementById('progLoader').dataset.pid;
+  const prgs=DB.get('programs')||[];
+  const p=prgs.find(x=>x.id===pid);
+  if(!p)return;
+  const wi=+document.getElementById('progLoaderWeek').value;
+  const di=+document.getElementById('progLoaderDay').value;
+  const day=p.weeks[wi]?.days[di];
+  if(!day)return;
+
+  // Clear existing exercises
+  document.getElementById('exBlocks').innerHTML='';
+  exCnt=0;
+
+  // Load each exercise from program with planned sets
+  (day.exercises||[]).forEach(e=>{
+    addExFromProgram(e);
+  });
+
+  // If none, add blank
+  if(!day.exercises||day.exercises.length===0) addEx();
+
+  // Update session type based on program phase
+  const typeMap={Strength:'Strength',Hypertrophy:'Hypertrophy',Power:'Strength',Foundation:'Strength',Deload:'Deload',Conditioning:'Conditioning',Mobility:'Mobility'};
+  const logType=document.getElementById('logType');
+  const mapped=typeMap[p.phase]||'Strength';
+  [...logType.options].forEach(o=>{if(o.value===mapped)o.selected=true;});
+
+  // Visual feedback
+  const btn=document.querySelector('[onclick="loadFromProgram()"]');
+  if(btn){const orig=btn.textContent;btn.textContent='✓ Loaded!';btn.style.background='var(--green)';btn.style.color='#fff';setTimeout(()=>{btn.textContent=orig;btn.style.background='';btn.style.color='';},1800);}
+}
+
+function addExFromProgram(progEx){
+  exCnt++;const id='ex'+exCnt;
+  const plannedSets=parseInt(progEx.sets)||3;
+  const div=document.createElement('div');div.className='ex-block';div.id=id;
+
+  // Build set rows based on planned sets from program
+  let setRows='';
+  for(let i=1;i<=plannedSets;i++){
+    setRows+=mkSetRow(id,i,progEx.load||'',progEx.reps||'');
+  }
+
+  div.innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+      <input type="text" class="ex-inp" value="${(progEx.name||'').replace(/"/g,'&quot;')}" placeholder="Exercise name" style="background:transparent;border:none;border-bottom:1.5px solid var(--border2);color:var(--text);font-family:'Syne',sans-serif;font-size:14px;font-weight:600;padding:4px 0;outline:none;flex:1;width:100%;transition:border-color .15s"/>
+      <button onclick="document.getElementById('${id}').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;padding:0 4px;flex-shrink:0">×</button>
+    </div>
+    ${progEx.notes?`<div style="font-size:11px;color:var(--text2);margin-bottom:8px;font-style:italic;padding:3px 0 3px 2px;border-left:2px solid var(--border2);padding-left:8px">${progEx.notes}</div>`:''}
+    <table class="sets-tbl">
+      <thead><tr><th>Set</th><th>Target</th><th>kg done</th><th>Reps done</th><th>RPE</th></tr></thead>
+      <tbody id="${id}_sets">${setRows}</tbody>
+    </table>
+    <button class="add-set-btn" onclick="addSet('${id}')">+ add set</button>`;
+  document.getElementById('exBlocks').appendChild(div);
+}
+
+function addEx(){
+  exCnt++;const id='ex'+exCnt;
+  const div=document.createElement('div');div.className='ex-block';div.id=id;
+  div.innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <input type="text" class="ex-inp" placeholder="Exercise name (e.g. Trap Bar Deadlift)" style="background:transparent;border:none;border-bottom:1.5px solid var(--border2);color:var(--text);font-family:'Syne',sans-serif;font-size:14px;font-weight:600;padding:4px 0;outline:none;flex:1;width:100%;transition:border-color .15s"/>
+      <button onclick="document.getElementById('${id}').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;padding:0 4px;flex-shrink:0">×</button>
+    </div>
+    <table class="sets-tbl">
+      <thead><tr><th>Set</th><th>Target</th><th>kg done</th><th>Reps done</th><th>RPE</th></tr></thead>
+      <tbody id="${id}_sets">${mkSetRow(id,1,'','')}</tbody>
+    </table>
+    <button class="add-set-btn" onclick="addSet('${id}')">+ add set</button>`;
+  document.getElementById('exBlocks').appendChild(div);
+}
+
+function mkSetRow(eid,n,target,targetReps){
+  const targetStr=target&&targetReps?`${targetReps}@${target}`:target||targetReps||'';
+  return`<tr>
+    <td><div class="set-num-c">${n}</div></td>
+    <td><div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;text-align:center;padding:6px 4px">${targetStr||'—'}</div></td>
+    <td><input class="set-inp" type="number" placeholder="kg" min="0" step="0.5"/></td>
+    <td><input class="set-inp" type="number" placeholder="reps" min="0"/></td>
+    <td><input class="set-inp" type="number" placeholder="RPE" min="1" max="10"/></td>
+  </tr>`;
+}
+
+function addSet(eid){
+  const tb=document.getElementById(eid+'_sets');
+  const n=tb.rows.length+1;
+  tb.insertAdjacentHTML('beforeend',mkSetRow(eid,n,'',''));
+  const inp=tb.querySelectorAll('tr:last-child input');
+  const prev=tb.rows[tb.rows.length-2];
+  if(prev){const pi=prev.querySelectorAll('input');inp[0].value=pi[0].value;inp[1].value=pi[1].value;}
+  inp[0].focus();
+  startRest(90);
+}
+
+// Warm-up
+let warmupCnt=0;
+function addWarmup(){
+  warmupCnt++;const id='wu'+warmupCnt;
+  const empty=document.getElementById('warmupEmpty');
+  if(empty)empty.style.display='none';
+  const div=document.createElement('div');
+  div.id=id;
+  div.style.cssText='display:grid;grid-template-columns:1fr 60px 60px 20px;gap:6px;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)';
+  div.innerHTML=`
+    <input type="text" placeholder="Exercise / activity" style="background:transparent;border:none;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text);outline:none;padding:3px 0"/>
+    <input type="text" placeholder="Sets" style="background:var(--bg);border:1px solid var(--border);border-radius:5px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text);text-align:center;padding:4px;outline:none"/>
+    <input type="text" placeholder="Reps/s" style="background:var(--bg);border:1px solid var(--border);border-radius:5px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text);text-align:center;padding:4px;outline:none"/>
+    <button onclick="document.getElementById('${id}').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;padding:0;line-height:1">×</button>`;
+  document.getElementById('warmupBlocks').appendChild(div);
+}
+
+function collectWarmup(){
+  const rows=[...document.getElementById('warmupBlocks').querySelectorAll('div[id^=wu]')];
+  const structured=rows.map(r=>{
+    const inps=r.querySelectorAll('input');
+    return{name:inps[0]?.value||'',sets:inps[1]?.value||'',reps:inps[2]?.value||''};
+  }).filter(x=>x.name);
+  const notes=document.getElementById('warmupNotes').value.trim();
+  return{items:structured,notes};
+}
+
+function toggleSes(){
+  if(!sesRun){sesRun=true;sesStart=Date.now();sesInt=setInterval(()=>{const e=Math.floor((Date.now()-sesStart)/1000);const el=document.getElementById('sesTimer');el.textContent=ft(e);el.classList.add('running');},1000);document.getElementById('sesBtn').textContent='⏹ Stop';}
+  else{sesRun=false;clearInterval(sesInt);document.getElementById('sesTimer').classList.remove('running');document.getElementById('sesBtn').textContent='▶ Start';}
+}
+
+function startRest(s){
+  if(restInt)clearInterval(restInt);restEnd=Date.now()+s*1000;
+  const el=document.getElementById('restTimer');
+  restInt=setInterval(()=>{const r=Math.max(0,Math.ceil((restEnd-Date.now())/1000));el.textContent=ft(r);if(r===0){clearInterval(restInt);el.style.color='var(--accent)';setTimeout(()=>{el.style.color='';},2500);}},200);
+}
+
+function collectEx(){
+  return[...document.querySelectorAll('#exBlocks .ex-block')].reduce((a,b)=>{
+    const name=b.querySelector('.ex-inp')?.value?.trim();if(!name)return a;
+    const sets=[...b.querySelectorAll('tbody tr')].reduce((s,r)=>{
+      const i=r.querySelectorAll('input');
+      // columns: kg done (0), reps done (1), RPE (2)
+      if(i[0]?.value||i[1]?.value)s.push({kg:i[0]?.value||'—',reps:i[1]?.value||'—',rpe:i[2]?.value||''});
+      return s;
+    },[]);
+    a.push({name,sets});return a;
+  },[]);
+}
+
+function saveSes(){
+  const cid=document.getElementById('logClient').value;
+  const cl=DB.get('clients')||[];const client=cl.find(c=>c.id===cid);
+  if(!client){alert('Please select a client');return;}
+  const exs=collectEx();
+  const warmup=collectWarmup();
+  const sum=exs.map(e=>`${e.name}: ${e.sets.map(s=>`${s.kg}kg×${s.reps}`).join(', ')}`).join(' | ');
+  const dur=sesRun?Math.max(1,Math.floor((Date.now()-sesStart)/60000)):55;
+  const s={
+    id:'ses_'+Date.now(),clientId:cid,clientName:client.name,
+    date:new Date().toISOString().split('T')[0],
+    type:document.getElementById('logType').value,
+    rpe:document.getElementById('logRPE').value||null,
+    duration:dur,exercises:sum,exerciseData:exs,
+    warmup,
+    notes:document.getElementById('logNotes').value.trim()
+  };
+  const ses=DB.get('sessions')||[];ses.unshift(s);DB.set('sessions',ses);
+  const idx=cl.findIndex(c=>c.id===cid);cl[idx].lastSession=s.date;DB.set('clients',cl);
+  if(sesRun)toggleSes();
+  clearLog();
+  nav('clientDetail',cid);
+}
+
+function clearLog(){
+  document.getElementById('logClient').value='';
+  document.getElementById('logNotes').value='';
+  document.getElementById('warmupNotes').value='';
+  document.getElementById('exBlocks').innerHTML='';
+  document.getElementById('warmupBlocks').innerHTML='';
+  const empty=document.getElementById('warmupEmpty');
+  if(empty)empty.style.display='block';
+  document.getElementById('logCInfo').style.display='none';
+  document.getElementById('progLoader').style.display='none';
+  exCnt=0;warmupCnt=0;
+  addEx();
+}
+
+
+function renderSes(){
+  const cl=DB.get('clients')||[],ses=DB.get('sessions')||[];
+  const sel=document.getElementById('sesFilter');
+  sel.innerHTML='<option value="">All clients</option>'+cl.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  const fv=sel.value;
+  const sorted=[...(fv?ses.filter(s=>s.clientId===fv):ses)].sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('sesTbl').innerHTML=sorted.length?sorted.map(s=>`<tr onclick="nav('clientDetail','${s.clientId}')"><td>${fd(s.date)}</td><td style="font-weight:500">${s.clientName}</td><td><span class="badge b-gray" style="font-size:9px">${s.type||'—'}</span></td><td style="font-family:'DM Mono',monospace">${s.duration?s.duration+'m':'—'}</td><td>${s.rpe||'—'}</td><td style="color:var(--text2);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px">${s.exercises||'—'}</td><td style="color:var(--text2);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px">${s.notes||'—'}</td></tr>`).join(''):'<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:40px">No sessions yet — start logging</td></tr>';
+}
+
+// ── PROGRAMS ──
+function renderProgs(){
+  const prgs=DB.get('programs')||[],cl=DB.get('clients')||[];
+  const sel=document.getElementById('np-client');if(sel)sel.innerHTML=cl.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  const act=prgs.filter(p=>p.status==='Active'),oth=prgs.filter(p=>p.status!=='Active');
+  document.getElementById('progList').innerHTML=`${act.length?`<div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:10px">Active (${act.length})</div>`:''}${act.map(p=>pCard(p,cl)).join('')}${oth.length?`<div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin:20px 0 10px">Completed / Paused</div>`:''}${oth.map(p=>pCard(p,cl)).join('')}${!prgs.length?'<div class="empty"><div style="font-size:32px;opacity:.3;margin-bottom:10px">📋</div><p>No programs yet — click + New program to create one</p></div>':''}`;
+}
+function pCard(p,cl){
+  const c=cl.find(x=>x.id===p.clientId);
+  const wks=p.weeks||[];
+  const totalEx=wks.reduce((a,w)=>a+w.days.reduce((b,d)=>b+(d.exercises||[]).length,0),0);
+  return `<div class="card mb12" style="border-left:3px solid ${c?.color||'#ccc'};cursor:pointer;transition:box-shadow .15s" onclick="navProgDetail('${p.id}')" onmouseover="this.style.boxShadow='var(--shadow-lg)'" onmouseout="this.style.boxShadow='var(--shadow)'">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="flex:1">
+        <div style="font-weight:600;font-family:Syne,sans-serif;font-size:15px;letter-spacing:-.2px;margin-bottom:4px">${p.name}</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px">${c?.name||'—'} · ${p.phase} · ${p.start?fd(p.start):'—'} → ${p.end?fd(p.end):'ongoing'}</div>
+        ${p.goal?`<div style="font-size:12px;color:var(--text3);margin-bottom:8px">${p.goal}</div>`:''}
+        <div style="display:flex;gap:12px">
+          <span style="font-size:11px;color:var(--text3)"><strong style="color:var(--text)">${wks.length}</strong> weeks</span>
+          <span style="font-size:11px;color:var(--text3)"><strong style="color:var(--text)">${totalEx}</strong> exercises</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+        <span class="badge ${p.status==='Active'?'b-green':p.status==='Completed'?'b-gray':'b-amber'}">${p.status}</span>
+        <span style="font-size:11px;color:var(--text3)">Click to open →</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function navProgDetail(id){
+  nav('programDetail');
+  renderProgDetail(id);
+}
+
+let curProgId=null,curWeekIdx=0;
+function renderProgDetail(id){
+  curProgId=id;
+  const prgs=DB.get('programs')||[],cl=DB.get('clients')||[];
+  const p=prgs.find(x=>x.id===id);if(!p)return;
+  const c=cl.find(x=>x.id===p.clientId);
+  if(!p.weeks)p.weeks=[];
+  document.getElementById('tbTitle').textContent=p.name;
+  document.getElementById('tbSub').textContent=c?.name||'';
+  if(curWeekIdx>=p.weeks.length)curWeekIdx=0;
+  renderProgDetailHTML(p,c);
+}
+
+function renderProgDetailHTML(p,c){
+  const el=document.getElementById('progDetailContent');
+  const weekTabs=p.weeks.map((w,i)=>`<button class="week-tab${i===curWeekIdx?' active':''}" onclick="selectWeek(${i})">${w.name||'Week '+(i+1)}</button>`).join('');
+  const curWeek=p.weeks[curWeekIdx]||null;
+  const totalEx=curWeek?(curWeek.days||[]).reduce((a,d)=>a+(d.exercises||[]).length,0):0;
+
+  el.innerHTML=`
+    <div class="detail-hero mb16">
+      <div class="d-av" style="background:${c?.color||'#ccc'}18;color:${c?.color||'#888'}">${getInitials(c?.name||'P')}</div>
+      <div style="flex:1">
+        <h2 style="font-family:Syne,sans-serif;font-size:20px;font-weight:700;letter-spacing:-.4px;margin-bottom:4px">${p.name}</h2>
+        <div style="font-size:13px;color:var(--text2)">${c?.name||'No client'} · ${p.phase}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="editProg('${p.id}')">Edit info</button>
+        <button class="btn btn-danger btn-sm" onclick="delProg('${p.id}')">Delete</button>
+      </div>
+    </div>
+    <div class="prog-info-bar">
+      <div class="prog-chip"><strong>${p.start?fd(p.start):'—'}</strong> Start</div>
+      <div style="width:1px;height:16px;background:var(--border)"></div>
+      <div class="prog-chip"><strong>${p.end?fd(p.end):'Ongoing'}</strong> End</div>
+      <div style="width:1px;height:16px;background:var(--border)"></div>
+      <div class="prog-chip"><strong>${p.weeks.length}</strong> Weeks</div>
+      <div style="width:1px;height:16px;background:var(--border)"></div>
+      <div class="prog-chip"><strong>${p.weeks.reduce((a,w)=>a+(w.days||[]).length,0)}</strong> Days total</div>
+      ${p.goal?`<div style="width:1px;height:16px;background:var(--border)"></div><div class="prog-chip" style="color:var(--text2)">${p.goal}</div>`:''}
+      <span class="badge ${p.status==='Active'?'b-green':p.status==='Completed'?'b-gray':'b-amber'}" style="margin-left:auto">${p.status}</span>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <div class="week-tabs" style="margin:0">${weekTabs}<button class="week-tab week-tab-add" onclick="addWeek('${p.id}')">+ Add week</button></div>
+      ${curWeek?`<div style="display:flex;gap:6px">
+        <button class="btn btn-accent btn-sm" onclick="addDay('${p.id}',${curWeekIdx})">+ Add day</button>
+        <button class="btn btn-ghost btn-sm" onclick="duplicateWeek('${p.id}',${curWeekIdx})">Duplicate week</button>
+        <button class="btn btn-danger btn-sm" onclick="removeWeek('${p.id}',${curWeekIdx})">Remove week</button>
+      </div>`:''}
+    </div>
+
+    ${curWeek?`
+      ${curWeek.days.length===0?`
+        <div class="card" style="text-align:center;padding:48px">
+          <div style="font-size:32px;margin-bottom:12px;opacity:.3">📋</div>
+          <div style="font-size:14px;color:var(--text3);margin-bottom:16px">No days in this week yet</div>
+          <button class="btn btn-accent" onclick="addDay('${p.id}',${curWeekIdx})">+ Add day 1</button>
+        </div>
+      `:`
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px">${curWeek.name||'Week '+(curWeekIdx+1)} · ${curWeek.days.length} days · ${totalEx} exercises total · scroll horizontally if needed</div>
+        <div class="program-grid">
+          ${curWeek.days.map((d,di)=>dayCol(p.id,curWeekIdx,di,d,c?.color)).join('')}
+          <div class="day-add-col" onclick="addDay('${p.id}',${curWeekIdx})" title="Add training day">+</div>
+        </div>
+      `}
+    `:p.weeks.length===0?`
+      <div class="card" style="text-align:center;padding:48px">
+        <div style="font-size:32px;margin-bottom:12px;opacity:.3">📅</div>
+        <div style="font-size:14px;color:var(--text3);margin-bottom:16px">No weeks yet</div>
+        <button class="btn btn-accent" onclick="addWeek('${p.id}')">+ Add week 1</button>
+      </div>
+    `:''}
+  `;
+}
+
+function dayCol(progId,wi,di,d,accentColor){
+  const exs=d.exercises||[];
+  const hasEx=exs.length>0;
+  const exHTML=exs.map((e,ei)=>`
+    <div class="ex-block-full" id="exrow-${progId}-${wi}-${di}-${ei}">
+      <div class="ex-num">
+        <span>${ei+1}</span>
+        <button class="ex-del-btn" onclick="removeEx('${progId}',${wi},${di},${ei})" title="Remove exercise">×</button>
+      </div>
+      <input class="ex-name-full" value="${(e.name||'').replace(/"/g,'&quot;')}" placeholder="Exercise name..." oninput="updateEx('${progId}',${wi},${di},${ei},'name',this.value)"/>
+      <div style="margin-bottom:4px">
+        <div class="ex-meta-row" style="margin-bottom:3px">
+          <div style="text-align:center"><div class="ex-meta-lbl">Sets</div></div>
+          <div style="text-align:center"><div class="ex-meta-lbl">Reps</div></div>
+          <div style="text-align:center"><div class="ex-meta-lbl">Load</div></div>
+        </div>
+        <div class="ex-meta-row">
+          <input class="ex-inp-meta" type="text" value="${e.sets||''}" placeholder="4" oninput="updateEx('${progId}',${wi},${di},${ei},'sets',this.value)"/>
+          <input class="ex-inp-meta" type="text" value="${e.reps||''}" placeholder="8–12" oninput="updateEx('${progId}',${wi},${di},${ei},'reps',this.value)"/>
+          <input class="ex-inp-meta" type="text" value="${e.load||''}" placeholder="RPE7" oninput="updateEx('${progId}',${wi},${di},${ei},'load',this.value)"/>
+        </div>
+      </div>
+      <textarea class="ex-notes-inp" rows="2" placeholder="Notes (tempo, cues...)" oninput="updateEx('${progId}',${wi},${di},${ei},'notes',this.value)">${e.notes||''}</textarea>
+    </div>`).join('');
+
+  return `
+    <div class="day-col" id="daycard-${progId}-${wi}-${di}">
+      <div class="day-col-hdr">
+        <div class="day-col-num${hasEx?' filled':''}">${hasEx?'Day '+(di+1):'Day '+(di+1)}</div>
+        <input class="day-name-inp" value="${(d.name||'').replace(/"/g,'&quot;')}" placeholder="e.g. Lower A" oninput="updateDayName('${progId}',${wi},${di},this.value)"/>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px">${exs.length} exercise${exs.length!==1?'s':''}</div>
+      </div>
+      <div class="day-col-body">
+        ${exHTML}
+        <button class="add-ex-btn" onclick="addExToDay('${progId}',${wi},${di})">+ Exercise</button>
+        ${exs.length>0?`<button class="btn btn-danger btn-sm" style="margin-top:6px;font-size:11px;width:100%;justify-content:center" onclick="removeDay('${progId}',${wi},${di})">Remove day</button>`:`<button class="btn btn-ghost btn-sm" style="margin-top:6px;font-size:11px;width:100%;justify-content:center" onclick="removeDay('${progId}',${wi},${di})">Remove day</button>`}
+      </div>
+    </div>`;
+}
+
+function toggleDay(pid,wi,di){}
+
+
+
+function selectWeek(idx){curWeekIdx=idx;const prgs=DB.get('programs')||[];const p=prgs.find(x=>x.id===curProgId);const cl=DB.get('clients')||[];const c=cl.find(x=>x.id===p?.clientId);if(p&&c)renderProgDetailHTML(p,c);}
+
+function addWeek(pid){
+  const prgs=DB.get('programs')||[];const p=prgs.find(x=>x.id===pid);if(!p)return;
+  if(!p.weeks)p.weeks=[];
+  const wn=p.weeks.length+1;
+  p.weeks.push({name:'Week '+wn,days:[{name:'Day 1',exercises:[]},{name:'Day 2',exercises:[]},{name:'Day 3',exercises:[]}]});
+  DB.set('programs',prgs);curWeekIdx=p.weeks.length-1;renderProgDetail(pid);
+}
+
+function duplicateWeek(pid,wi){
+  const prgs=DB.get('programs')||[];const p=prgs.find(x=>x.id===pid);if(!p)return;
+  const src=JSON.parse(JSON.stringify(p.weeks[wi]));
+  src.name='Week '+(p.weeks.length+1);
+  p.weeks.push(src);DB.set('programs',prgs);curWeekIdx=p.weeks.length-1;renderProgDetail(pid);
+}
+
+function removeWeek(pid,wi){
+  if(!confirm('Remove this week?'))return;
+  const prgs=DB.get('programs')||[];const p=prgs.find(x=>x.id===pid);if(!p)return;
+  p.weeks.splice(wi,1);DB.set('programs',prgs);curWeekIdx=Math.max(0,wi-1);renderProgDetail(pid);
+}
+
+function addDay(pid,wi){
+  const prgs=DB.get('programs')||[];const p=prgs.find(x=>x.id===pid);if(!p)return;
+  const dn=p.weeks[wi].days.length+1;
+  p.weeks[wi].days.push({name:'Day '+dn,exercises:[]});
+  DB.set('programs',prgs);renderProgDetail(pid);
+}
+
+function removeDay(pid,wi,di){
+  if(!confirm('Remove this day?'))return;
+  const prgs=DB.get('programs')||[];const p=prgs.find(x=>x.id===pid);if(!p)return;
+  p.weeks[wi].days.splice(di,1);DB.set('programs',prgs);renderProgDetail(pid);
+}
+
+function updateDayName(pid,wi,di,val){
+  const prgs=DB.get('programs')||[];const p=prgs.find(x=>x.id===pid);if(!p)return;
+  p.weeks[wi].days[di].name=val;DB.set('programs',prgs);
+}
+
+function addExToDay(pid,wi,di){
+  const prgs=DB.get('programs')||[];const p=prgs.find(x=>x.id===pid);if(!p)return;
+  if(!p.weeks[wi].days[di].exercises)p.weeks[wi].days[di].exercises=[];
+  p.weeks[wi].days[di].exercises.push({name:'',sets:'',reps:'',load:'',notes:''});
+  DB.set('programs',prgs);renderProgDetail(pid);
+  // Focus the new exercise name input after render
+  setTimeout(()=>{
+    const col=document.getElementById(`daycard-${pid}-${wi}-${di}`);
+    if(col){const inputs=col.querySelectorAll('.ex-name-full');if(inputs.length)inputs[inputs.length-1].focus();}
+  },60);
+}
+
+function updateEx(pid,wi,di,ei,field,val){
+  const prgs=DB.get('programs')||[];const p=prgs.find(x=>x.id===pid);if(!p)return;
+  p.weeks[wi].days[di].exercises[ei][field]=val;DB.set('programs',prgs);
+}
+
+function removeEx(pid,wi,di,ei){
+  const prgs=DB.get('programs')||[];const p=prgs.find(x=>x.id===pid);if(!p)return;
+  p.weeks[wi].days[di].exercises.splice(ei,1);DB.set('programs',prgs);renderProgDetail(pid);
+}
+
+function editProg(pid){
+  const prgs=DB.get('programs')||[];const p=prgs.find(x=>x.id===pid);if(!p)return;
+  document.getElementById('np-name').value=p.name;
+  document.getElementById('np-phase').value=p.phase;
+  document.getElementById('np-start').value=p.start||'';
+  document.getElementById('np-end').value=p.end||'';
+  document.getElementById('np-status').value=p.status;
+  document.getElementById('np-goal').value=p.goal||'';
+  document.getElementById('np-link').value=p.link||'';
+  const cl=DB.get('clients')||[];
+  document.getElementById('np-client').innerHTML=cl.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  document.getElementById('np-client').value=p.clientId;
+  // Store editing ID
+  document.getElementById('np-name').dataset.editId=pid;
+  openM('addProgram');
+}
+
+function delProg(pid){
+  if(!confirm('Delete this program?'))return;
+  const prgs=DB.get('programs')||[];
+  DB.set('programs',prgs.filter(p=>p.id!==pid));
+  nav('programs');
+}
+
+function renderAss(){
+  const cl=DB.get('clients')||[],ass=DB.get('assessments')||[];
+  const sel=document.getElementById('na-client');if(sel)sel.innerHTML=cl.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  const s=[...ass].sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('assTbl').innerHTML=s.length?s.map(a=>{const c=cl.find(x=>x.id===a.clientId);return`<tr><td>${fd(a.date)}</td><td style="font-weight:500">${c?.name||'—'}</td><td>${a.weight?a.weight+'kg':'—'}</td><td>${a.squat?`<strong>${a.squat}kg</strong>`:'—'}</td><td>${a.deadlift?`<strong>${a.deadlift}kg</strong>`:'—'}</td><td>${a.bench?`<strong>${a.bench}kg</strong>`:'—'}</td><td>${a.waist?a.waist+'cm':'—'}</td><td style="color:var(--text2)">${a.notes||'—'}</td></tr>`}).join(''):'<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:40px">No assessments yet</td></tr>';
+}
+
+// ── MODALS ──
+function openM(name){
+  const cl=DB.get('clients')||[];const today=new Date().toISOString().split('T')[0];
+  ['np-client','na-client'].forEach(id=>{const s=document.getElementById(id);if(s)s.innerHTML=cl.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');});
+  ['nc-start','np-start','na-date'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.value=today;});
+  if(curCid){['na-client','np-client'].forEach(id=>{const s=document.getElementById(id);if(s)s.value=curCid;});}
+  document.getElementById('modal-'+name).classList.add('open');
+}
+function closeM(n){document.getElementById('modal-'+n).classList.remove('open');}
+
+function addClient(){
+  const name=document.getElementById('nc-name').value.trim();if(!name){alert('Name required');return;}
+  const cl=DB.get('clients')||[];
+  cl.push({id:'c_'+Date.now(),name,type:document.getElementById('nc-type').value,goals:document.getElementById('nc-goal').value,status:document.getElementById('nc-status').value,start:document.getElementById('nc-start').value,nextAssessment:document.getElementById('nc-assess').value,injury:document.getElementById('nc-inj').value,phase:document.getElementById('nc-phase').value,email:document.getElementById('nc-email').value,appLink:document.getElementById('nc-app').value,sessions:0,color:PALETTE[cl.length%PALETTE.length]});
+  DB.set('clients',cl);closeM('addClient');['nc-name','nc-goal','nc-inj','nc-phase','nc-email','nc-app'].forEach(id=>{document.getElementById(id).value='';});renderClients();
+}
+// All body zones grouped
+const BODY_ZONES = [
+  {group:'Upper body', zones:['Neck','Left shoulder','Right shoulder','Left elbow','Right elbow','Left wrist','Right wrist','Chest','Left trap','Right trap','Upper back','Lower back']},
+  {group:'Core & hips', zones:['Core / abs','Left hip','Right hip','Left glute','Right glute','Pelvis / groin']},
+  {group:'Lower body', zones:['Left quad','Right quad','Left hamstring','Right hamstring','Left knee','Right knee','Left calf','Right calf','Left ankle','Right ankle','Left foot','Right foot']},
+];
+
+let activeZones = new Set();
+
+function renderZoneChips(){
+  const el = document.getElementById('zoneChips');
+  let html = '';
+  BODY_ZONES.forEach(group => {
+    html += `<div class="zone-section-label">${group.group}</div>`;
+    group.zones.forEach(z => {
+      const on = activeZones.has(z);
+      html += `<span class="zone-chip${on?' active':''}" onclick="toggleZone('${z}')">${on?'':'+ '}${z}</span>`;
+    });
+  });
+  el.innerHTML = html;
+}
+
+function toggleZone(z){
+  if(activeZones.has(z)) activeZones.delete(z);
+  else activeZones.add(z);
+  renderZoneChips();
+}
+
+function clearAllZones(){
+  activeZones.clear();
+  renderZoneChips();
+}
+
+function zonesToText(){
+  const zones = [...activeZones];
+  const notes = document.getElementById('ec-inj-notes')?.value?.trim()||'';
+  if(!zones.length && !notes) return '';
+  if(!zones.length) return notes;
+  if(!notes) return zones.join(', ');
+  return zones.join(', ') + (notes ? ' — ' + notes : '');
+}
+
+function textToZones(txt){
+  if(!txt) return {zones:[], notes:''};
+  // Extract known zone names from the text
+  const allZones = BODY_ZONES.flatMap(g=>g.zones);
+  const found = allZones.filter(z => txt.toLowerCase().includes(z.toLowerCase()));
+  // Remaining text after removing zone names = notes
+  let remaining = txt;
+  found.forEach(z => { remaining = remaining.replace(new RegExp(z, 'gi'), ''); });
+  // Clean up separators
+  remaining = remaining.replace(/^[\s,—\-]+|[\s,—\-]+$/g, '').replace(/,\s*,/g, ',').trim();
+  return {zones: found, notes: remaining};
+}
+
+function editC(id){
+  const cl=DB.get('clients')||[];const c=cl.find(x=>x.id===id);if(!c)return;
+  document.getElementById('ec-id').value=id;
+  document.getElementById('ec-name').value=c.name||'';
+  document.getElementById('ec-type').value=c.type||'In-person';
+  document.getElementById('ec-goal').value=c.goals||'';
+  document.getElementById('ec-status').value=c.status||'Active';
+  document.getElementById('ec-start').value=c.start||'';
+  document.getElementById('ec-assess').value=c.nextAssessment||'';
+  document.getElementById('ec-phase').value=c.phase||'';
+  document.getElementById('ec-email').value=c.email||'';
+  document.getElementById('ec-app').value=c.appLink||'';
+  // Parse existing injury text into zones + notes
+  const parsed = textToZones(c.injury||'');
+  activeZones = new Set(parsed.zones);
+  setTimeout(()=>{
+    renderZoneChips();
+    const notesEl = document.getElementById('ec-inj-notes');
+    if(notesEl) notesEl.value = parsed.notes;
+  }, 50);
+  openM('editClient');
+}
+function saveEC(){
+  const id=document.getElementById('ec-id').value;
+  const cl=DB.get('clients')||[];
+  const idx=cl.findIndex(c=>c.id===id);if(idx===-1)return;
+  cl[idx]={...cl[idx],
+    name:document.getElementById('ec-name').value.trim(),
+    type:document.getElementById('ec-type').value,
+    goals:document.getElementById('ec-goal').value,
+    status:document.getElementById('ec-status').value,
+    start:document.getElementById('ec-start').value,
+    nextAssessment:document.getElementById('ec-assess').value,
+    injury:zonesToText(),
+    injuryZones:[...activeZones],
+    phase:document.getElementById('ec-phase').value,
+    email:document.getElementById('ec-email').value,
+    appLink:document.getElementById('ec-app').value
+  };
+  DB.set('clients',cl);closeM('editClient');nav('clientDetail',id);
+}
+function delClient(id){
+  if(!confirm('Delete this client and all data? Cannot be undone.'))return;
+  ['clients','sessions','programs','assessments','notes','checkins'].forEach(k=>{const arr=DB.get(k)||[];DB.set(k,arr.filter(i=>(k==='clients'?i.id:i.clientId)!==id));});
+  nav('clients');
+}
+function addProg(){
+  const name=document.getElementById('np-name').value.trim();if(!name){alert('Name required');return;}
+  const prgs=DB.get('programs')||[];
+  const editId=document.getElementById('np-name').dataset.editId;
+  if(editId){
+    const idx=prgs.findIndex(p=>p.id===editId);
+    if(idx>-1){prgs[idx]={...prgs[idx],clientId:document.getElementById('np-client').value,name,phase:document.getElementById('np-phase').value,start:document.getElementById('np-start').value,end:document.getElementById('np-end').value,status:document.getElementById('np-status').value,goal:document.getElementById('np-goal').value,link:document.getElementById('np-link').value};}
+    delete document.getElementById('np-name').dataset.editId;
+    DB.set('programs',prgs);closeM('addProgram');renderProgDetail(editId);return;
+  }
+  prgs.push({id:'p_'+Date.now(),clientId:document.getElementById('np-client').value,name,phase:document.getElementById('np-phase').value,start:document.getElementById('np-start').value,end:document.getElementById('np-end').value,status:document.getElementById('np-status').value,goal:document.getElementById('np-goal').value,link:document.getElementById('np-link').value,weeks:[]});
+  DB.set('programs',prgs);closeM('addProgram');renderProgs();
+}
+function addAss(){
+  const ass=DB.get('assessments')||[];
+  ass.push({id:'a_'+Date.now(),clientId:document.getElementById('na-client').value,date:document.getElementById('na-date').value,weight:document.getElementById('na-weight').value,bf:document.getElementById('na-bf').value,squat:document.getElementById('na-squat').value,deadlift:document.getElementById('na-dl').value,bench:document.getElementById('na-bench').value,hipThrust:document.getElementById('na-hip').value,waist:document.getElementById('na-waist').value,hipCm:document.getElementById('na-hipcm').value,notes:document.getElementById('na-notes').value});
+  DB.set('assessments',ass);closeM('addAssessment');renderAss();
+  if(curCid)nav('clientDetail',curCid);
+}
+
+// ── NOTES ──
+function openNote(cid){document.getElementById('nn-cid').value=cid;document.getElementById('nn-text').value='';document.getElementById('nn-date').value=new Date().toISOString().split('T')[0];openM('addNote');}
+function saveNote(){
+  const nts=DB.get('notes')||[];const cid=document.getElementById('nn-cid').value;
+  nts.unshift({id:'n_'+Date.now(),clientId:cid,date:document.getElementById('nn-date').value,category:document.getElementById('nn-cat').value,text:document.getElementById('nn-text').value.trim()});
+  DB.set('notes',nts);closeM('addNote');nav('clientDetail',cid);
+}
+function delNote(id,cid){DB.set('notes',(DB.get('notes')||[]).filter(n=>n.id!==id));nav('clientDetail',cid);}
+
+// ── CHECKINS ──
+function openCI(cid){
+  document.getElementById('ci-cid').value=cid;document.getElementById('ci-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('ciSliders').innerHTML=['Sleep','Stress','Soreness','Energy','Motivation'].map(nm=>`<div class="ci-row"><div class="ci-hdr"><span class="ci-name">${nm}</span><span class="ci-val" id="ci${nm}V">3 — Moderate</span></div><input type="range" id="ci${nm}" min="1" max="5" step="1" value="3" oninput="updCI('${nm}',this.value)"/><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:2px"><span>1 — Very poor</span><span>5 — Excellent</span></div></div>`).join('');
+  openM('addCheckin');
+}
+function updCI(nm,v){const lb={1:'Very poor',2:'Poor',3:'Moderate',4:'Good',5:'Excellent'};document.getElementById('ci'+nm+'V').textContent=v+' — '+(lb[v]||'');}
+function saveCI(){
+  const cis=DB.get('checkins')||[];const cid=document.getElementById('ci-cid').value;
+  const gv=nm=>{const el=document.getElementById('ci'+nm);return el?+el.value:3;};
+  cis.unshift({id:'ci_'+Date.now(),clientId:cid,date:document.getElementById('ci-date').value,sleep:gv('Sleep'),stress:gv('Stress'),soreness:gv('Soreness'),energy:gv('Energy'),motivation:gv('Motivation'),compliance:document.getElementById('ci-comp').value,notes:document.getElementById('ci-notes').value.trim()});
+  DB.set('checkins',cis);closeM('addCheckin');nav('clientDetail',cid);
+}
+
+// ── NOTION ──
+function saveNC(){
+  const key=document.getElementById('notionKey').value.trim();if(!key){showSR('API key required','error');return;}
+  DB.set('notionKey',key);DB.set('notionDbs',{clients:document.getElementById('dbClients').value.trim(),sessions:document.getElementById('dbSessions').value.trim(),assessments:document.getElementById('dbAssessments').value.trim(),programs:document.getElementById('dbPrograms').value.trim()});
+  ['step1','step2','step3','step4'].forEach(id=>{const el=document.getElementById(id);if(el){el.classList.add('done');el.textContent='✓';}});
+  document.getElementById('connStat').textContent='Notion configured';
+  showSR('✓ Saved. Note: direct Notion API needs a backend proxy for CORS — data saved locally.','success');
+}
+function clearNC(){DB.set('notionKey',null);DB.set('notionDbs',null);document.getElementById('notionKey').value='';document.getElementById('connStat').textContent='Local storage active';showSR('Cleared','info');}
+function showSR(msg,type){const el=document.getElementById('setupRes');el.style.display='block';el.style.color=type==='error'?'var(--red)':type==='success'?'var(--green)':'var(--text2)';el.textContent=msg;}
+function checkSetup(){
+  const key=DB.get('notionKey');if(!key)return;
+  document.getElementById('notionKey').value=key;
+  const dbs=DB.get('notionDbs')||{};
+  ['clients','sessions','assessments','programs'].forEach(k=>{const el=document.getElementById('db'+k.charAt(0).toUpperCase()+k.slice(1));if(el&&dbs[k])el.value=dbs[k];});
+  ['step1','step2','step3','step4'].forEach(id=>{const el=document.getElementById(id);if(el){el.classList.add('done');el.textContent='✓';}});
+  document.getElementById('connStat').textContent='Notion configured';
+}
+
+// ── EXPORT ──
+function expCSV(cid){
+  const cl=DB.get('clients')||[],ses=DB.get('sessions')||[];
+  const c=cl.find(x=>x.id===cid);if(!c)return;
+  let csv='Date,Type,Duration,RPE,Exercises,Notes\n';
+  ses.filter(s=>s.clientId===cid).sort((a,b)=>a.date.localeCompare(b.date)).forEach(s=>{csv+=`${s.date},"${s.type||''}",${s.duration||''},"${s.rpe||''}","${(s.exercises||'').replace(/"/g,"'")}","${(s.notes||'').replace(/"/g,"'")}"\n`;});
+  dl(csv,c.name.replace(/\s+/g,'_')+'_sessions.csv');
+}
+function exportAllCSV(){
+  const cl=DB.get('clients')||[];
+  let csv='Name,Status,Type,Goals,Injury,Start,Sessions,Last Session,Phase\n';
+  cl.forEach(c=>{csv+=`"${c.name}","${c.status}","${c.type}","${(c.goals||'').replace(/"/g,"'")}","${(c.injury||'').replace(/"/g,"'")}","${c.start||''}",${c.sessions||0},"${c.lastSession||''}","${(c.phase||'').replace(/"/g,"'")}"\n`;});
+  dl(csv,'all_clients.csv');
+}
+function dl(csv,fn){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=fn;a.click();}
+
+// ── UTILS ──
+function fd(d){if(!d)return'—';try{return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch(e){return d;}}
+function ft(s){return`${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;}
+
+document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)closeM(o.id.replace('modal-',''));});});
+
+initData();renderDash();checkSetup();
+</script>
+</body>
+</html>
