@@ -2044,19 +2044,13 @@ function delClient(id){
 }
 async function pushProgramToNotion(prog){
   const dbs = getDbIds();
-  const cl = DB.get('clients')||[];
-  const client = cl.find(c=>c.id===prog.clientId);
-  // Serialize weeks/days/exercises as JSON in a text field
-  const weeksJson = JSON.stringify(prog.weeks||[]);
   const props = {
     Name: P.title(prog.name),
-    Client: P.text(client?.name||''),
     Phase: P.select(prog.phase),
-    'Start Date': P.date(prog.start||null),
-    'End Date': P.date(prog.end||null),
-    Status: P.select(prog.status),
+    'Start date': P.date(prog.start||null),
+    'End date': P.date(prog.end||null),
     Goal: P.text(prog.goal||''),
-    'Program Data': P.text(weeksJson.slice(0,2000)),
+    'Program link': P.url(prog.link||null),
   };
   try {
     if(prog.notionPageId){
