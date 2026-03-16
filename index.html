@@ -446,7 +446,35 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;}
 </div>
 
 <!-- MODALS -->
-<div class="modal-overlay" id="modal-addClient"><div class="modal"><div class="modal-hdr"><div class="modal-title">Add client</div><button class="modal-close" onclick="closeM('addClient')">×</button></div><div class="form-grid"><div class="fg"><label>Full name *</label><input type="text" id="nc-name" placeholder="e.g. Anna K"/></div><div class="fg"><label>Type</label><select id="nc-type"><option>In-person</option><option>Online</option><option>Hybrid</option></select></div><div class="fg"><label>Goal(s)</label><input type="text" id="nc-goal" placeholder="Fat loss, Strength..."/></div><div class="fg"><label>Status</label><select id="nc-status"><option>Active</option><option>Paused</option><option>Check</option><option>Archived</option></select></div><div class="fg"><label>Start date</label><input type="date" id="nc-start"/></div><div class="fg"><label>Next assessment</label><input type="date" id="nc-assess"/></div><div class="fg fg-full"><label>Injuries / limitations</label><input type="text" id="nc-inj" placeholder="e.g. Left knee, Tennis elbow — or use Edit client after adding to set body zones"/></div><div class="fg fg-full"><label>Current phase</label><input type="text" id="nc-phase" placeholder="e.g. Foundation Block"/></div><div class="fg"><label>Email</label><input type="email" id="nc-email"/></div><div class="fg"><label>App link</label><input type="text" id="nc-app" placeholder="https://..."/></div></div><div class="form-actions"><button class="btn btn-accent" onclick="addClient()">Add client</button><button class="btn btn-ghost" onclick="closeM('addClient')">Cancel</button></div></div></div>
+<div class="modal-overlay" id="modal-addClient">
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-title">Add client</div><button class="modal-close" onclick="closeM('addClient')">×</button></div>
+    <div class="form-grid">
+      <div class="fg fg-full"><label>Full name *</label><input type="text" id="nc-name" placeholder="e.g. Anna K"/></div>
+      <div class="fg"><label>Client type</label><select id="nc-type"><option>In-person</option><option>Online</option><option>Hybrid</option></select></div>
+      <div class="fg"><label>Status</label><select id="nc-status"><option value="Active">Active</option><option value="Paused">Paused</option><option value="Check">Check-in needed</option><option value="Archived">Archived</option></select></div>
+      <div class="fg fg-full"><label>Goal(s)</label>
+        <div id="nc-goals-wrap" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px;background:var(--bg);border:1px solid var(--border2);border-radius:var(--rad-xs);min-height:42px">
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;border-radius:20px;border:1px solid var(--border2);background:var(--white)" class="goal-chip-nc"><input type="checkbox" value="Strength" style="margin:0"/>Strength</label>
+<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;border-radius:20px;border:1px solid var(--border2);background:var(--white)" class="goal-chip-nc"><input type="checkbox" value="Muscle Gain" style="margin:0"/>Muscle Gain</label>
+<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;border-radius:20px;border:1px solid var(--border2);background:var(--white)" class="goal-chip-nc"><input type="checkbox" value="Fat loss" style="margin:0"/>Fat loss</label>
+<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;border-radius:20px;border:1px solid var(--border2);background:var(--white)" class="goal-chip-nc"><input type="checkbox" value="Endurance" style="margin:0"/>Endurance</label>
+<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;border-radius:20px;border:1px solid var(--border2);background:var(--white)" class="goal-chip-nc"><input type="checkbox" value="Health & fitness" style="margin:0"/>Health & fitness</label>
+<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;border-radius:20px;border:1px solid var(--border2);background:var(--white)" class="goal-chip-nc"><input type="checkbox" value="Rehab" style="margin:0"/>Rehab</label>
+<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;border-radius:20px;border:1px solid var(--border2);background:var(--white)" class="goal-chip-nc"><input type="checkbox" value="Event" style="margin:0"/>Event</label>
+        </div>
+      </div>
+      <div class="fg"><label>Start date</label><input type="date" id="nc-start"/></div>
+      <div class="fg"><label>Next assessment</label><input type="date" id="nc-assess"/></div>
+      <div class="fg fg-full"><label>Current phase</label><input type="text" id="nc-phase" placeholder="e.g. Foundation Block"/></div>
+      <div class="fg fg-full"><label>Notes / injuries</label><textarea id="nc-inj" placeholder="Injuries, limitations, lifestyle notes..."></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-accent" onclick="addClient()">Add client</button>
+      <button class="btn btn-ghost" onclick="closeM('addClient')">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <div class="modal-overlay" id="modal-editClient">
   <div class="modal" style="max-width:680px">
@@ -455,13 +483,24 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;}
     <div class="form-grid mb16">
       <div class="fg"><label>Full name</label><input type="text" id="ec-name"/></div>
       <div class="fg"><label>Type</label><select id="ec-type"><option>In-person</option><option>Online</option><option>Hybrid</option></select></div>
-      <div class="fg"><label>Goal(s)</label><input type="text" id="ec-goal"/></div>
+      <div class="fg fg-full"><label>Goal(s)</label>
+        <div id="ec-goals-wrap" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px;background:var(--bg);border:1px solid var(--border2);border-radius:var(--rad-xs);min-height:42px">
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;border-radius:20px;border:1px solid var(--border2);background:var(--white)" class="goal-chip-ec"><input type="checkbox" value="Strength" style="margin:0"/>Strength</label>
+<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;border-radius:20px;border:1px solid var(--border2);background:var(--white)" class="goal-chip-ec"><input type="checkbox" value="Muscle Gain" style="margin:0"/>Muscle Gain</label>
+<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;border-radius:20px;border:1px solid var(--border2);background:var(--white)" class="goal-chip-ec"><input type="checkbox" value="Fat loss" style="margin:0"/>Fat loss</label>
+<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;border-radius:20px;border:1px solid var(--border2);background:var(--white)" class="goal-chip-ec"><input type="checkbox" value="Endurance" style="margin:0"/>Endurance</label>
+<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;border-radius:20px;border:1px solid var(--border2);background:var(--white)" class="goal-chip-ec"><input type="checkbox" value="Health & fitness" style="margin:0"/>Health & fitness</label>
+<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;border-radius:20px;border:1px solid var(--border2);background:var(--white)" class="goal-chip-ec"><input type="checkbox" value="Rehab" style="margin:0"/>Rehab</label>
+<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;border-radius:20px;border:1px solid var(--border2);background:var(--white)" class="goal-chip-ec"><input type="checkbox" value="Event" style="margin:0"/>Event</label>
+        </div>
+      </div>
       <div class="fg"><label>Status</label><select id="ec-status"><option>Active</option><option>Paused</option><option>Check</option><option>Archived</option></select></div>
       <div class="fg"><label>Start date</label><input type="date" id="ec-start"/></div>
       <div class="fg"><label>Next assessment</label><input type="date" id="ec-assess"/></div>
       <div class="fg fg-full"><label>Current phase</label><input type="text" id="ec-phase"/></div>
       <div class="fg"><label>Email</label><input type="email" id="ec-email"/></div>
       <div class="fg"><label>App link</label><input type="text" id="ec-app"/></div>
+      <input type="hidden" id="ec-goal"/>
     </div>
 
     <!-- INJURY EDITOR -->
@@ -1957,19 +1996,52 @@ function openM(name){
   ['nc-start','np-start','na-date'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.value=today;});
   if(curCid){['na-client','np-client'].forEach(id=>{const s=document.getElementById(id);if(s)s.value=curCid;});}
   document.getElementById('modal-'+name).classList.add('open');
+  if(name==='addClient') setTimeout(()=>{initGoalChips('nc');setGoalChips('nc','');},50);
 }
 function closeM(n){document.getElementById('modal-'+n).classList.remove('open');}
 
 function addClient(){
   const name=document.getElementById('nc-name').value.trim();if(!name){alert('Name required');return;}
   const cl=DB.get('clients')||[];
-  cl.push({id:'c_'+Date.now(),name,type:document.getElementById('nc-type').value,goals:document.getElementById('nc-goal').value,status:document.getElementById('nc-status').value,start:document.getElementById('nc-start').value,nextAssessment:document.getElementById('nc-assess').value,injury:document.getElementById('nc-inj').value,phase:document.getElementById('nc-phase').value,email:document.getElementById('nc-email').value,appLink:document.getElementById('nc-app').value,sessions:0,color:PALETTE[cl.length%PALETTE.length]});
+  cl.push({id:'c_'+Date.now(),name,type:document.getElementById('nc-type').value,goals:getGoalsFromChips('nc'),status:document.getElementById('nc-status').value,start:document.getElementById('nc-start').value,nextAssessment:document.getElementById('nc-assess').value,injury:document.getElementById('nc-inj').value,phase:document.getElementById('nc-phase').value,email:'',appLink:'',sessions:0,color:PALETTE[cl.length%PALETTE.length]});
   DB.set('clients',cl);
   // Push to Notion if configured
   if(DB.get('workerUrl')||DB.get('notionDbs')) pushClientToNotion(cl[cl.length-1]).catch(()=>{});
   closeM('addClient');['nc-name','nc-goal','nc-inj','nc-phase','nc-email','nc-app'].forEach(id=>{document.getElementById(id).value='';});renderClients();
 }
 // All body zones grouped
+// Goal checkbox helpers
+const GOAL_OPTIONS = ['Strength','Muscle Gain','Fat loss','Endurance','Health & fitness','Rehab','Event'];
+
+function getGoalsFromChips(prefix){
+  const wrap = document.getElementById(prefix+'-goals-wrap');
+  if(!wrap) return '';
+  return [...wrap.querySelectorAll('input[type=checkbox]:checked')].map(c=>c.value).join(', ');
+}
+
+function setGoalChips(prefix, goalsStr){
+  const wrap = document.getElementById(prefix+'-goals-wrap');
+  if(!wrap) return;
+  const active = (goalsStr||'').split(',').map(s=>s.trim().toLowerCase());
+  wrap.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.checked = active.includes(cb.value.toLowerCase());
+    const lbl = cb.closest('label');
+    if(lbl) lbl.style.background = cb.checked ? 'var(--accent)' : 'var(--white)';
+    if(lbl) lbl.style.borderColor = cb.checked ? 'var(--accent-dark)' : 'var(--border2)';
+  });
+}
+
+function initGoalChips(prefix){
+  const wrap = document.getElementById(prefix+'-goals-wrap');
+  if(!wrap) return;
+  wrap.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      const lbl = cb.closest('label');
+      if(lbl){lbl.style.background=cb.checked?'var(--accent)':'var(--white)';lbl.style.borderColor=cb.checked?'var(--accent-dark)':'var(--border2)';}
+    });
+  });
+}
+
 const BODY_ZONES = [
   {group:'Upper body', zones:['Neck','Left shoulder','Right shoulder','Left elbow','Right elbow','Left wrist','Right wrist','Chest','Left trap','Right trap','Upper back','Lower back']},
   {group:'Core & hips', zones:['Core / abs','Left hip','Right hip','Left glute','Right glute','Pelvis / groin']},
@@ -2036,6 +2108,7 @@ function editC(id){
   document.getElementById('ec-phase').value=c.phase||'';
   document.getElementById('ec-email').value=c.email||'';
   document.getElementById('ec-app').value=c.appLink||'';
+  setTimeout(()=>{ setGoalChips('ec', c.goals||''); initGoalChips('ec'); }, 50);
   // Parse existing injury text into zones + notes
   const parsed = textToZones(c.injury||'');
   activeZones = new Set(parsed.zones);
@@ -2053,7 +2126,7 @@ function saveEC(){
   cl[idx]={...cl[idx],
     name:document.getElementById('ec-name').value.trim(),
     type:document.getElementById('ec-type').value,
-    goals:document.getElementById('ec-goal').value,
+    goals:getGoalsFromChips('ec')||document.getElementById('ec-goal')?.value||'',
     status:document.getElementById('ec-status').value,
     start:document.getElementById('ec-start').value,
     nextAssessment:document.getElementById('ec-assess').value,
@@ -2416,6 +2489,7 @@ async function pushClientToNotion(client){
     'Start date': P.date(client.start||null),
     'Current Phase': P.text(client.phase||''),
     Notes: P.text(client.injury||''),
+    Goal: {multi_select:(client.goals||'').split(',').map(s=>s.trim()).filter(Boolean).map(n=>({name:n}))},
     'Next assessment': P.date(client.nextAssessment||null),
   };
   try {
