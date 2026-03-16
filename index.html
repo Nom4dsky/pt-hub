@@ -2293,7 +2293,11 @@ async function fullSync(){
         notionPageId: p.id,
         notionId: p.id.replace(/-/g,''),
         name,
-        status: getSelect(p,'Status')||'Active',
+        status: (()=>{
+          const ns = p.properties?.Status?.status?.name||'Active';
+          const map={'Active':'Active','Paused':'Paused','In progress':'Check','Done':'Archived'};
+          return map[ns]||ns;
+        })(),
         type: getSelect(p,'Client Type')||'In-person',
         goals: p.properties?.Goal?.multi_select?.map(x=>x.name).join(', ')||'',
         injury: getText(p,'Notes')||'',
@@ -2402,9 +2406,13 @@ async function syncFromNotion(){ return fullSync(); }
 // ══════════════════════════════
 async function pushClientToNotion(client){
   const dbs = getDbIds();
+  // Notion "status" type uses {status:{name:value}} not {select:{name:value}}
+  const statusMap = {'Active':'Active','Paused':'Paused','Check':'In progress','Archived':'Done'};
+  const notionStatus = statusMap[client.status]||'Active';
   const props = {
     Name: P.title(client.name),
     'Client Type': P.select(client.type),
+    Status: {status:{name:notionStatus}},
     'Start date': P.date(client.start||null),
     'Current Phase': P.text(client.phase||''),
     Notes: P.text(client.injury||''),
