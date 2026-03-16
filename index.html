@@ -1647,7 +1647,7 @@ async function syncFromNotion(){
   const dbs = getDbIds();
   try {
     // Pull clients
-    const pages = await queryDb(dbs.clients, null, [{property:'Name',direction:'ascending'}]);
+    const pages = await queryDb(dbs.clients);
     syncLog(`Found ${pages.length} clients in Notion`,'ok');
     const existing = DB.get('clients')||[];
     const merged = [...existing];
@@ -1681,7 +1681,7 @@ async function syncFromNotion(){
     syncLog(`✓ ${pages.length} clients synced`,'ok');
 
     // Pull sessions
-    const sesPgs = await queryDb(dbs.sessions, null, [{property:'Date',direction:'descending'}]);
+    const sesPgs = await queryDb(dbs.sessions);
     syncLog(`Found ${sesPgs.length} sessions in Notion`,'ok');
     const existingSes = DB.get('sessions')||[];
     const mergedSes = [...existingSes];
