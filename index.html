@@ -507,7 +507,7 @@ let sesRun=false,sesStart=null,sesInt=null,restEnd=null,restInt=null,exCnt=0;
 let cFilter={status:'',type:'',inj:false};
 
 function initData(){
-  if(DB.get('init'))return;
+  if(DB.get('init_v2'))return;
   const cl=[
     {id:'eli',name:'Eli V.S.',type:'In-person',goals:'General Fitness, Strength',injury:'Fatigue sensitive, Senior',status:'Active',start:'2025-10-27',phase:'Phase 2 – Strength Development (W14)',sessions:15,lastSession:'2026-03-09',color:'#3b82f6'},
     {id:'veronika',name:'Veronika S.O.',type:'In-person',goals:'Strength, Mobility, Pull-up development',injury:'',status:'Active',start:'2025-10-01',phase:'Consolidation – Strength + Pull-up',sessions:39,lastSession:'2026-02-25',color:'#22c55e'},
@@ -530,12 +530,550 @@ function initData(){
   DB.set('clients',cl);
   DB.set('sessions',[]);
   DB.set('programs',[
-    {id:'p1',clientId:'eli',name:'Phase 2 – Strength Development',phase:'Strength',start:'2025-11-24',end:'2026-03-20',status:'Active',goal:'Build free-weight strength, posterior chain, upper back'},
+    {
+  id:'p1',
+  clientId:'eli',
+  name:'Eli V.S. – Phase 2 Strength Development',
+  phase:'Strength',
+  start:'2025-11-24',
+  end:'2026-04-30',
+  status:'Active',
+  goal:'Build free-weight strength — posterior chain, upper back, core. 1x/week, 55-60 min. Fatigue sensitive — conservative progression RPE 6-8.',
+  weeks:[
+    {
+      name:'Week 5',
+      days:[
+        {
+          name:'Full Body – Strength',
+          exercises:[
+            {
+              name:'Rack KB Split Squat',
+              sets:'3',
+              reps:'8/side',
+              load:'8kg',
+              notes:'2-1-2-1 | Stable stance, upright torso. RIR 3-4. 60s'
+            },
+            {
+              name:'Leg Press',
+              sets:'3',
+              reps:'12',
+              load:'53-63kg',
+              notes:'3-1-2-1 | Midfoot drive, no lockout. RIR 3-4. 60s'
+            },
+            {
+              name:'Cable Pull-Through',
+              sets:'3',
+              reps:'10-12',
+              load:'12-20kg',
+              notes:'2-1-2-1 | Hips back, slight knee bend, feel hamstrings. 45-60s'
+            },
+            {
+              name:'Seated Cable Row',
+              sets:'3',
+              reps:'12',
+              load:'20-27.5kg',
+              notes:'2-1-2-0 | Scapula first, no swinging. 60s'
+            },
+            {
+              name:'Incline DB Chest Press (neutral)',
+              sets:'3',
+              reps:'8',
+              load:'12kg',
+              notes:'3-1-2-0 | Comfortable range, no grinding. 60-75s'
+            },
+            {
+              name:'Pallof Press (kneeling, band)',
+              sets:'3',
+              reps:'10/side',
+              load:'Light band',
+              notes:'2-1-2-0 | Anti-rotation focus, ribs down. 30s'
+            },
+            {
+              name:'Suitcase Carry (KB)',
+              sets:'3',
+              reps:'25m/side',
+              load:'16kg',
+              notes:'Tall posture, slow steps, no lean. 45-60s'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name:'Week 6',
+      days:[
+        {
+          name:'Full Body – Strength',
+          exercises:[
+            {
+              name:'Leg Press',
+              sets:'4',
+              reps:'12',
+              load:'61-69kg',
+              notes:'3-1-2-1 | Main volume driver. Midfoot drive, no lockout. 60s'
+            },
+            {
+              name:'Rack KB Split Squat',
+              sets:'3',
+              reps:'8/side',
+              load:'8kg',
+              notes:'2-1-2-1 | Stable stance, upright torso. 60s'
+            },
+            {
+              name:'Cable Pull-Through',
+              sets:'3',
+              reps:'10-12',
+              load:'17-20kg',
+              notes:'2-1-2-1 | Hip hinge, feel hamstrings. 45-60s'
+            },
+            {
+              name:'Seated Cable Row',
+              sets:'3',
+              reps:'12',
+              load:'27.5kg',
+              notes:'2-1-2-0 | Scapula first, pause at chest. 60s'
+            },
+            {
+              name:'Incline DB Chest Press (neutral)',
+              sets:'3',
+              reps:'10',
+              load:'12kg',
+              notes:'3-1-2-0 | Progress reps before load. 60-75s'
+            },
+            {
+              name:'Pallof Press (kneeling, band)',
+              sets:'3',
+              reps:'10/side',
+              load:'Light band',
+              notes:'Anti-rotation, ribs down. 30s'
+            },
+            {
+              name:'Suitcase Carry (KB)',
+              sets:'3',
+              reps:'25m/side',
+              load:'18-20kg',
+              notes:'Tall posture, no lean. 45-60s'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name:'Week 7',
+      days:[
+        {
+          name:'Full Body – A/B Pattern',
+          exercises:[
+            {
+              name:'Goblet Squat (KB)',
+              sets:'3',
+              reps:'12',
+              load:'8kg',
+              notes:'2-1-2-0 | Upright torso, knees over mid-foot, controlled depth. 60-90s'
+            },
+            {
+              name:'Cable Pull-Through',
+              sets:'3',
+              reps:'10',
+              load:'17.5kg',
+              notes:'3-0-2-1 | Hips back, feel hamstrings, no lumbar flexion. 60-90s'
+            },
+            {
+              name:'Gorilla Row (KB)',
+              sets:'3',
+              reps:'10/side',
+              load:'14-16kg',
+              notes:'2-1-2-1 | Chest on bench, pull to ribs, pause + squeeze at top. 60-75s'
+            },
+            {
+              name:'DB Floor Press',
+              sets:'3',
+              reps:'8-12',
+              load:'8-12kg',
+              notes:'2-1-2-0 | Elbows ~45°, no bounce off floor, controlled eccentric. 60-75s'
+            },
+            {
+              name:'Lat Pulldown',
+              sets:'3',
+              reps:'12',
+              load:'25-30kg',
+              notes:'2-1-2-0 | Scap depression first, chest up, no swinging. 60-75s'
+            },
+            {
+              name:'Half-Kneeling DB Shoulder Press',
+              sets:'3',
+              reps:'8/side',
+              load:'6kg',
+              notes:'2-1-2-0 | Back-leg glute tight, ribs down, press straight. 60-75s'
+            },
+            {
+              name:'Suitcase March (KB)',
+              sets:'3',
+              reps:'12/side',
+              load:'20kg',
+              notes:'Tall posture, slow steps. 45-60s'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name:'Week 8',
+      days:[
+        {
+          name:'Full Body – Strength',
+          exercises:[
+            {
+              name:'Goblet Squat (KB)',
+              sets:'3',
+              reps:'12',
+              load:'8kg',
+              notes:'2-1-2-0 | Upright torso, full foot. Progress only if W7 clean (RIR 3-4). 60-90s'
+            },
+            {
+              name:'KB Deadlift',
+              sets:'3',
+              reps:'8',
+              load:'16kg',
+              notes:'3-0-2-1 | Hips back, ribs down, exhale up. If dizzy → drop load. 60-90s'
+            },
+            {
+              name:'Gorilla Row (KB)',
+              sets:'3',
+              reps:'10/side',
+              load:'16kg',
+              notes:'2-1-2-1 | Brace hard, pull to ribs, no torso rotation. 60-75s'
+            },
+            {
+              name:'DB Bench Press',
+              sets:'3',
+              reps:'12',
+              load:'12kg',
+              notes:'2-1-2-0 | Controlled eccentric, pause on floor, smooth press. 60-75s'
+            },
+            {
+              name:'Lat Pulldown',
+              sets:'3',
+              reps:'10-12',
+              load:'35kg',
+              notes:'2-1-2-0 | Scapular depression first, no swinging. 60-75s'
+            },
+            {
+              name:'Half-Kneeling DB Shoulder Press',
+              sets:'3',
+              reps:'8/side',
+              load:'8kg',
+              notes:'2-1-2-0 | Back-leg glute tight, ribs down, straight press path. 60-75s'
+            },
+            {
+              name:'Suitcase March (KB)',
+              sets:'3',
+              reps:'25m/side',
+              load:'20kg',
+              notes:'Tall posture, slow steps, no leaning. 45-60s'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name:'Week 9 (Deload feel)',
+      days:[
+        {
+          name:'Full Body – Light',
+          exercises:[
+            {
+              name:'Leg Press',
+              sets:'4',
+              reps:'10',
+              load:'53kg',
+              notes:'3-1-2-1 | Slightly lighter than peak. Smooth, no lockout. 60s'
+            },
+            {
+              name:'Split Squat (assisted if needed)',
+              sets:'3',
+              reps:'8/side',
+              load:'4kg DBs',
+              notes:'2-1-2-1 | Front foot stable, light support allowed. 60-75s'
+            },
+            {
+              name:'Lat Pulldown (neutral grip)',
+              sets:'3',
+              reps:'12',
+              load:'25-30kg',
+              notes:'2-1-2-0 | Re-groove scapular control. 60s'
+            },
+            {
+              name:'Chest Press (machine or DB neutral)',
+              sets:'3',
+              reps:'10',
+              load:'15kg',
+              notes:'3-1-2-0 | Comfortable range, no strain. 60-75s'
+            },
+            {
+              name:'Suitcase Carry (KB)',
+              sets:'3',
+              reps:'20-30m/side',
+              load:'16-20kg',
+              notes:'Light, tall posture, easy walk. 45-60s'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name:'Week 10',
+      days:[
+        {
+          name:'Full Body – Strength',
+          exercises:[
+            {
+              name:'Leg Press',
+              sets:'4',
+              reps:'10',
+              load:'63-68kg',
+              notes:'3-1-2-1 | Main volume driver. Smooth reps, no lockout. 60s'
+            },
+            {
+              name:'Split Squat (regular)',
+              sets:'3',
+              reps:'8/side',
+              load:'6kg DBs',
+              notes:'2-1-2-1 | Stable front foot, light support allowed. 60-75s'
+            },
+            {
+              name:'Seated Row Cable',
+              sets:'3',
+              reps:'12',
+              load:'27.5-35kg',
+              notes:'2-1-2-0 | Scapula first, no swinging. 60s'
+            },
+            {
+              name:'Incline DB Chest Press (neutral)',
+              sets:'3',
+              reps:'8',
+              load:'16kg',
+              notes:'3-1-2-0 | Comfortable range, no grinding. 60-75s'
+            },
+            {
+              name:'Pallof Press (kneeling)',
+              sets:'3',
+              reps:'10/side',
+              load:'Small band',
+              notes:'2-1-2-0 | Anti-rotation focus, ribs down. 30s'
+            },
+            {
+              name:'Suitcase Carry (KB)',
+              sets:'3',
+              reps:'25-35m/side',
+              load:'20-24kg',
+              notes:'Tall posture, no lean. 45-60s'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name:'Week 11',
+      days:[
+        {
+          name:'Full Body – Strength',
+          exercises:[
+            {
+              name:'Step-Back Lunge',
+              sets:'3',
+              reps:'8/side',
+              load:'2×4kg',
+              notes:'2-1-2-1 | Step back to reduce knee stress. 60-75s'
+            },
+            {
+              name:'Leg Press',
+              sets:'4',
+              reps:'10',
+              load:'63kg',
+              notes:'3-1-2-1 | Main progression. Smooth, no lockout. 60s'
+            },
+            {
+              name:'Lat Pulldown (neutral)',
+              sets:'3',
+              reps:'10-12',
+              load:'27.5-35kg',
+              notes:'2-1-2-0 | Only if reps stay clean. 60s'
+            },
+            {
+              name:'Seated Cable Row (wide grip)',
+              sets:'3',
+              reps:'12',
+              load:'20-27.5kg',
+              notes:'2-1-2-1 | Pause 1s, posture first. 60s'
+            },
+            {
+              name:'Incline DB Chest Press (neutral)',
+              sets:'3',
+              reps:'10',
+              load:'16kg',
+              notes:'3-1-2-0 | Rep progression, no grinding. 60-75s'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name:'Week 12',
+      days:[
+        {
+          name:'Full Body – Free Weights',
+          exercises:[
+            {
+              name:'Goblet Squat (KB)',
+              sets:'3',
+              reps:'8-12',
+              load:'8kg',
+              notes:'3-1-2-1 | Smooth depth, braced torso. 60s'
+            },
+            {
+              name:'DB RDL',
+              sets:'3',
+              reps:'8',
+              load:'15-25kg',
+              notes:'2-1-2-1 | Hip hinge, feel hamstrings. Progress: 15→20→25kg. 60-75s'
+            },
+            {
+              name:'TRX Row + TRX Face Pulls',
+              sets:'2+2',
+              reps:'8',
+              load:'Bodyweight',
+              notes:'2-1-2-0 | Clean reps, scap controlled. 60s'
+            },
+            {
+              name:'Half-Kneeling DB Press',
+              sets:'3',
+              reps:'8/side',
+              load:'4kg',
+              notes:'2-1-2-1 | Pause 1s overhead, posture first. 60s'
+            },
+            {
+              name:'Suitcase Walk (KB)',
+              sets:'2',
+              reps:'25m/side',
+              load:'24-28kg',
+              notes:'Tall, no lean. 60-75s'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name:'Week 13',
+      days:[
+        {
+          name:'Full Body – Strength',
+          exercises:[
+            {
+              name:'Goblet Squat (KB)',
+              sets:'3',
+              reps:'8-12',
+              load:'10kg',
+              notes:'3-1-2-1 | Main progression. Smooth depth. 60s'
+            },
+            {
+              name:'DB RDL',
+              sets:'3',
+              reps:'10',
+              load:'20-25kg',
+              notes:'2-1-2-1 | Hip hinge, ribs down. 60-75s'
+            },
+            {
+              name:'TRX Row + TRX Face Pulls',
+              sets:'3+3',
+              reps:'8-10',
+              load:'Bodyweight',
+              notes:'2-1-2-0 | Clean reps only. 60s'
+            },
+            {
+              name:'Half-Kneeling DB Press',
+              sets:'3',
+              reps:'8/side',
+              load:'4-5kg',
+              notes:'2-1-2-1 | Pause 1s, posture first. 60s'
+            },
+            {
+              name:'AB Crunch on Bench',
+              sets:'2',
+              reps:'8',
+              load:'Bodyweight',
+              notes:'Controlled, no momentum'
+            },
+            {
+              name:'Half-Kneeling Oblique Rotation',
+              sets:'2',
+              reps:'8/side',
+              load:'5kg',
+              notes:'Hips stable, rotate from thoracic'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name:'Week 14 (current)',
+      days:[
+        {
+          name:'Full Body – Strength',
+          exercises:[
+            {
+              name:'Goblet Squat (KB)',
+              sets:'4',
+              reps:'10',
+              load:'12kg',
+              notes:'3-1-2-1 | RIR 3, RPE 7. Braced torso, smooth depth. 75s'
+            },
+            {
+              name:'BB RDL',
+              sets:'3',
+              reps:'10',
+              load:'25kg',
+              notes:'2-1-2-1 | RIR 3, RPE 7. Same load, push reps slightly. 60-75s'
+            },
+            {
+              name:'TRX Row',
+              sets:'3',
+              reps:'10',
+              load:'Harder body angle',
+              notes:'2-1-2-0 | RIR 3, RPE 7. Clean reps only. 60s'
+            },
+            {
+              name:'Half-Kneeling DB Press',
+              sets:'3',
+              reps:'8/side',
+              load:'7kg',
+              notes:'2-1-2-1 | RIR 3, RPE 7. Ribs down, pause 1s overhead. 60s'
+            },
+            {
+              name:'Suitcase Carry (KB)',
+              sets:'3',
+              reps:'25-30m/side',
+              load:'20kg',
+              notes:'RIR 2-3, RPE 7. Tall posture, no lean. 45-60s'
+            },
+            {
+              name:'Half-Kneeling Rotation (Cable/Band)',
+              sets:'2',
+              reps:'10/side',
+              load:'Light-medium',
+              notes:'Controlled. Hips stable, rotate from thoracic. 45s'
+            }
+          ]
+        }
+      ]
+    }
+  ]
+},
     {id:'p2',clientId:'veronika',name:'Ascend & Anchor',phase:'Strength',start:'2025-10-01',end:'',status:'Active',goal:'Maintain strength, develop pull-ups, improve mobility'},
     {id:'p3',clientId:'maxime',name:'FBW + Pull-up Bias',phase:'Hypertrophy',start:'2026-01-08',end:'',status:'Active',goal:'Upper body strength, first strict pull-up, fat loss'},
   ]);
   DB.set('assessments',[]);DB.set('notes',[]);DB.set('checkins',[]);
-  DB.set('init',true);
+  DB.set('init_v2',true);
 }
 
 function nav(page,data){
@@ -1316,6 +1854,10 @@ function removeDay(pid,wi,di){
 function updateDayName(pid,wi,di,val){
   const prgs=DB.get('programs')||[];const p=prgs.find(x=>x.id===pid);if(!p)return;
   p.weeks[wi].days[di].name=val;DB.set('programs',prgs);
+  if(DB.get('workerUrl')||DB.get('notionDbs')){
+    clearTimeout(_progSyncTimer);
+    _progSyncTimer=setTimeout(()=>pushProgramToNotion(p).catch(()=>{}),3000);
+  }
 }
 
 function addExToDay(pid,wi,di){
@@ -1330,9 +1872,15 @@ function addExToDay(pid,wi,di){
   },60);
 }
 
+let _progSyncTimer=null;
 function updateEx(pid,wi,di,ei,field,val){
   const prgs=DB.get('programs')||[];const p=prgs.find(x=>x.id===pid);if(!p)return;
   p.weeks[wi].days[di].exercises[ei][field]=val;DB.set('programs',prgs);
+  // Debounce push — wait 3s after last keystroke before syncing
+  if(DB.get('workerUrl')||DB.get('notionDbs')){
+    clearTimeout(_progSyncTimer);
+    _progSyncTimer=setTimeout(()=>pushProgramToNotion(p).catch(()=>{}),3000);
+  }
 }
 
 function removeEx(pid,wi,di,ei){
@@ -1494,6 +2042,37 @@ function delClient(id){
   ['clients','sessions','programs','assessments','notes','checkins'].forEach(k=>{const arr=DB.get(k)||[];DB.set(k,arr.filter(i=>(k==='clients'?i.id:i.clientId)!==id));});
   nav('clients');
 }
+async function pushProgramToNotion(prog){
+  const dbs = getDbIds();
+  const cl = DB.get('clients')||[];
+  const client = cl.find(c=>c.id===prog.clientId);
+  // Serialize weeks/days/exercises as JSON in a text field
+  const weeksJson = JSON.stringify(prog.weeks||[]);
+  const props = {
+    Name: P.title(prog.name),
+    Client: P.text(client?.name||''),
+    Phase: P.select(prog.phase),
+    'Start Date': P.date(prog.start||null),
+    'End Date': P.date(prog.end||null),
+    Status: P.select(prog.status),
+    Goal: P.text(prog.goal||''),
+    'Program Data': P.text(weeksJson.slice(0,2000)),
+  };
+  try {
+    if(prog.notionPageId){
+      await updatePage(prog.notionPageId, props);
+      syncLog(`↑ Updated program: ${prog.name}`,'ok');
+    } else {
+      const page = await createPage(dbs.programs, props);
+      const prgs = DB.get('programs')||[];
+      const idx = prgs.findIndex(p=>p.id===prog.id);
+      if(idx>=0){ prgs[idx].notionPageId=page.id; prgs[idx].notionId=page.id.replace(/-/g,''); DB.set('programs',prgs); }
+      syncLog(`↑ Created program: ${prog.name}`,'ok');
+    }
+  } catch(e){ syncLog(`✗ Program sync failed: ${e.message}`,'error'); }
+}
+
+
 function addProg(){
   const name=document.getElementById('np-name').value.trim();if(!name){alert('Name required');return;}
   const prgs=DB.get('programs')||[];
@@ -1502,10 +2081,15 @@ function addProg(){
     const idx=prgs.findIndex(p=>p.id===editId);
     if(idx>-1){prgs[idx]={...prgs[idx],clientId:document.getElementById('np-client').value,name,phase:document.getElementById('np-phase').value,start:document.getElementById('np-start').value,end:document.getElementById('np-end').value,status:document.getElementById('np-status').value,goal:document.getElementById('np-goal').value,link:document.getElementById('np-link').value};}
     delete document.getElementById('np-name').dataset.editId;
-    DB.set('programs',prgs);closeM('addProgram');renderProgDetail(editId);return;
+    DB.set('programs',prgs);
+    if(DB.get('workerUrl')||DB.get('notionDbs')) pushProgramToNotion(prgs[idx]).catch(()=>{});
+    closeM('addProgram');renderProgDetail(editId);return;
   }
-  prgs.push({id:'p_'+Date.now(),clientId:document.getElementById('np-client').value,name,phase:document.getElementById('np-phase').value,start:document.getElementById('np-start').value,end:document.getElementById('np-end').value,status:document.getElementById('np-status').value,goal:document.getElementById('np-goal').value,link:document.getElementById('np-link').value,weeks:[]});
-  DB.set('programs',prgs);closeM('addProgram');renderProgs();
+  const newProg={id:'p_'+Date.now(),clientId:document.getElementById('np-client').value,name,phase:document.getElementById('np-phase').value,start:document.getElementById('np-start').value,end:document.getElementById('np-end').value,status:document.getElementById('np-status').value,goal:document.getElementById('np-goal').value,link:document.getElementById('np-link').value,weeks:[]};
+  prgs.push(newProg);
+  DB.set('programs',prgs);
+  if(DB.get('workerUrl')||DB.get('notionDbs')) pushProgramToNotion(newProg).catch(()=>{});
+  closeM('addProgram');renderProgs();
 }
 function addAss(){
   const ass=DB.get('assessments')||[];
