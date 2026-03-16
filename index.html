@@ -2333,7 +2333,7 @@ async function pushSessionToNotion(session){
     RPE: P.num(session.rpe),
     Duration: P.num(session.duration),
     Exercises: P.text((session.exercises||'').slice(0,2000)),
-    'Trainer Notes': P.text((session.notes||'').slice(0,2000)),
+    'Session Type': session.type ? {multi_select:[{name:session.type}]} : {multi_select:[]},
   };
   try {
     if(session.notionPageId){
