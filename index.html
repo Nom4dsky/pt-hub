@@ -4091,6 +4091,90 @@ function ft(s){return`${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).to
 document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)closeM(o.id.replace('modal-',''));});});
 
 initTheme();initData();
+// ── HILDE J — full data migration ──
+if(!localStorage.getItem('pthub_hilde_v1')){
+  try{
+    const cl=JSON.parse(localStorage.getItem('pthub_clients')||'[]');
+    const hi=cl.findIndex(c=>c.id==='hilde');
+    if(hi>=0){
+      cl[hi]={...cl[hi],
+        name:'Hilde J',
+        gender:'f',
+        type:'In-person',
+        status:'Active',
+        goals:'Health & fitness',
+        phase:'Function Phase — Weeks 9–12',
+        start:'2025-11-01',
+        injuryZones:['Right hip','Left hip','Lower back'],
+        injury:'Right hip, Left hip, Lower back — hip/sciatic irritation, pain-free depth always priority',
+        mainNotes:'Started Nov 2025. Rehab-focused approach — hip/sciatic issues, shallow ranges, pain-free depth always priority. Very coachable, consistent. FBW A/B alternating, session 12 as of March 2026. Good progress on leg press (30→99kg), deadlift patterns progressing well. Responds well to tempo cues. Sleep issues noted — waking in the night. 12-week block nearly complete, ready to review and plan next block.',
+        nextAssessment:'2026-04-01',
+        color:'#f59e0b'
+      };
+      localStorage.setItem('pthub_clients',JSON.stringify(cl));
+    }
+
+    // Program — FBW A/B 12-week block
+    const prgs=JSON.parse(localStorage.getItem('pthub_programs')||'[]');
+    const progId='prog_hilde_fbw';
+    if(!prgs.find(p=>p.id===progId)){
+      prgs.push({
+        id:progId,
+        clientId:'hilde',
+        name:'Hilde — FBW A/B Block',
+        phase:'Strength',
+        status:'Active',
+        start:'2025-11-01',
+        end:'2026-04-01',
+        goal:'Rehab-focused full body strength. Hip/sciatic safe. Pain-free depth always priority. A/B alternating weekly.',
+        notionId:'',
+        weeks:[
+          {name:'Current FBW A',days:[
+            {name:'FBW A',exercises:[
+              {name:'Trap Bar Deadlift',sets:'4',reps:'8',load:'32–42kg',notes:'Controlled, 10s isometric holds set 3. B-stance ok.'},
+              {name:'Goblet Squat',sets:'3',reps:'8',load:'12kg',notes:'3-1-2-1 tempo, 75s rest'},
+              {name:'Chest Press Machine',sets:'3',reps:'12',load:'30–35kg',notes:'2-1-2-1 tempo, 60s rest'},
+              {name:'Seated Row Machine',sets:'3',reps:'12',load:'40kg',notes:'2-1-2-0, bit more vertical'},
+              {name:'Ab Crunch Machine',sets:'2',reps:'8',load:'50kg',notes:''},
+            ]}
+          ]},
+          {name:'Current FBW B',days:[
+            {name:'FBW B',exercises:[
+              {name:'Leg Press',sets:'3',reps:'8–10',load:'99kg',notes:'Wide-neutral, shallow depth, pain-free only. 2-1-2-1, 60s rest'},
+              {name:'RDL',sets:'3',reps:'8',load:'20–30kg',notes:'Smith or DB. 3-1-2-1 tempo, 75s. If any irritation → skip'},
+              {name:'DB Bench Press',sets:'3',reps:'12',load:'12–16kg',notes:'Flat, 2-1-2-1, 60s. Controlled, no shoulder strain'},
+              {name:'Single Arm DB Row',sets:'3',reps:'12',load:'6–12kg',notes:'Per side, upright posture, 2-1-2-1, 60s'},
+              {name:'Cable Fly',sets:'3',reps:'12',load:'',notes:''},
+              {name:'Sled Push',sets:'1',reps:'20 min',load:'',notes:'Conditioning'},
+            ]}
+          ]},
+        ]
+      });
+      localStorage.setItem('pthub_programs',JSON.stringify(prgs));
+    }
+
+    // Sessions — all 13 sessions
+    const ses=JSON.parse(localStorage.getItem('pthub_sessions')||'[]');
+    const hildeSessions=[
+      {id:'ses_h1',clientId:'hilde',clientName:'Hilde J',date:'2025-11-25',type:'Strength',duration:60,rpe:null,exercises:'Box Squat, TRX Assisted Squat, Step-Up, TRX Row, Bench Push-Ups, Back Extension Machine, Ab Crunch Machine',notes:'Session 1 — foundation phase',exerciseData:[{name:'Box Squat',sets:[{kg:'0',reps:'10'},{kg:'0',reps:'10'},{kg:'0',reps:'10'}]},{name:'TRX Assisted Squat',sets:[{kg:'BW',reps:'12'},{kg:'BW',reps:'12'}]},{name:'Step-Up',sets:[{kg:'8',reps:'8'},{kg:'8',reps:'8'}]},{name:'TRX Row',sets:[{kg:'BW',reps:'12'},{kg:'BW',reps:'12'}]},{name:'Back Extension Machine',sets:[{kg:'0',reps:'12'},{kg:'0',reps:'12'},{kg:'0',reps:'12'}]}]},
+      {id:'ses_h2',clientId:'hilde',clientName:'Hilde J',date:'2025-12-02',type:'Strength',duration:60,rpe:null,exercises:'Leg Press, KB Deadlift, Cable Row, Chest Press Machine, Seated Leg Curl, Pallof Press, Split Squat',notes:'Pain-free depth on leg press',exerciseData:[{name:'Leg Press',sets:[{kg:'30',reps:'12'},{kg:'30',reps:'12'}]},{name:'KB Deadlift',sets:[{kg:'16',reps:'10'},{kg:'20',reps:'10'},{kg:'20',reps:'10'}]},{name:'Chest Press Machine',sets:[{kg:'5',reps:'12'},{kg:'10',reps:'12'},{kg:'10',reps:'12'}]}]},
+      {id:'ses_h3',clientId:'hilde',clientName:'Hilde J',date:'2025-12-09',type:'Strength',duration:60,rpe:null,exercises:'Box Squat, TRX Assisted Squat, TRX Rev Lunge, TRX Row, Bench Push-Ups, Back Extension Machine, Dead Bug',notes:'',exerciseData:[{name:'Box Squat',sets:[{kg:'0',reps:'12'},{kg:'8',reps:'12'},{kg:'8',reps:'12'}]},{name:'Back Extension Machine',sets:[{kg:'30',reps:'12'},{kg:'30',reps:'12'},{kg:'30',reps:'12'}]}]},
+      {id:'ses_h4',clientId:'hilde',clientName:'Hilde J',date:'2025-12-16',type:'Strength',duration:60,rpe:null,exercises:'Leg Press, KB Deadlift, Lat Pulldown, Cable Row, Chest Press Machine, Sled Push',notes:'',exerciseData:[{name:'Leg Press',sets:[{kg:'53',reps:'12'},{kg:'77',reps:'12'},{kg:'77',reps:'12'}]},{name:'KB Deadlift',sets:[{kg:'20',reps:'12'},{kg:'20',reps:'12'},{kg:'20',reps:'12'}]},{name:'Sled Push',sets:[{kg:'60',reps:'25m'},{kg:'60',reps:'25m'}]}]},
+      {id:'ses_h5',clientId:'hilde',clientName:'Hilde J',date:'2026-01-06',type:'Strength',duration:60,rpe:null,exercises:'Leg Press, KB Deadlift, Lat Pulldown, Cable Row, Chest Press Machine, Back Extension Machine',notes:'',exerciseData:[{name:'Leg Press',sets:[{kg:'50',reps:'12'},{kg:'70',reps:'12'},{kg:'70',reps:'12'},{kg:'70',reps:'12'}]},{name:'KB Deadlift',sets:[{kg:'24',reps:'12'},{kg:'24',reps:'12'},{kg:'24',reps:'12'},{kg:'24',reps:'12'}]}]},
+      {id:'ses_h6',clientId:'hilde',clientName:'Hilde J',date:'2026-01-13',type:'Strength',duration:60,rpe:null,exercises:'Box Squat, DB Split Squat, TRX Row, Push-Ups, Back Extension Machine, AB Crunch Machine, Cable Rotation',notes:'',exerciseData:[{name:'Box Squat',sets:[{kg:'8',reps:'12'},{kg:'12',reps:'12'},{kg:'12',reps:'12'},{kg:'12',reps:'12'}]},{name:'Back Extension Machine',sets:[{kg:'35',reps:'12'},{kg:'35',reps:'12'},{kg:'35',reps:'12'}]},{name:'AB Crunch Machine',sets:[{kg:'40',reps:'12'},{kg:'40',reps:'12'},{kg:'40',reps:'12'}]}]},
+      {id:'ses_h7',clientId:'hilde',clientName:'Hilde J',date:'2026-01-20',type:'Strength',duration:60,rpe:null,exercises:'Leg Press, Leg Extension, KB Deadlift, Incline DB Chest Press, Lat Pulldown, Face Pulls, Farmers Carry',notes:'Sleep issues noted. *Form dropped on lat pulldown at 42.5kg — 8 reps only',exerciseData:[{name:'Leg Press',sets:[{kg:'80',reps:'10'},{kg:'80',reps:'10'},{kg:'80',reps:'10'}]},{name:'KB Deadlift',sets:[{kg:'32',reps:'6'},{kg:'32',reps:'6'},{kg:'32',reps:'6'},{kg:'32',reps:'6'}]},{name:'Farmer Carry',sets:[{kg:'20',reps:'25m'},{kg:'20',reps:'25m'},{kg:'20',reps:'25m'}]}]},
+      {id:'ses_h8',clientId:'hilde',clientName:'Hilde J',date:'2026-01-27',type:'Strength',duration:60,rpe:null,exercises:'Box Squat to step, DB Split Squat, TRX Row, Push-Ups, AB Crunch Cable',notes:'10s isometric holds on split squat set 3',exerciseData:[{name:'Box Squat',sets:[{kg:'8',reps:'10'},{kg:'8',reps:'10'},{kg:'8',reps:'10'},{kg:'8',reps:'10'}]},{name:'AB Crunch Cable',sets:[{kg:'15',reps:'12'},{kg:'15',reps:'12'},{kg:'15',reps:'12'}]}]},
+      {id:'ses_h9',clientId:'hilde',clientName:'Hilde J',date:'2026-02-03',type:'Strength',duration:60,rpe:null,exercises:'Leg Press, Trap Bar Deadlift, Incline DB Chest Press, Lat Pulldown, Face Pulls',notes:'Session 10',exerciseData:[{name:'Leg Press',sets:[{kg:'50',reps:'10'},{kg:'85',reps:'10'},{kg:'85',reps:'10'},{kg:'85',reps:'10'}]},{name:'Trap Bar Deadlift',sets:[{kg:'32',reps:'12'},{kg:'32',reps:'12'},{kg:'32',reps:'12'}]},{name:'Incline DB Bench Press',sets:[{kg:'12',reps:'12'},{kg:'14',reps:'12'},{kg:'14',reps:'12'}]},{name:'Lat Pulldown',sets:[{kg:'35',reps:'12'},{kg:'40',reps:'12'},{kg:'40',reps:'12'}]}]},
+      {id:'ses_h10',clientId:'hilde',clientName:'Hilde J',date:'2026-02-17',type:'Strength',duration:60,rpe:null,exercises:'Leg Press, RDL Smith, Flat DB Chest Press, Single Arm Row, Cable Fly, Sled Push',notes:'Session 11. Leg press 99kg.',exerciseData:[{name:'Leg Press',sets:[{kg:'99',reps:'10'},{kg:'99',reps:'10'},{kg:'99',reps:'10'}]},{name:'RDL',sets:[{kg:'20',reps:'8'},{kg:'20',reps:'8'},{kg:'30',reps:'8'}]},{name:'DB Bench Press',sets:[{kg:'12',reps:'12'},{kg:'14',reps:'12'},{kg:'16',reps:'12'}]},{name:'Single Arm DB Row',sets:[{kg:'6',reps:'12'},{kg:'8',reps:'12'},{kg:'12',reps:'12'}]}]},
+      {id:'ses_h11',clientId:'hilde',clientName:'Hilde J',date:'2026-03-03',type:'Strength',duration:60,rpe:null,exercises:'Box Squat to step, Trap Bar DL, Chest Press Machine, Seated Row Machine, Ab Twist',notes:'Session 12. Trap bar 42kg.',exerciseData:[{name:'Box Squat',sets:[{kg:'12',reps:'8'},{kg:'12',reps:'8'},{kg:'12',reps:'8'},{kg:'12',reps:'8'}]},{name:'Trap Bar Deadlift',sets:[{kg:'32',reps:'6'},{kg:'42',reps:'6'},{kg:'42',reps:'6'}]},{name:'Chest Press Machine',sets:[{kg:'25',reps:'12'},{kg:'25',reps:'12'},{kg:'30',reps:'12'}]},{name:'Seated Row Machine',sets:[{kg:'35',reps:'12'},{kg:'35',reps:'12'},{kg:'35',reps:'12'}]}]},
+      {id:'ses_h12',clientId:'hilde',clientName:'Hilde J',date:'2026-03-10',type:'Strength',duration:60,rpe:null,exercises:'Trap Bar DL, Goblet Squat, Chest Press Machine, Seated Row Machine, Ab Crunch Machine',notes:'Session 12. Chest press 35kg, rows 40kg.',exerciseData:[{name:'Trap Bar Deadlift',sets:[{kg:'32',reps:'8'},{kg:'42',reps:'8'},{kg:'42',reps:'8'},{kg:'42',reps:'8'}]},{name:'Goblet Squat',sets:[{kg:'12',reps:'8'},{kg:'12',reps:'8'},{kg:'12',reps:'8'}]},{name:'Chest Press Machine',sets:[{kg:'30',reps:'12'},{kg:'35',reps:'12'},{kg:'35',reps:'12'}]},{name:'Seated Row Machine',sets:[{kg:'40',reps:'12'},{kg:'40',reps:'12'},{kg:'40',reps:'12'}]},{name:'Ab Crunch Machine',sets:[{kg:'50',reps:'8'},{kg:'50',reps:'8'}]}]},
+    ];
+    hildeSessions.forEach(s=>{if(!ses.find(x=>x.id===s.id))ses.push(s);});
+    localStorage.setItem('pthub_sessions',JSON.stringify(ses));
+    localStorage.setItem('pthub_hilde_v1','1');
+  }catch(e){console.error('Hilde migration error:',e);}
+}
+
 // One-time phase clear migration
 if(!localStorage.getItem('pthub_phases_cleared')){
   try{
