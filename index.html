@@ -407,17 +407,37 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;}
 
     <!-- SETUP -->
     <div id="page-setup" class="page">
-      <div class="sec-hdr mb20"><div><div class="pg-title">Notion Setup</div><div class="pg-sub">Connect your workspace to sync data</div></div></div>
+      <div class="sec-hdr mb20"><div><div class="pg-title">Notion Sync</div><div class="pg-sub">Two-way sync via Cloudflare Worker</div></div></div>
       <div style="max-width:520px">
         <div class="card mb16">
-          <div class="setup-step"><div class="step-circle" id="step1">1</div><div><strong style="font-size:13px">Create a Notion integration</strong><p style="font-size:12px;color:var(--text2);margin-top:4px;line-height:1.6">Go to <strong>notion.so/my-integrations</strong> → New integration → name it "PT Hub" → copy the token.</p></div></div>
-          <div class="setup-step"><div class="step-circle" id="step2">2</div><div style="flex:1"><strong style="font-size:13px">Paste your API key</strong><div class="fg" style="margin-top:8px"><input type="password" id="notionKey" placeholder="secret_xxxxxxxxxxxxxx"/></div></div></div>
-          <div class="setup-step"><div class="step-circle" id="step3">3</div><div style="flex:1"><strong style="font-size:13px">Enter database IDs</strong><p style="font-size:12px;color:var(--text2);margin:4px 0 10px;line-height:1.6">The ID is in the Notion URL after the workspace name.</p><div style="display:flex;flex-direction:column;gap:8px"><div class="fg"><label>Client Hub</label><input type="text" id="dbClients" placeholder="30ed5b39586681a09179f5140ee0127a"/></div><div class="fg"><label>Session Log</label><input type="text" id="dbSessions" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"/></div><div class="fg"><label>Assessments</label><input type="text" id="dbAssessments" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"/></div><div class="fg"><label>Programs</label><input type="text" id="dbPrograms" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"/></div></div></div></div>
-          <div class="setup-step"><div class="step-circle" id="step4">4</div><div><strong style="font-size:13px">Share databases with integration</strong><p style="font-size:12px;color:var(--text2);margin-top:4px;line-height:1.6">In each database → ··· menu → Connections → add PT Hub.</p></div></div>
-          <div style="display:flex;gap:8px"><button class="btn btn-accent" style="flex:1;justify-content:center" onclick="saveNC()">Save & connect</button><button class="btn btn-ghost" onclick="clearNC()">Clear</button></div>
+          <div class="card-label">Connection</div>
+          <div class="fg mb16"><label>Cloudflare Worker URL</label><input type="text" id="workerUrl" placeholder="https://pt-hub-proxy.nom4dsky.workers.dev" value="https://pt-hub-proxy.nom4dsky.workers.dev"/></div>
+          <div class="card-label">Database IDs</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+            <div class="fg"><label>Client Hub</label><input type="text" id="dbClients" value="325d5b395866807b879cdb6038cbf88c"/></div>
+            <div class="fg"><label>Session Log</label><input type="text" id="dbSessions" value="325d5b395866808ab3e6f4d76f9ac681"/></div>
+            <div class="fg"><label>Assessments</label><input type="text" id="dbAssessments" value="325d5b39586680c6ad08d379891b0741"/></div>
+            <div class="fg"><label>Programs</label><input type="text" id="dbPrograms" value="325d5b39586680f9ac2ef9353cd034ba"/></div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-accent" style="flex:1;justify-content:center" onclick="saveNC()">Save & test connection</button>
+            <button class="btn btn-ghost" onclick="syncFromNotion()">↓ Pull from Notion</button>
+          </div>
           <div id="setupRes" style="margin-top:12px;font-size:13px;display:none"></div>
         </div>
-        <div class="card" style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0" id="connDot"></div><div><div style="font-size:13px;font-weight:500" id="connStat">Local storage active</div><div style="font-size:11px;color:var(--text3)">All data saved in your browser automatically</div></div></div>
+        <div class="card mb16">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;transition:background .3s" id="connDot"></div>
+            <div style="flex:1"><div style="font-size:13px;font-weight:500" id="connStat">Not connected</div><div style="font-size:11px;color:var(--text3)" id="connDetail">Configure above and test connection</div></div>
+            <div style="font-size:11px;color:var(--text3)" id="lastSync"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-label">Sync log</div>
+          <div id="syncLog" style="font-size:11px;font-family:DM Mono,monospace;color:var(--text2);max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:3px">
+            <div style="color:var(--text3)">No sync activity yet</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1072,6 +1092,8 @@ function saveSes(){
   const ses=DB.get('sessions')||[];ses.unshift(s);DB.set('sessions',ses);
   const idx=cl.findIndex(c=>c.id===cid);cl[idx].lastSession=s.date;DB.set('clients',cl);
   if(sesRun)toggleSes();
+  // Push to Notion if configured
+  if(DB.get('workerUrl')||DB.get('notionDbs')) pushSessionToNotion(s).catch(()=>{});
   clearLog();
   nav('clientDetail',cid);
 }
@@ -1363,7 +1385,10 @@ function addClient(){
   const name=document.getElementById('nc-name').value.trim();if(!name){alert('Name required');return;}
   const cl=DB.get('clients')||[];
   cl.push({id:'c_'+Date.now(),name,type:document.getElementById('nc-type').value,goals:document.getElementById('nc-goal').value,status:document.getElementById('nc-status').value,start:document.getElementById('nc-start').value,nextAssessment:document.getElementById('nc-assess').value,injury:document.getElementById('nc-inj').value,phase:document.getElementById('nc-phase').value,email:document.getElementById('nc-email').value,appLink:document.getElementById('nc-app').value,sessions:0,color:PALETTE[cl.length%PALETTE.length]});
-  DB.set('clients',cl);closeM('addClient');['nc-name','nc-goal','nc-inj','nc-phase','nc-email','nc-app'].forEach(id=>{document.getElementById(id).value='';});renderClients();
+  DB.set('clients',cl);
+  // Push to Notion if configured
+  if(DB.get('workerUrl')||DB.get('notionDbs')) pushClientToNotion(cl[cl.length-1]).catch(()=>{});
+  closeM('addClient');['nc-name','nc-goal','nc-inj','nc-phase','nc-email','nc-app'].forEach(id=>{document.getElementById(id).value='';});renderClients();
 }
 // All body zones grouped
 const BODY_ZONES = [
@@ -1459,7 +1484,10 @@ function saveEC(){
     email:document.getElementById('ec-email').value,
     appLink:document.getElementById('ec-app').value
   };
-  DB.set('clients',cl);closeM('editClient');nav('clientDetail',id);
+  DB.set('clients',cl);
+  // Push to Notion if configured
+  if(DB.get('workerUrl')||DB.get('notionDbs')) pushClientToNotion(cl[idx]).catch(()=>{});
+  closeM('editClient');nav('clientDetail',id);
 }
 function delClient(id){
   if(!confirm('Delete this client and all data? Cannot be undone.'))return;
@@ -1482,7 +1510,14 @@ function addProg(){
 function addAss(){
   const ass=DB.get('assessments')||[];
   ass.push({id:'a_'+Date.now(),clientId:document.getElementById('na-client').value,date:document.getElementById('na-date').value,weight:document.getElementById('na-weight').value,bf:document.getElementById('na-bf').value,squat:document.getElementById('na-squat').value,deadlift:document.getElementById('na-dl').value,bench:document.getElementById('na-bench').value,hipThrust:document.getElementById('na-hip').value,waist:document.getElementById('na-waist').value,hipCm:document.getElementById('na-hipcm').value,notes:document.getElementById('na-notes').value});
-  DB.set('assessments',ass);closeM('addAssessment');renderAss();
+  DB.set('assessments',ass);
+  // Push to Notion if configured
+  if(DB.get('workerUrl')||DB.get('notionDbs')){
+    const cl=DB.get('clients')||[];
+    const client=cl.find(c=>c.id===ass[ass.length-1].clientId);
+    pushAssessmentToNotion(ass[ass.length-1], client?.name||'').catch(()=>{});
+  }
+  closeM('addAssessment');renderAss();
   if(curCid)nav('clientDetail',curCid);
 }
 
@@ -1510,22 +1545,316 @@ function saveCI(){
 }
 
 // ── NOTION ──
-function saveNC(){
-  const key=document.getElementById('notionKey').value.trim();if(!key){showSR('API key required','error');return;}
-  DB.set('notionKey',key);DB.set('notionDbs',{clients:document.getElementById('dbClients').value.trim(),sessions:document.getElementById('dbSessions').value.trim(),assessments:document.getElementById('dbAssessments').value.trim(),programs:document.getElementById('dbPrograms').value.trim()});
-  ['step1','step2','step3','step4'].forEach(id=>{const el=document.getElementById(id);if(el){el.classList.add('done');el.textContent='✓';}});
-  document.getElementById('connStat').textContent='Notion configured';
-  showSR('✓ Saved. Note: direct Notion API needs a backend proxy for CORS — data saved locally.','success');
+// ═══════════════════════════════════════
+// NOTION SYNC
+// ═══════════════════════════════════════
+
+const WORKER_DEFAULT = 'https://pt-hub-proxy.nom4dsky.workers.dev';
+const DB_IDS_DEFAULT = {
+  clients:     '325d5b395866807b879cdb6038cbf88c',
+  sessions:    '325d5b395866808ab3e6f4d76f9ac681',
+  assessments: '325d5b39586680c6ad08d379891b0741',
+  programs:    '325d5b39586680f9ac2ef9353cd034ba',
+};
+
+function getWorkerUrl(){ return DB.get('workerUrl')||WORKER_DEFAULT; }
+function getDbIds(){ return DB.get('notionDbs')||DB_IDS_DEFAULT; }
+
+function syncLog(msg, type='info'){
+  const el=document.getElementById('syncLog');
+  if(!el)return;
+  const empty=el.querySelector('div[style*="No sync"]');
+  if(empty)empty.remove();
+  const color = type==='error'?'var(--red)':type==='ok'?'var(--green)':'var(--text2)';
+  const time = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  el.insertAdjacentHTML('afterbegin',`<div style="color:${color}">[${time}] ${msg}</div>`);
+  // Keep last 20 entries
+  while(el.children.length>20) el.lastChild.remove();
 }
-function clearNC(){DB.set('notionKey',null);DB.set('notionDbs',null);document.getElementById('notionKey').value='';document.getElementById('connStat').textContent='Local storage active';showSR('Cleared','info');}
-function showSR(msg,type){const el=document.getElementById('setupRes');el.style.display='block';el.style.color=type==='error'?'var(--red)':type==='success'?'var(--green)':'var(--text2)';el.textContent=msg;}
+
+function setConnStatus(ok, detail=''){
+  const dot=document.getElementById('connDot');
+  const stat=document.getElementById('connStat');
+  const det=document.getElementById('connDetail');
+  if(dot) dot.style.background = ok?'var(--green)':'var(--red)';
+  if(stat) stat.textContent = ok?'Connected to Notion':'Connection error';
+  if(det && detail) det.textContent = detail;
+  const ls=document.getElementById('lastSync');
+  if(ls&&ok) ls.textContent='Last sync: '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+
+async function notionReq(method, path, body=null){
+  const url = getWorkerUrl() + '/notion' + path;
+  const opts = {
+    method,
+    headers:{'Content-Type':'application/json'},
+  };
+  if(body) opts.body = JSON.stringify(body);
+  const res = await fetch(url, opts);
+  if(!res.ok){
+    const err = await res.text();
+    throw new Error(`Notion ${method} ${path} → ${res.status}: ${err}`);
+  }
+  return res.json();
+}
+
+// ── Query a database ──
+async function queryDb(dbId, filter=null, sorts=null){
+  const body = {};
+  if(filter) body.filter = filter;
+  if(sorts) body.sorts = sorts;
+  body.page_size = 100;
+  const data = await notionReq('POST', `/databases/${dbId}/query`, body);
+  return data.results||[];
+}
+
+// ── Create a page in a database ──
+async function createPage(dbId, properties){
+  return notionReq('POST', '/pages', {
+    parent: {database_id: dbId},
+    properties
+  });
+}
+
+// ── Update a page ──
+async function updatePage(pageId, properties){
+  return notionReq('PATCH', `/pages/${pageId}`, {properties});
+}
+
+// ── Property helpers ──
+const P = {
+  title: v => ({title:[{text:{content:String(v||'')}}]}),
+  text:  v => ({rich_text:[{text:{content:String(v||'')}}]}),
+  select:v => v ? ({select:{name:String(v)}}) : ({select:null}),
+  date:  v => v ? ({date:{start:v}}) : ({date:null}),
+  num:   v => ({number: v!==''&&v!=null ? parseFloat(v)||null : null}),
+  url:   v => ({url: v||null}),
+  checkbox: v => ({checkbox: !!v}),
+};
+
+function getTitle(page){ return page?.properties?.Name?.title?.[0]?.plain_text||page?.properties?.['Client Name']?.title?.[0]?.plain_text||''; }
+function getText(page,key){ return page?.properties?.[key]?.rich_text?.[0]?.plain_text||''; }
+function getSelect(page,key){ return page?.properties?.[key]?.select?.name||''; }
+function getDate(page,key){ return page?.properties?.[key]?.date?.start||''; }
+function getNum(page,key){ return page?.properties?.[key]?.number??''; }
+
+// ══════════════════════════════
+// PULL FROM NOTION → LOCAL
+// ══════════════════════════════
+async function syncFromNotion(){
+  showSR('Pulling from Notion...','info');
+  syncLog('Starting pull from Notion...');
+  const dbs = getDbIds();
+  try {
+    // Pull clients
+    const pages = await queryDb(dbs.clients, null, [{property:'Name',direction:'ascending'}]);
+    syncLog(`Found ${pages.length} clients in Notion`,'ok');
+    const existing = DB.get('clients')||[];
+    const merged = [...existing];
+
+    pages.forEach(p=>{
+      const notionId = p.id.replace(/-/g,'');
+      const name = getTitle(p);
+      if(!name) return;
+      const idx = merged.findIndex(c=>c.notionId===notionId||c.name===name);
+      const clientData = {
+        id: idx>=0 ? merged[idx].id : 'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+        notionId,
+        notionPageId: p.id,
+        name,
+        status: getSelect(p,'Account Status')||getSelect(p,'Status')||'Active',
+        type: getSelect(p,'Program Type')||getSelect(p,'Type')||'In-person',
+        goals: getText(p,'Goal')||getText(p,'Goals')||'',
+        injury: getText(p,'Injuries / Limitations')||getText(p,'Injury')||'',
+        start: getDate(p,'Start Date')||getDate(p,'Start date')||'',
+        phase: getText(p,'Current phase')||getText(p,'Phase')||'',
+        email: p.properties?.Email?.email||'',
+        sessions: idx>=0 ? (merged[idx].sessions||0) : 0,
+        lastSession: idx>=0 ? (merged[idx].lastSession||'') : '',
+        color: idx>=0 ? (merged[idx].color||PALETTE[merged.length%PALETTE.length]) : PALETTE[merged.length%PALETTE.length],
+      };
+      if(idx>=0) merged[idx]={...merged[idx],...clientData};
+      else merged.push(clientData);
+    });
+
+    DB.set('clients', merged);
+    syncLog(`✓ ${pages.length} clients synced`,'ok');
+
+    // Pull sessions
+    const sesPgs = await queryDb(dbs.sessions, null, [{property:'Date',direction:'descending'}]);
+    syncLog(`Found ${sesPgs.length} sessions in Notion`,'ok');
+    const existingSes = DB.get('sessions')||[];
+    const mergedSes = [...existingSes];
+    sesPgs.forEach(p=>{
+      const notionId = p.id.replace(/-/g,'');
+      const idx = mergedSes.findIndex(s=>s.notionId===notionId);
+      const ses = {
+        id: idx>=0 ? mergedSes[idx].id : 'ses_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+        notionId,
+        notionPageId: p.id,
+        clientName: getText(p,'Client')||getTitle(p)||'',
+        date: getDate(p,'Date')||'',
+        type: getSelect(p,'Session type')||getSelect(p,'Type')||'Strength',
+        rpe: getNum(p,'RPE')||'',
+        duration: getNum(p,'Duration (min)')||55,
+        exercises: getText(p,'Exercises')||'',
+        notes: getText(p,'Trainer notes')||getText(p,'Notes')||'',
+      };
+      if(idx>=0) mergedSes[idx]={...mergedSes[idx],...ses};
+      else mergedSes.push(ses);
+    });
+    DB.set('sessions', mergedSes);
+    syncLog(`✓ ${sesPgs.length} sessions synced`,'ok');
+
+    setConnStatus(true, `${pages.length} clients, ${sesPgs.length} sessions`);
+    showSR(`✓ Pulled ${pages.length} clients and ${sesPgs.length} sessions from Notion`,'success');
+    if(curPage==='clients') renderClients();
+    if(curPage==='dashboard') renderDash();
+    if(curPage==='sessions') renderSes();
+
+  } catch(e){
+    syncLog('ERROR: '+e.message,'error');
+    setConnStatus(false, e.message);
+    showSR('Error: '+e.message,'error');
+  }
+}
+
+// ══════════════════════════════
+// PUSH TO NOTION
+// ══════════════════════════════
+async function pushClientToNotion(client){
+  const dbs = getDbIds();
+  const props = {
+    Name: P.title(client.name),
+    'Account Status': P.select(client.status),
+    'Program Type': P.select(client.type),
+    Goal: P.text(client.goals),
+    'Injuries / Limitations': P.text(client.injury||''),
+    'Start Date': P.date(client.start),
+    'Current phase': P.text(client.phase),
+  };
+  try {
+    if(client.notionPageId){
+      await updatePage(client.notionPageId, props);
+      syncLog(`↑ Updated client: ${client.name}`,'ok');
+    } else {
+      const page = await createPage(dbs.clients, props);
+      // Save notion page ID back to client
+      const cl = DB.get('clients')||[];
+      const idx = cl.findIndex(c=>c.id===client.id);
+      if(idx>=0){ cl[idx].notionPageId=page.id; cl[idx].notionId=page.id.replace(/-/g,''); DB.set('clients',cl); }
+      syncLog(`↑ Created client: ${client.name}`,'ok');
+    }
+  } catch(e){ syncLog(`✗ Client sync failed: ${e.message}`,'error'); }
+}
+
+async function pushSessionToNotion(session){
+  const dbs = getDbIds();
+  const props = {
+    Name: P.title(`${session.clientName} – ${session.date}`),
+    Date: P.date(session.date),
+    Client: P.text(session.clientName),
+    'Session type': P.select(session.type),
+    RPE: P.num(session.rpe),
+    'Duration (min)': P.num(session.duration),
+    Exercises: P.text((session.exercises||'').slice(0,2000)),
+    'Trainer notes': P.text((session.notes||'').slice(0,2000)),
+  };
+  try {
+    if(session.notionPageId){
+      await updatePage(session.notionPageId, props);
+      syncLog(`↑ Updated session: ${session.clientName} ${session.date}`,'ok');
+    } else {
+      const page = await createPage(dbs.sessions, props);
+      const ses = DB.get('sessions')||[];
+      const idx = ses.findIndex(s=>s.id===session.id);
+      if(idx>=0){ ses[idx].notionPageId=page.id; ses[idx].notionId=page.id.replace(/-/g,''); DB.set('sessions',ses); }
+      syncLog(`↑ Created session: ${session.clientName} ${session.date}`,'ok');
+    }
+  } catch(e){ syncLog(`✗ Session sync failed: ${e.message}`,'error'); }
+}
+
+async function pushAssessmentToNotion(a, clientName){
+  const dbs = getDbIds();
+  const props = {
+    Name: P.title(`${clientName} – ${a.date}`),
+    Date: P.date(a.date),
+    Client: P.text(clientName),
+    'Body weight (kg)': P.num(a.weight),
+    'Squat 1RM (kg)': P.num(a.squat),
+    'Deadlift 1RM (kg)': P.num(a.deadlift),
+    'Bench 1RM (kg)': P.num(a.bench),
+    'Waist (cm)': P.num(a.waist),
+    Notes: P.text(a.notes||''),
+  };
+  try {
+    const page = await createPage(dbs.assessments, props);
+    const ass = DB.get('assessments')||[];
+    const idx = ass.findIndex(x=>x.id===a.id);
+    if(idx>=0){ ass[idx].notionPageId=page.id; DB.set('assessments',ass); }
+    syncLog(`↑ Created assessment: ${clientName} ${a.date}`,'ok');
+  } catch(e){ syncLog(`✗ Assessment sync failed: ${e.message}`,'error'); }
+}
+
+// ── Test connection ──
+async function testConnection(){
+  const workerUrl = document.getElementById('workerUrl')?.value?.trim()||WORKER_DEFAULT;
+  try {
+    const res = await fetch(workerUrl+'/notion/users/me', {headers:{'Content-Type':'application/json'}});
+    const data = await res.json();
+    if(data.type==='person'||data.object==='user'||data.name){
+      syncLog('✓ Connection OK — Notion user: '+(data.name||data.type),'ok');
+      return true;
+    }
+    throw new Error(JSON.stringify(data).slice(0,100));
+  } catch(e){
+    syncLog('✗ Connection failed: '+e.message,'error');
+    return false;
+  }
+}
+
+function saveNC(){
+  const workerUrl = document.getElementById('workerUrl')?.value?.trim()||WORKER_DEFAULT;
+  const dbs = {
+    clients: document.getElementById('dbClients').value.trim(),
+    sessions: document.getElementById('dbSessions').value.trim(),
+    assessments: document.getElementById('dbAssessments').value.trim(),
+    programs: document.getElementById('dbPrograms').value.trim(),
+  };
+  DB.set('workerUrl', workerUrl);
+  DB.set('notionDbs', dbs);
+  showSR('Saved — testing connection...','info');
+  testConnection().then(ok=>{
+    setConnStatus(ok, ok?'Worker connected':'Check worker URL');
+    if(ok) showSR('✓ Connected! Click "Pull from Notion" to load your clients','success');
+    else showSR('✗ Connection failed — check the Worker URL and Notion key','error');
+  });
+}
+
+function clearNC(){
+  DB.set('workerUrl',null);DB.set('notionDbs',null);
+  setConnStatus(false,'Not configured');
+  showSR('Cleared','info');
+}
+
+function showSR(msg,type){
+  const el=document.getElementById('setupRes');
+  if(!el)return;
+  el.style.display='block';
+  el.style.color=type==='error'?'var(--red)':type==='success'?'var(--green)':'var(--text2)';
+  el.textContent=msg;
+}
+
 function checkSetup(){
-  const key=DB.get('notionKey');if(!key)return;
-  document.getElementById('notionKey').value=key;
-  const dbs=DB.get('notionDbs')||{};
-  ['clients','sessions','assessments','programs'].forEach(k=>{const el=document.getElementById('db'+k.charAt(0).toUpperCase()+k.slice(1));if(el&&dbs[k])el.value=dbs[k];});
-  ['step1','step2','step3','step4'].forEach(id=>{const el=document.getElementById(id);if(el){el.classList.add('done');el.textContent='✓';}});
-  document.getElementById('connStat').textContent='Notion configured';
+  const saved = DB.get('workerUrl');
+  const el = document.getElementById('workerUrl');
+  if(el&&!el.value) el.value = saved||WORKER_DEFAULT;
+  const dbs=DB.get('notionDbs')||DB_IDS_DEFAULT;
+  ['clients','sessions','assessments','programs'].forEach(k=>{
+    const el=document.getElementById('db'+k.charAt(0).toUpperCase()+k.slice(1));
+    if(el&&!el.value) el.value=dbs[k]||'';
+  });
+  if(saved) setConnStatus(true,'Worker configured');
 }
 
 // ── EXPORT ──
