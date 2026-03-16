@@ -2304,12 +2304,11 @@ async function pushClientToNotion(client){
   const dbs = getDbIds();
   const props = {
     Name: P.title(client.name),
-    'Account Status': P.select(client.status),
-    'Program Type': P.select(client.type),
-    Goal: P.text(client.goals),
-    'Injuries / Limitations': P.text(client.injury||''),
-    'Start Date': P.date(client.start),
-    'Current phase': P.text(client.phase),
+    'Client Type': P.select(client.type),
+    'Start date': P.date(client.start||null),
+    'Current Phase': P.text(client.phase||''),
+    Notes: P.text(client.injury||''),
+    'Next assessment': P.date(client.nextAssessment||null),
   };
   try {
     if(client.notionPageId){
@@ -2330,13 +2329,11 @@ async function pushSessionToNotion(session){
   const dbs = getDbIds();
   const props = {
     Name: P.title(`${session.clientName} – ${session.date}`),
-    Date: P.date(session.date),
-    Client: P.text(session.clientName),
-    'Session type': P.select(session.type),
+    'Session Date': P.date(session.date),
     RPE: P.num(session.rpe),
-    'Duration (min)': P.num(session.duration),
+    Duration: P.num(session.duration),
     Exercises: P.text((session.exercises||'').slice(0,2000)),
-    'Trainer notes': P.text((session.notes||'').slice(0,2000)),
+    'Trainer Notes': P.text((session.notes||'').slice(0,2000)),
   };
   try {
     if(session.notionPageId){
@@ -2354,16 +2351,16 @@ async function pushSessionToNotion(session){
 
 async function pushAssessmentToNotion(a, clientName){
   const dbs = getDbIds();
+  // Build a summary string since Assessments DB only has Name field
+  const parts = [`${clientName} – ${a.date}`];
+  if(a.weight) parts.push(`BW:${a.weight}kg`);
+  if(a.squat) parts.push(`Squat:${a.squat}kg`);
+  if(a.deadlift) parts.push(`DL:${a.deadlift}kg`);
+  if(a.bench) parts.push(`Bench:${a.bench}kg`);
+  if(a.waist) parts.push(`Waist:${a.waist}cm`);
+  if(a.notes) parts.push(a.notes);
   const props = {
-    Name: P.title(`${clientName} – ${a.date}`),
-    Date: P.date(a.date),
-    Client: P.text(clientName),
-    'Body weight (kg)': P.num(a.weight),
-    'Squat 1RM (kg)': P.num(a.squat),
-    'Deadlift 1RM (kg)': P.num(a.deadlift),
-    'Bench 1RM (kg)': P.num(a.bench),
-    'Waist (cm)': P.num(a.waist),
-    Notes: P.text(a.notes||''),
+    Name: P.title(parts.join(' · ')),
   };
   try {
     const page = await createPage(dbs.assessments, props);
