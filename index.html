@@ -418,6 +418,7 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;}
             <div class="fg"><label>Session Log</label><input type="text" id="dbSessions" value="325d5b395866808ab3e6f4d76f9ac681"/></div>
             <div class="fg"><label>Assessments</label><input type="text" id="dbAssessments" value="325d5b39586680c6ad08d379891b0741"/></div>
             <div class="fg"><label>Programs</label><input type="text" id="dbPrograms" value="325d5b39586680f9ac2ef9353cd034ba"/></div>
+            <div class="fg"><label>Coach Notes</label><input type="text" id="dbNotes" value="325d5b395866807ea641f62a2f9f7e84"/></div>
           </div>
           <div style="display:flex;gap:8px">
             <button class="btn btn-accent" style="flex:1;justify-content:center" onclick="saveNC()">Save & test connection</button>
@@ -2207,10 +2208,23 @@ function addAss(){
 function openNote(cid){document.getElementById('nn-cid').value=cid;document.getElementById('nn-text').value='';document.getElementById('nn-date').value=new Date().toISOString().split('T')[0];openM('addNote');}
 function saveNote(){
   const nts=DB.get('notes')||[];const cid=document.getElementById('nn-cid').value;
-  nts.unshift({id:'n_'+Date.now(),clientId:cid,date:document.getElementById('nn-date').value,category:document.getElementById('nn-cat').value,text:document.getElementById('nn-text').value.trim()});
-  DB.set('notes',nts);closeM('addNote');nav('clientDetail',cid);
+  const cl=DB.get('clients')||[];const client=cl.find(c=>c.id===cid);
+  const note={id:'n_'+Date.now(),clientId:cid,date:document.getElementById('nn-date').value,category:document.getElementById('nn-cat').value,text:document.getElementById('nn-text').value.trim()};
+  nts.unshift(note);
+  DB.set('notes',nts);
+  if(DB.get('workerUrl')||DB.get('notionDbs')) pushNoteToNotion(note, client?.name||'').catch(()=>{});
+  closeM('addNote');nav('clientDetail',cid);
 }
-function delNote(id,cid){DB.set('notes',(DB.get('notes')||[]).filter(n=>n.id!==id));nav('clientDetail',cid);}
+function delNote(id,cid){
+  const nts=DB.get('notes')||[];
+  const note=nts.find(n=>n.id===id);
+  // Archive in Notion if synced
+  if(note?.notionPageId&&(DB.get('workerUrl')||DB.get('notionDbs'))){
+    notionReq('DELETE',`/blocks/${note.notionPageId}`).catch(()=>{});
+  }
+  DB.set('notes',nts.filter(n=>n.id!==id));
+  nav('clientDetail',cid);
+}
 
 // ── CHECKINS ──
 function openCI(cid){
@@ -2237,6 +2251,7 @@ const DB_IDS_DEFAULT = {
   sessions:    '325d5b395866808ab3e6f4d76f9ac681',
   assessments: '325d5b39586680c6ad08d379891b0741',
   programs:    '325d5b39586680f9ac2ef9353cd034ba',
+  notes:       '325d5b395866807ea641f62a2f9f7e84',
 };
 
 function getWorkerUrl(){ return DB.get('workerUrl')||WORKER_DEFAULT; }
@@ -2452,6 +2467,54 @@ async function fullSync(){
     }
     if(newProgs.length) syncLog(`↑ Pushed ${newProgs.length} new programs`,'ok');
 
+    // ── Sync coach notes ──
+    syncLog('Syncing coach notes...');
+    try {
+      const notionNotes = await queryDb(dbs.notes);
+      const notionNoteIds = new Set(notionNotes.map(p=>p.id));
+      let localNotes = DB.get('notes')||[];
+
+      // Remove notes deleted in Notion
+      localNotes = localNotes.filter(n=>{
+        if(n.notionPageId && !notionNoteIds.has(n.notionPageId)){
+          syncLog(`Removed note deleted in Notion`);
+          return false;
+        }
+        return true;
+      });
+
+      // Merge notes from Notion
+      notionNotes.forEach(p=>{
+        const idx = localNotes.findIndex(n=>n.notionPageId===p.id);
+        const clientName = getTitle(p).split(' — ')[0]||'';
+        const client = localClients.find(c=>c.name===clientName);
+        const data = {
+          notionPageId: p.id,
+          notionId: p.id.replace(/-/g,''),
+          clientId: client?.id||'',
+          clientName,
+          date: getDate(p,'Date')||'',
+          category: getSelect(p,'Category')||'General',
+          text: getText(p,'Note')||'',
+        };
+        if(idx>=0) localNotes[idx]={...localNotes[idx],...data};
+        else localNotes.push({id:'n_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),...data});
+      });
+      DB.set('notes', localNotes);
+
+      // Push local notes not in Notion
+      const newNotes = localNotes.filter(n=>!n.notionPageId);
+      for(const n of newNotes){
+        const cl2=DB.get('clients')||[];
+        const client2=cl2.find(c=>c.id===n.clientId);
+        await pushNoteToNotion(n, client2?.name||n.clientName||'').catch(e=>syncLog(`✗ Note: ${e.message}`,'error'));
+      }
+      syncLog(`✓ Notes: ${localNotes.length} total`,'ok');
+    } catch(e){ syncLog(`✗ Notes sync error: ${e.message}`,'error'); }
+
+    // ── Sync client Notes field (rich_text on client profile) ──
+    // Already handled in pushClientToNotion via Notes property
+
     syncLog('═══ Sync complete ═══','ok');
     setConnStatus(true, `${localClients.length} clients · ${localSes.length} sessions`);
     showSR(`✓ Sync complete — ${localClients.length} clients, ${localSes.length} sessions`,'success');
@@ -2477,6 +2540,28 @@ async function syncFromNotion(){ return fullSync(); }
 // ══════════════════════════════
 // PUSH TO NOTION
 // ══════════════════════════════
+async function pushNoteToNotion(note, clientName){
+  const dbs = getDbIds();
+  const props = {
+    Name: P.title(`${clientName} — ${note.date}`),
+    Date: P.date(note.date),
+    Note: P.text((note.text||'').slice(0,2000)),
+    Category: P.select(note.category||'General'),
+  };
+  try {
+    if(note.notionPageId){
+      await updatePage(note.notionPageId, props);
+      syncLog(`↑ Updated note: ${clientName} ${note.date}`,'ok');
+    } else {
+      const page = await createPage(dbs.notes, props);
+      const nts = DB.get('notes')||[];
+      const idx = nts.findIndex(n=>n.id===note.id);
+      if(idx>=0){ nts[idx].notionPageId=page.id; nts[idx].notionId=page.id.replace(/-/g,''); DB.set('notes',nts); }
+      syncLog(`↑ Created note: ${clientName} ${note.date}`,'ok');
+    }
+  } catch(e){ syncLog(`✗ Note sync failed: ${e.message}`,'error'); }
+}
+
 async function pushClientToNotion(client){
   const dbs = getDbIds();
   // Notion "status" type uses {status:{name:value}} not {select:{name:value}}
@@ -2577,6 +2662,7 @@ function saveNC(){
     sessions: document.getElementById('dbSessions').value.trim(),
     assessments: document.getElementById('dbAssessments').value.trim(),
     programs: document.getElementById('dbPrograms').value.trim(),
+    notes: document.getElementById('dbNotes')?.value.trim()||DB_IDS_DEFAULT.notes,
   };
   DB.set('workerUrl', workerUrl);
   DB.set('notionDbs', dbs);
@@ -2607,7 +2693,7 @@ function checkSetup(){
   const el = document.getElementById('workerUrl');
   if(el&&!el.value) el.value = saved||WORKER_DEFAULT;
   const dbs=DB.get('notionDbs')||DB_IDS_DEFAULT;
-  ['clients','sessions','assessments','programs'].forEach(k=>{
+  ['clients','sessions','assessments','programs','notes'].forEach(k=>{
     const el=document.getElementById('db'+k.charAt(0).toUpperCase()+k.slice(1));
     if(el&&!el.value) el.value=dbs[k]||'';
   });
