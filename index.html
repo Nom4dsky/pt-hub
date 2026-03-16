@@ -10,11 +10,11 @@
 :root{--bg:#f2f1ee;--white:#ffffff;--card:#ffffff;--sidebar:#0f0e0c;--border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.14);--text:#0f0e0c;--text2:#6b6760;--text3:#b0ada8;--accent:#d4f54e;--accent-dark:#0f0e0c;--green:#22c55e;--red:#ef4444;--amber:#f59e0b;--blue:#3b82f6;--orange:#f97316;--rad:16px;--rad-sm:10px;--rad-xs:6px;--shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);--shadow-lg:0 4px 24px rgba(0,0,0,.10);}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;overflow:hidden;}
-#app{display:flex;height:100vh;}
+#app{display:flex;height:100vh;height:100dvh;}
 #sidebar{width:64px;background:var(--sidebar);display:flex;flex-direction:column;align-items:center;padding:20px 0;gap:4px;flex-shrink:0;z-index:10;}
 #main{flex:1;overflow:hidden;display:flex;flex-direction:column;}
 #topbar{height:64px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;gap:16px;flex-shrink:0;}
-#content{flex:1;overflow-y:auto;padding:28px;}
+#content{flex:1;overflow-y:auto;padding:28px;padding-bottom:80px;-webkit-overflow-scrolling:touch;}
 .sb-logo{width:36px;height:36px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;cursor:pointer;}
 .sb-item{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.3);transition:all .15s;position:relative;}
 .sb-item:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);}
@@ -211,7 +211,7 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;}
 .zone-chip.active::before{content:"⚠ ";}
 .zone-chip.caution{background:var(--amberbg);border-color:var(--amber);color:var(--amber);}
 .zone-section-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);width:100%;margin-top:6px;margin-bottom:2px;}
-@media(max-width:640px){#sidebar{display:none;}#content{padding:16px;}.kpi-row{grid-template-columns:1fr 1fr;}.g2,.g2-1,.g3{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
+@media(max-width:640px){#sidebar{display:none;}#content{padding:16px;padding-bottom:100px;}.kpi-row{grid-template-columns:1fr 1fr;}.g2,.g2-1,.g3{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -2250,83 +2250,152 @@ function getNum(page,key){ return page?.properties?.[key]?.number??''; }
 // ══════════════════════════════
 // PULL FROM NOTION → LOCAL
 // ══════════════════════════════
-async function syncFromNotion(){
-  showSR('Pulling from Notion...','info');
-  syncLog('Starting pull from Notion...');
-  const dbs = getDbIds();
-  try {
-    // Pull clients
-    const pages = await queryDb(dbs.clients);
-    syncLog(`Found ${pages.length} clients in Notion`,'ok');
-    const existing = DB.get('clients')||[];
-    const merged = [...existing];
+async function fullSync(){
+  if(!(DB.get('workerUrl')||DB.get('notionDbs'))){
+    showSR('Configure Notion connection first','error'); nav('setup'); return;
+  }
+  const btn=document.getElementById('syncBtn');
+  if(btn){btn.textContent='⇅ Syncing...';btn.disabled=true;}
+  syncLog('═══ Full sync started ═══');
+  showSR('Syncing...','info');
 
-    pages.forEach(p=>{
-      const notionId = p.id.replace(/-/g,'');
+  try {
+    const dbs = getDbIds();
+
+    // ── STEP 1: Pull from Notion (source of truth) ──
+    syncLog('Pulling from Notion...');
+    const notionClients = await queryDb(dbs.clients);
+    const notionSessions = await queryDb(dbs.sessions);
+    const notionPrograms = await queryDb(dbs.programs);
+
+    // Build sets of Notion IDs that currently exist
+    const notionClientIds = new Set(notionClients.map(p=>p.id));
+    const notionSessionIds = new Set(notionSessions.map(p=>p.id));
+
+    // ── STEP 2: Merge clients ──
+    let localClients = DB.get('clients')||[];
+
+    // Remove local clients that were deleted in Notion (had a notionPageId but it's gone)
+    localClients = localClients.filter(c=>{
+      if(c.notionPageId && !notionClientIds.has(c.notionPageId)){
+        syncLog(`Removed "${c.name}" — deleted in Notion`);
+        return false;
+      }
+      return true;
+    });
+
+    // Merge/add clients from Notion
+    notionClients.forEach(p=>{
       const name = getTitle(p);
       if(!name) return;
-      const idx = merged.findIndex(c=>c.notionId===notionId||c.name===name);
-      const clientData = {
-        id: idx>=0 ? merged[idx].id : 'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
-        notionId,
+      const idx = localClients.findIndex(c=>c.notionPageId===p.id||c.name===name);
+      const data = {
         notionPageId: p.id,
+        notionId: p.id.replace(/-/g,''),
         name,
-        status: getSelect(p,'Account Status')||getSelect(p,'Status')||'Active',
-        type: getSelect(p,'Program Type')||getSelect(p,'Type')||'In-person',
-        goals: getText(p,'Goal')||getText(p,'Goals')||'',
-        injury: getText(p,'Injuries / Limitations')||getText(p,'Injury')||'',
-        start: getDate(p,'Start Date')||getDate(p,'Start date')||'',
-        phase: getText(p,'Current phase')||getText(p,'Phase')||'',
-        email: p.properties?.Email?.email||'',
-        sessions: idx>=0 ? (merged[idx].sessions||0) : 0,
-        lastSession: idx>=0 ? (merged[idx].lastSession||'') : '',
-        color: idx>=0 ? (merged[idx].color||PALETTE[merged.length%PALETTE.length]) : PALETTE[merged.length%PALETTE.length],
+        status: getSelect(p,'Status')||'Active',
+        type: getSelect(p,'Client Type')||'In-person',
+        goals: p.properties?.Goal?.multi_select?.map(x=>x.name).join(', ')||'',
+        injury: getText(p,'Notes')||'',
+        start: getDate(p,'Start date')||'',
+        phase: getText(p,'Current Phase')||'',
+        nextAssessment: getDate(p,'Next assessment')||'',
       };
-      if(idx>=0) merged[idx]={...merged[idx],...clientData};
-      else merged.push(clientData);
+      if(idx>=0){
+        localClients[idx]={...localClients[idx],...data};
+      } else {
+        localClients.push({
+          id:'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+          sessions:0, lastSession:'',
+          color:PALETTE[localClients.length%PALETTE.length],
+          ...data
+        });
+      }
+    });
+    DB.set('clients', localClients);
+    syncLog(`✓ Clients: ${localClients.length} total`,'ok');
+
+    // ── STEP 3: Merge sessions ──
+    let localSes = DB.get('sessions')||[];
+
+    // Remove sessions deleted in Notion
+    localSes = localSes.filter(s=>{
+      if(s.notionPageId && !notionSessionIds.has(s.notionPageId)){
+        syncLog(`Removed session "${s.clientName} ${s.date}" — deleted in Notion`);
+        return false;
+      }
+      return true;
     });
 
-    DB.set('clients', merged);
-    syncLog(`✓ ${pages.length} clients synced`,'ok');
-
-    // Pull sessions
-    const sesPgs = await queryDb(dbs.sessions);
-    syncLog(`Found ${sesPgs.length} sessions in Notion`,'ok');
-    const existingSes = DB.get('sessions')||[];
-    const mergedSes = [...existingSes];
-    sesPgs.forEach(p=>{
-      const notionId = p.id.replace(/-/g,'');
-      const idx = mergedSes.findIndex(s=>s.notionId===notionId);
-      const ses = {
-        id: idx>=0 ? mergedSes[idx].id : 'ses_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
-        notionId,
+    // Merge sessions from Notion
+    notionSessions.forEach(p=>{
+      const idx = localSes.findIndex(s=>s.notionPageId===p.id);
+      const data = {
         notionPageId: p.id,
-        clientName: getText(p,'Client')||getTitle(p)||'',
-        date: getDate(p,'Date')||'',
-        type: getSelect(p,'Session type')||getSelect(p,'Type')||'Strength',
+        notionId: p.id.replace(/-/g,''),
+        clientName: getTitle(p).split(' – ')[0]||'',
+        date: getDate(p,'Session Date')||'',
+        type: p.properties?.['Session Type']?.multi_select?.[0]?.name||'Strength',
         rpe: getNum(p,'RPE')||'',
-        duration: getNum(p,'Duration (min)')||55,
+        duration: getNum(p,'Duration')||55,
         exercises: getText(p,'Exercises')||'',
-        notes: getText(p,'Trainer notes')||getText(p,'Notes')||'',
+        notes: getText(p,'Trainer Notes')||'',
       };
-      if(idx>=0) mergedSes[idx]={...mergedSes[idx],...ses};
-      else mergedSes.push(ses);
+      // Find clientId from name
+      const client = localClients.find(c=>c.name===data.clientName);
+      if(client) data.clientId = client.id;
+      if(idx>=0) localSes[idx]={...localSes[idx],...data};
+      else localSes.push({id:'ses_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),...data});
     });
-    DB.set('sessions', mergedSes);
-    syncLog(`✓ ${sesPgs.length} sessions synced`,'ok');
+    DB.set('sessions', localSes);
+    syncLog(`✓ Sessions: ${localSes.length} total`,'ok');
 
-    setConnStatus(true, `${pages.length} clients, ${sesPgs.length} sessions`);
-    showSR(`✓ Pulled ${pages.length} clients and ${sesPgs.length} sessions from Notion`,'success');
+    // ── STEP 4: Push local-only items to Notion ──
+    syncLog('Pushing new local items to Notion...');
+
+    // Push clients that don't have a notionPageId yet
+    const newClients = localClients.filter(c=>!c.notionPageId);
+    for(const c of newClients){
+      await pushClientToNotion(c).catch(e=>syncLog(`✗ ${c.name}: ${e.message}`,'error'));
+    }
+    if(newClients.length) syncLog(`↑ Pushed ${newClients.length} new clients`,'ok');
+
+    // Push sessions without notionPageId
+    const newSes = localSes.filter(s=>!s.notionPageId);
+    for(const s of newSes){
+      await pushSessionToNotion(s).catch(e=>syncLog(`✗ Session ${s.date}: ${e.message}`,'error'));
+    }
+    if(newSes.length) syncLog(`↑ Pushed ${newSes.length} new sessions`,'ok');
+
+    // Push programs without notionPageId
+    const prgs = DB.get('programs')||[];
+    const newProgs = prgs.filter(p=>!p.notionPageId);
+    for(const p of newProgs){
+      await pushProgramToNotion(p).catch(e=>syncLog(`✗ Program ${p.name}: ${e.message}`,'error'));
+    }
+    if(newProgs.length) syncLog(`↑ Pushed ${newProgs.length} new programs`,'ok');
+
+    syncLog('═══ Sync complete ═══','ok');
+    setConnStatus(true, `${localClients.length} clients · ${localSes.length} sessions`);
+    showSR(`✓ Sync complete — ${localClients.length} clients, ${localSes.length} sessions`,'success');
+
+    // Refresh current page
     if(curPage==='clients') renderClients();
     if(curPage==='dashboard') renderDash();
     if(curPage==='sessions') renderSes();
+    if(curPage==='clientDetail'&&curCid) renderCD(curCid);
 
   } catch(e){
     syncLog('ERROR: '+e.message,'error');
     setConnStatus(false, e.message);
-    showSR('Error: '+e.message,'error');
+    showSR('Sync error: '+e.message,'error');
+  } finally {
+    if(btn){btn.textContent='⇅ Sync';btn.disabled=false;}
   }
 }
+
+async function syncFromNotion(){ return fullSync(); }
+
 
 // ══════════════════════════════
 // PUSH TO NOTION
