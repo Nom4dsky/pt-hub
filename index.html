@@ -360,6 +360,17 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;}
 .superset-label{position:absolute;top:-1px;left:12px;background:var(--accent);color:#fff;font-size:9px;font-weight:700;font-family:var(--font-display);text-transform:uppercase;letter-spacing:.14em;padding:2px 8px;}
 .superset-group .ex-block{border:none;border-bottom:1px dashed var(--border2);margin-bottom:0;}
 .superset-group .ex-block:last-child{border-bottom:none;}
+/* ── METCON BLOCK ── */
+.metcon-block{background:var(--white-pure);border:1px solid var(--border);border-left:3px solid var(--accent);padding:16px 18px;margin-bottom:12px;}
+.metcon-type-row{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.metcon-type-btn{padding:5px 14px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--text3);transition:all .13s;font-family:var(--font-display);text-transform:uppercase;letter-spacing:.1em;}
+.metcon-type-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.metcon-config{display:grid;gap:10px;margin-bottom:12px;}
+.metcon-label{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.16em;font-family:var(--font-display);margin-bottom:4px;}
+.metcon-inp{background:transparent;border:1px solid var(--border2);color:var(--text);font-family:var(--font-mono);font-size:15px;padding:10px 12px;outline:none;transition:border-color .15s;width:100%;}
+.metcon-inp:focus{border-color:var(--accent);}
+.metcon-movements{display:flex;flex-direction:column;gap:6px;}
+.metcon-mv-row{display:grid;grid-template-columns:1fr 80px 80px 28px;gap:6px;align-items:center;}
 /* Default is light — toggle switches to dark */
 /* ── BODY MAP SVG ── */
 .bf{fill:var(--text);opacity:.13;}
@@ -548,6 +559,26 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;}
         <button class="btn btn-ghost btn-sm" onclick="addEx()" style="flex:1;justify-content:center;font-size:11px">+ Exercise</button>
         <button class="btn btn-ghost btn-sm" onclick="addSupersetGroup(2)" style="flex:1;justify-content:center;font-size:11px">+ Superset</button>
         <button class="btn btn-ghost btn-sm" onclick="addSupersetGroup(3)" style="flex:1;justify-content:center;font-size:11px">+ Triset</button>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 8px">
+        <div style="display:flex;align-items:center;gap:7px"><div style="width:7px;height:7px;border-radius:50%;background:var(--accent)"></div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em">Conditioning / Metcon</div></div>
+        <button class="btn btn-ghost btn-sm" onclick="toggleMetcon()" id="metconToggle" style="font-size:10px">+ Add metcon</button>
+      </div>
+      <div id="metconBlock" style="display:none">
+        <div class="metcon-block">
+          <div class="metcon-type-row">
+            <button class="metcon-type-btn active" onclick="setMetconType('amrap',this)">AMRAP</button>
+            <button class="metcon-type-btn" onclick="setMetconType('emom',this)">EMOM</button>
+            <button class="metcon-type-btn" onclick="setMetconType('intervals',this)">Intervals</button>
+            <button class="metcon-type-btn" onclick="setMetconType('fortime',this)">For Time</button>
+          </div>
+          <div id="metconConfig"></div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.16em;font-family:var(--font-display);margin-bottom:8px">Movements</div>
+          <div class="metcon-movements" id="metconMovements"></div>
+          <button onclick="addMetconMovement()" class="add-set-btn" style="margin-top:8px">+ add movement</button>
+          <div style="margin-top:10px" class="fg"><label>Result / Score</label><input type="text" id="metconResult" class="metcon-inp" placeholder="e.g. 6 rounds + 5 reps, 4:32, 8 rounds..."/></div>
+          <div style="margin-top:8px" class="fg"><label>Notes</label><input type="text" id="metconNotes" class="metcon-inp" placeholder="How it felt, modifications..."/></div>
+        </div>
       </div>
       <div class="card mb12" style="margin-top:12px"><div class="card-label">Session notes</div><textarea id="logNotes" placeholder="Coaching observations, technique cues, how client felt..." style="background:transparent;border:none;width:100%;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);resize:vertical;min-height:60px;outline:none;padding:0;line-height:1.6"></textarea></div>
       <div style="display:flex;gap:8px;padding-bottom:40px">
@@ -2967,6 +2998,77 @@ function collectEx(){
   },[]);
 }
 
+let metconType='amrap';
+function toggleMetcon(){
+  const b=document.getElementById('metconBlock');
+  const btn=document.getElementById('metconToggle');
+  const shown=b.style.display!=='none';
+  b.style.display=shown?'none':'block';
+  btn.textContent=shown?'+ Add metcon':'− Remove metcon';
+  if(!shown){
+    setMetconType('amrap',document.querySelector('.metcon-type-btn'));
+    addMetconMovement();
+  }
+}
+function setMetconType(type,btnEl){
+  metconType=type;
+  document.querySelectorAll('.metcon-type-btn').forEach(b=>b.classList.remove('active'));
+  if(btnEl)btnEl.classList.add('active');
+  const cfg=document.getElementById('metconConfig');
+  if(!cfg)return;
+  const inp=(id,lbl,ph)=>`<div class="fg" style="margin-bottom:8px"><div class="metcon-label">${lbl}</div><input type="text" id="${id}" class="metcon-inp" placeholder="${ph}"/></div>`;
+  const configs={
+    amrap:`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">${inp('mcDur','Duration','e.g. 12 min')}${inp('mcRounds','Target Rounds (optional)','e.g. 5+')}</div>`,
+    emom:`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">${inp('mcDur','Duration','e.g. 12 min')}${inp('mcInterval','Interval','e.g. every 60s')}</div>`,
+    intervals:`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">${inp('mcWork','Work','e.g. 20s')}${inp('mcRest','Rest','e.g. 40s')}${inp('mcRounds','Rounds','e.g. 8')}</div>`,
+    fortime:`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">${inp('mcRounds','Rounds','e.g. 3')}${inp('mcTimecap','Timecap','e.g. 15 min')}</div>`,
+  };
+  cfg.innerHTML=configs[type]||'';
+}
+let mcMoveCnt=0;
+function addMetconMovement(){
+  mcMoveCnt++;
+  const id='mcmv'+mcMoveCnt;
+  const row=document.createElement('div');
+  row.id=id; row.className='metcon-mv-row';
+  row.innerHTML=`
+    <input type="text" class="metcon-inp" placeholder="Movement (e.g. KB Swing)" style="font-size:13px"/>
+    <input type="text" class="metcon-inp" placeholder="Reps" style="font-size:13px;text-align:center"/>
+    <input type="text" class="metcon-inp" placeholder="Load" style="font-size:13px;text-align:center"/>
+    <button onclick="document.getElementById('${id}').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:0;transition:color .13s" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">×</button>`;
+  document.getElementById('metconMovements').appendChild(row);
+}
+function collectMetcon(){
+  if(document.getElementById('metconBlock')?.style.display==='none') return null;
+  const movements=[...document.querySelectorAll('#metconMovements .metcon-mv-row')].map(row=>{
+    const inps=row.querySelectorAll('input');
+    return{movement:inps[0]?.value||'',reps:inps[1]?.value||'',load:inps[2]?.value||''};
+  }).filter(m=>m.movement);
+  if(!movements.length) return null;
+  const cfg={};
+  ['mcDur','mcRounds','mcInterval','mcWork','mcRest','mcTimecap'].forEach(id=>{
+    const el=document.getElementById(id); if(el&&el.value) cfg[id.replace('mc','').toLowerCase()]=el.value;
+  });
+  return{
+    type:metconType,
+    config:cfg,
+    movements,
+    result:document.getElementById('metconResult')?.value||'',
+    notes:document.getElementById('metconNotes')?.value||''
+  };
+}
+function renderMetconSummary(mc){
+  if(!mc) return '';
+  const typeLabel={amrap:'AMRAP',emom:'EMOM',intervals:'Intervals',fortime:'For Time'}[mc.type]||mc.type.toUpperCase();
+  const cfgStr=Object.entries(mc.config||{}).map(([k,v])=>`${k}: ${v}`).join(' · ');
+  const mvStr=mc.movements.map(m=>`${m.reps?m.reps+' ':''}${m.movement}${m.load?' @'+m.load:''}`).join(', ');
+  return`<div style="margin-top:10px;padding:10px 14px;background:var(--bg);border-left:2px solid var(--accent)">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;font-family:'Oswald',sans-serif;color:var(--accent);margin-bottom:4px">${typeLabel}${cfgStr?' · '+cfgStr:''}</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:${mc.result?'4px':'0'}">${mvStr}</div>
+    ${mc.result?`<div style="font-size:13px;font-weight:700;font-family:'DM Mono',monospace">Result: ${mc.result}</div>`:''}
+    ${mc.notes?`<div style="font-size:11px;color:var(--text3);font-style:italic;margin-top:2px">${mc.notes}</div>`:''}
+  </div>`;
+}
 function saveSes(){
   const cid=document.getElementById('logClient').value;
   const cl=DB.get('clients')||[];const client=cl.find(c=>c.id===cid);
@@ -2982,6 +3084,7 @@ function saveSes(){
     rpe:document.getElementById('logRPE').value||null,
     duration:dur,exercises:sum,exerciseData:exs,
     warmup,
+    metcon:collectMetcon(),
     notes:document.getElementById('logNotes').value.trim()
   };
   const ses=DB.get('sessions')||[];ses.unshift(s);DB.set('sessions',ses);
@@ -2994,6 +3097,12 @@ function saveSes(){
 }
 
 function clearLog(){
+  const mb=document.getElementById('metconBlock');if(mb)mb.style.display='none';
+  const mt=document.getElementById('metconToggle');if(mt)mt.textContent='+ Add metcon';
+  const mm=document.getElementById('metconMovements');if(mm)mm.innerHTML='';
+  const mr=document.getElementById('metconResult');if(mr)mr.value='';
+  const mn2=document.getElementById('metconNotes');if(mn2)mn2.value='';
+  mcMoveCnt=0;
   document.getElementById('logClient').value='';
   document.getElementById('logNotes').value='';
   document.getElementById('warmupNotes').value='';
@@ -4222,6 +4331,7 @@ function openSessionDetail(id){
     html=`<div style="color:var(--text3);font-size:13px;padding:12px 0">No exercise data recorded</div>`;
   }
 
+  if(s.metcon) html+=renderMetconSummary(s.metcon);
   if(s.notes) html+=`<div style="margin-top:14px;padding:10px 14px;background:var(--bg);border-left:2px solid var(--accent)"><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;font-family:'Oswald',sans-serif">Notes</div><div style="font-size:13px;color:var(--text2);line-height:1.6">${s.notes}</div></div>`;
 
   if(s.warmup) html+=`<div style="margin-top:10px;padding:10px 14px;background:var(--bg);border-left:2px solid var(--orange)"><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;font-family:'Oswald',sans-serif">Warm-up</div><div style="font-size:12px;color:var(--text2)">${s.warmup}</div></div>`;
@@ -4554,6 +4664,50 @@ if(!localStorage.getItem('pthub_alex_v1')){
     localStorage.setItem('pthub_sessions',JSON.stringify(deduped));
     localStorage.setItem('pthub_alex_v1','1');
   }catch(e){console.error('Alexandra migration:',e);}
+}
+// ── ALEXANDRA G — Phase 2 migration ──
+if(!localStorage.getItem('pthub_alex_v2')){
+  try{
+    const prgs=JSON.parse(localStorage.getItem('pthub_programs')||'[]');
+    const cl=JSON.parse(localStorage.getItem('pthub_clients')||'[]');
+    const ai=cl.findIndex(c=>c.name==='Alexandra G'||c.id==='alexandra');
+    const alexId=ai>=0?cl[ai].id:'alexandra';
+
+    // Update phase
+    if(ai>=0){
+      cl[ai].phase='Phase 2 — FBW Strength + Metcon';
+      localStorage.setItem('pthub_clients',JSON.stringify(cl));
+    }
+
+    const progId2='prog_alex_p2';
+    if(!prgs.find(p=>p.id===progId2)){
+      prgs.push({
+        id:progId2,clientId:alexId,
+        name:'Alexandra — Phase 2 FBW + Metcon',
+        phase:'Strength',status:'Active',
+        start:'2026-03-18',end:'2026-06-01',
+        goal:'Progress from machines to free weights. Leg press stays, add RDL + DB work. Metcon finisher each session.',
+        weeks:[
+          {name:'FBW A',days:[{name:'FBW A',exercises:[
+            {name:'Leg Press',sets:'3',reps:'8-10',load:'100-110kg',notes:'Hammer Strength, feet high, partial ROM, pain-free, 90s rest'},
+            {name:'Romanian Deadlift',sets:'3',reps:'10',load:'Start 20kg DB',notes:'Hinge focus, 2s down, neutral spine, 90s rest'},
+            {name:'DB Bench Press',sets:'3',reps:'10-12',load:'Start 8kg DB',notes:'Full range, 2-1-2 tempo, 75s rest'},
+            {name:'Seated Row Machine',sets:'3',reps:'10',load:'35-40kg',notes:'1s pause at chest, 75s rest'},
+            {name:'Lat Pulldown',sets:'3',reps:'12',load:'30-35kg',notes:'Full stretch at top, 60s rest'},
+          ]}]},
+          {name:'FBW B',days:[{name:'FBW B',exercises:[
+            {name:'Leg Press',sets:'3',reps:'8-10',load:'100-110kg',notes:'Same as FBW A'},
+            {name:'DB RDL (Single Leg)',sets:'3',reps:'8',load:'Start 8kg DB',notes:'Single leg variation, hold bench, 90s rest'},
+            {name:'DB Shoulder Press',sets:'3',reps:'10-12',load:'Start 6-8kg DB',notes:'Seated, 2-1-2 tempo, 75s rest'},
+            {name:'Chest Press Machine',sets:'3',reps:'10',load:'16-21kg',notes:'Controlled, 75s rest'},
+            {name:'DB Row',sets:'3',reps:'12',load:'Start 8-10kg',notes:'Chest-supported, 1s pause, 60s rest'},
+          ]}]},
+        ]
+      });
+      localStorage.setItem('pthub_programs',JSON.stringify(prgs));
+    }
+    localStorage.setItem('pthub_alex_v2','1');
+  }catch(e){console.error('Alexandra p2:',e);}
 }
 initTheme();initData();
 // ── HILDE J — full data migration ──
