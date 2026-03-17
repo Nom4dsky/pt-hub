@@ -495,7 +495,7 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;}
       <div class="log-bar">
         <div class="log-field"><div class="log-lbl">Client</div><select class="log-sel" id="logClient" style="min-width:150px" onchange="updLogHdr()"><option value="">Select...</option></select></div>
         <div class="log-field"><div class="log-lbl">Type</div><select class="log-sel" id="logType"><option>Strength</option><option>Hypertrophy</option><option>Conditioning</option><option>Mobility</option><option>Deload</option><option>Mixed</option></select></div>
-        <div class="log-field"><div class="log-lbl">RPE</div><select class="log-sel" id="logRPE"><option value="">—</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></div>
+        <div class="log-field"><div class="log-lbl">Duration (min)</div><input type="number" class="log-sel" id="logDuration" placeholder="60" min="1" max="300" style="width:80px"/></div><div class="log-field"><div class="log-lbl">RPE</div><select class="log-sel" id="logRPE"><option value="">—</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></div>
         <div id="logCInfo" style="display:none;flex-direction:column;gap:3px;margin-left:auto"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;font-weight:600">Phase</div><div style="font-size:12px;font-weight:500" id="logCPhase">—</div></div>
       </div>
       <div id="progLoader" style="display:none" class="card mb12">
@@ -2107,10 +2107,26 @@ function renderCD(id){
       <div class="detail-acts"><button class="btn btn-accent btn-sm" onclick="nav('log','${id}')">+ Session</button><button class="btn btn-ghost btn-sm" onclick="openCI('${id}')">+ Check-in</button><button class="btn btn-ghost btn-sm" onclick="openNote('${id}')">+ Note</button><button class="btn btn-ghost btn-sm" onclick="editC('${id}')">Edit</button><button class="btn btn-ghost btn-sm" onclick="expCSV('${id}')">↓ CSV</button></div>
     </div>
     <div class="kpi-row mb16">
-      <div class="kpi"><div class="kpi-label">Total sessions</div><div class="kpi-value">${cSes.length}</div></div>
-      <div class="kpi"><div class="kpi-label">Last session</div><div class="kpi-value" style="font-size:16px;padding-top:4px">${c.lastSession||cSes[0]?.date?fd(c.lastSession||cSes[0]?.date):'—'}</div></div>
-      <div class="kpi"><div class="kpi-label">Started</div><div class="kpi-value" style="font-size:16px;padding-top:4px">${c.start?fd(c.start):'—'}</div></div>
-      <div class="kpi"><div class="kpi-label">Check-ins</div><div class="kpi-value">${cCIs.length}</div></div>
+      <div class="kpi">
+        <div class="kpi-label">Sessions</div>
+        <div class="kpi-value">${cSes.length}</div>
+        <div class="kpi-sub">${cSes[0]?.date?'Last: '+fd(cSes[0].date):'No sessions yet'}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Goal</div>
+        <div class="kpi-value" style="font-size:13px;line-height:1.3;padding-top:6px;font-weight:700">${(c.goals||'—').split(',')[0].trim()}</div>
+        <div class="kpi-sub">${(c.goals||'').split(',')[1]?.trim()||'&nbsp;'}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Weight</div>
+        <div class="kpi-value">${(()=>{const ws=cCIs.filter(x=>x.weight).sort((a,b)=>b.date.localeCompare(a.date));if(!ws.length)return'—';const latest=ws[0].weight;if(ws.length<2)return latest+'<span style="font-size:12px;font-weight:400">kg</span>';const diff=(latest-ws[1].weight).toFixed(1);const arr=diff>0?'↑':diff<0?'↓':'→';return latest+'<span style="font-size:12px;font-weight:400">kg</span>';})()}</div>
+        <div class="kpi-sub">${(()=>{const ws=cCIs.filter(x=>x.weight).sort((a,b)=>b.date.localeCompare(a.date));if(ws.length<2)return ws.length?'1 check-in':'No data';const diff=(ws[0].weight-ws[1].weight).toFixed(1);return(diff>0?'↑ +':diff<0?'↓ ':'→ ')+Math.abs(diff)+'kg vs prev';})()}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">On program</div>
+        <div class="kpi-value" style="font-size:13px;line-height:1.3;padding-top:6px;font-weight:700">${(()=>{const prgs=DB.get('programs')||[];const ap=prgs.find(p=>p.clientId===c.id&&p.status==='Active');return ap?ap.name.replace(/^[^—–-]*[—–-]\s*/,'').slice(0,22):'No program';})()}</div>
+        <div class="kpi-sub">${c.phase||'&nbsp;'}</div>
+      </div>
     </div>
     <div class="main-notes-wrap mb16">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
@@ -5276,7 +5292,7 @@ function regenAvatar(clientId){
       <div class="log-bar">
         <div class="log-field"><div class="log-lbl">Client</div><select class="log-sel" id="logClient" style="min-width:150px" onchange="updLogHdr()"><option value="">Select...</option></select></div>
         <div class="log-field"><div class="log-lbl">Type</div><select class="log-sel" id="logType"><option>Strength</option><option>Hypertrophy</option><option>Conditioning</option><option>Mobility</option><option>Deload</option><option>Mixed</option></select></div>
-        <div class="log-field"><div class="log-lbl">RPE</div><select class="log-sel" id="logRPE"><option value="">—</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></div>
+        <div class="log-field"><div class="log-lbl">Duration (min)</div><input type="number" class="log-sel" id="logDuration" placeholder="60" min="1" max="300" style="width:80px"/></div><div class="log-field"><div class="log-lbl">RPE</div><select class="log-sel" id="logRPE"><option value="">—</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></div>
         <div id="logCInfo" style="display:none;flex-direction:column;gap:3px;margin-left:auto"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;font-weight:600">Phase</div><div style="font-size:12px;font-weight:500" id="logCPhase">—</div></div>
       </div>
       <div id="progLoader" style="display:none" class="card mb12">
@@ -7495,10 +7511,26 @@ function renderCD(id){
       <div class="detail-acts"><button class="btn btn-accent btn-sm" onclick="nav('log','${id}')">+ Session</button><button class="btn btn-ghost btn-sm" onclick="openCI('${id}')">+ Check-in</button><button class="btn btn-ghost btn-sm" onclick="openNote('${id}')">+ Note</button><button class="btn btn-ghost btn-sm" onclick="editC('${id}')">Edit</button><button class="btn btn-ghost btn-sm" onclick="expCSV('${id}')">↓ CSV</button></div>
     </div>
     <div class="kpi-row mb16">
-      <div class="kpi"><div class="kpi-label">Total sessions</div><div class="kpi-value">${cSes.length}</div></div>
-      <div class="kpi"><div class="kpi-label">Last session</div><div class="kpi-value" style="font-size:16px;padding-top:4px">${c.lastSession||cSes[0]?.date?fd(c.lastSession||cSes[0]?.date):'—'}</div></div>
-      <div class="kpi"><div class="kpi-label">Started</div><div class="kpi-value" style="font-size:16px;padding-top:4px">${c.start?fd(c.start):'—'}</div></div>
-      <div class="kpi"><div class="kpi-label">Check-ins</div><div class="kpi-value">${cCIs.length}</div></div>
+      <div class="kpi">
+        <div class="kpi-label">Sessions</div>
+        <div class="kpi-value">${cSes.length}</div>
+        <div class="kpi-sub">${cSes[0]?.date?'Last: '+fd(cSes[0].date):'No sessions yet'}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Goal</div>
+        <div class="kpi-value" style="font-size:13px;line-height:1.3;padding-top:6px;font-weight:700">${(c.goals||'—').split(',')[0].trim()}</div>
+        <div class="kpi-sub">${(c.goals||'').split(',')[1]?.trim()||'&nbsp;'}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Weight</div>
+        <div class="kpi-value">${(()=>{const ws=cCIs.filter(x=>x.weight).sort((a,b)=>b.date.localeCompare(a.date));if(!ws.length)return'—';const latest=ws[0].weight;if(ws.length<2)return latest+'<span style="font-size:12px;font-weight:400">kg</span>';const diff=(latest-ws[1].weight).toFixed(1);const arr=diff>0?'↑':diff<0?'↓':'→';return latest+'<span style="font-size:12px;font-weight:400">kg</span>';})()}</div>
+        <div class="kpi-sub">${(()=>{const ws=cCIs.filter(x=>x.weight).sort((a,b)=>b.date.localeCompare(a.date));if(ws.length<2)return ws.length?'1 check-in':'No data';const diff=(ws[0].weight-ws[1].weight).toFixed(1);return(diff>0?'↑ +':diff<0?'↓ ':'→ ')+Math.abs(diff)+'kg vs prev';})()}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">On program</div>
+        <div class="kpi-value" style="font-size:13px;line-height:1.3;padding-top:6px;font-weight:700">${(()=>{const prgs=DB.get('programs')||[];const ap=prgs.find(p=>p.clientId===c.id&&p.status==='Active');return ap?ap.name.replace(/^[^—–-]*[—–-]\s*/,'').slice(0,22):'No program';})()}</div>
+        <div class="kpi-sub">${c.phase||'&nbsp;'}</div>
+      </div>
     </div>
     <div class="main-notes-wrap mb16">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
@@ -10254,7 +10286,7 @@ function regenAvatar(clientId){
       <div class="log-bar">
         <div class="log-field"><div class="log-lbl">Client</div><select class="log-sel" id="logClient" style="min-width:150px" onchange="updLogHdr()"><option value="">Select...</option></select></div>
         <div class="log-field"><div class="log-lbl">Type</div><select class="log-sel" id="logType"><option>Strength</option><option>Hypertrophy</option><option>Conditioning</option><option>Mobility</option><option>Deload</option><option>Mixed</option></select></div>
-        <div class="log-field"><div class="log-lbl">RPE</div><select class="log-sel" id="logRPE"><option value="">—</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></div>
+        <div class="log-field"><div class="log-lbl">Duration (min)</div><input type="number" class="log-sel" id="logDuration" placeholder="60" min="1" max="300" style="width:80px"/></div><div class="log-field"><div class="log-lbl">RPE</div><select class="log-sel" id="logRPE"><option value="">—</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></div>
         <div id="logCInfo" style="display:none;flex-direction:column;gap:3px;margin-left:auto"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;font-weight:600">Phase</div><div style="font-size:12px;font-weight:500" id="logCPhase">—</div></div>
       </div>
       <div id="progLoader" style="display:none" class="card mb12">
