@@ -3790,6 +3790,20 @@ async function fullSync(){
       if(idx>=0) localSes[idx]={...localSes[idx],...data};
       else localSes.push({id:'ses_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),...data});
     });
+    // Deduplicate: if same clientId+date exists, keep the one with notionPageId
+    const sesMap = new Map();
+    localSes.forEach(s=>{
+      const key = (s.clientId||s.clientName)+'|'+s.date;
+      const existing = sesMap.get(key);
+      if(!existing) { sesMap.set(key,s); return; }
+      // Keep whichever has notionPageId, or the one with more data
+      if(s.notionPageId && !existing.notionPageId) sesMap.set(key,s);
+      else if(s.notionPageId && existing.notionPageId){
+        // Both have notionPageId — merge, keep exerciseData from local
+        sesMap.set(key,{...s, exerciseData: existing.exerciseData||s.exerciseData||[]});
+      }
+    });
+    localSes=[...sesMap.values()];
     DB.set('sessions', localSes);
     syncLog(`✓ Sessions: ${localSes.length} total`,'ok');
 
