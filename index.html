@@ -4467,6 +4467,94 @@ if(!localStorage.getItem('pthub_maxime_v2')){
     localStorage.setItem('pthub_maxime_v2','1');
   }catch(e){console.error('Maxime migration:',e);}
 }
+// ── ALEXANDRA G — full data migration ──
+if(!localStorage.getItem('pthub_alex_v1')){
+  try{
+    const cl=JSON.parse(localStorage.getItem('pthub_clients')||'[]');
+    const ai=cl.findIndex(c=>c.name==='Alexandra G'||c.id==='alexandra');
+    const alexId=ai>=0?cl[ai].id:'alexandra';
+    if(ai>=0){
+      cl[ai]={...cl[ai],
+        name:'Alexandra G',gender:'f',type:'In-person',status:'Active',
+        goals:'Health & fitness',
+        phase:'Foundation Phase — Machine FBW',
+        start:'2026-02-11',
+        injuryZones:['Right knee','Left knee'],
+        injury:'Knee issues — partial ROM on leg press, pain-free depth always priority',
+        mainNotes:'Foundation phase, machine-based FBW. Knee issues — feet high on leg press, pain-free depth only. Very good feeling reported from W3 onwards. Key progression: Leg Press 53→101kg, Leg Curl 26→38kg, Shoulder Press 4.5→19kg, Lat Pulldown 27.5→30kg. 5 sessions Feb-Mar 2026. Program has A/B/C/D/E blocks plus warm-up and conditioning bike intervals.',
+        nextAssessment:'2026-04-15',
+        color:'#a855f7'
+      };
+      localStorage.setItem('pthub_clients',JSON.stringify(cl));
+    }
+
+    const prgs=JSON.parse(localStorage.getItem('pthub_programs')||'[]');
+    const progId='prog_alex_fbw';
+    if(!prgs.find(p=>p.id===progId)){
+      prgs.push({
+        id:progId,clientId:alexId,
+        name:'Alexandra — Foundation FBW',
+        phase:'Strength',status:'Active',
+        start:'2026-02-11',end:'2026-05-01',
+        goal:'Machine-based full body strength. Knee rehab — partial ROM. Leg press, leg curl, shoulder press, chest press, row, lat pulldown.',
+        weeks:[{name:'Current',days:[{name:'FBW',exercises:[
+          {name:'Leg Press',sets:'3',reps:'10-12',load:'101kg',notes:'Hammer Strength, feet high, partial ROM, pain-free depth, 90s rest'},
+          {name:'Leg Curl',sets:'3',reps:'12',load:'38kg',notes:'Knee support focus, 75s rest'},
+          {name:'Shoulder Press Machine',sets:'3',reps:'10-12',load:'19kg',notes:'Hammer Strength, 60-75s rest'},
+          {name:'Chest Press Machine',sets:'3',reps:'6-8',load:'16-21kg',notes:'Hammer Strength, 90s rest'},
+          {name:'Seated Row Machine',sets:'3',reps:'10',load:'35kg',notes:'1s pause at chest, 60-75s'},
+          {name:'Lat Pulldown',sets:'3',reps:'12',load:'30kg',notes:'RPE 7-8'},
+        ]}]}]
+      });
+      localStorage.setItem('pthub_programs',JSON.stringify(prgs));
+    }
+
+    const ses=JSON.parse(localStorage.getItem('pthub_sessions')||'[]');
+    const alexSessions=[
+      {id:'ses_ag1',clientId:alexId,clientName:'Alexandra G',date:'2026-02-11',type:'Strength',duration:60,rpe:6,exercises:'Leg Press, Leg Curl, Chest Press, Seated Row, Bike Intervals',notes:'W1P1 — Foundation. First session.',exerciseData:[
+        {name:'Leg Press',sets:[{kg:'mod',reps:'10'},{kg:'mod',reps:'10'},{kg:'mod',reps:'10'}]},
+        {name:'Leg Curl',sets:[{kg:'mod',reps:'12'},{kg:'mod',reps:'12'},{kg:'mod',reps:'12'}]},
+        {name:'Chest Press Machine',sets:[{kg:'mod',reps:'10'},{kg:'mod',reps:'10'},{kg:'mod',reps:'10'}]},
+        {name:'Seated Row Machine',sets:[{kg:'mod',reps:'10'},{kg:'mod',reps:'10'},{kg:'mod',reps:'10'}]},
+      ]},
+      {id:'ses_ag2',clientId:alexId,clientName:'Alexandra G',date:'2026-02-18',type:'Strength',duration:60,rpe:6,exercises:'Leg Press, Leg Curl, Shoulder Press Machine, Chest Press Machine, Seated Row, Lat Pulldown',notes:'W2P1 — Foundation.',exerciseData:[
+        {name:'Leg Press',sets:[{kg:'53',reps:'10'},{kg:'63',reps:'10'},{kg:'73',reps:'10'}]},
+        {name:'Leg Curl',sets:[{kg:'26',reps:'12'},{kg:'26',reps:'12'},{kg:'26',reps:'12'}]},
+        {name:'Shoulder Press Machine',sets:[{kg:'4.5',reps:'12'},{kg:'9',reps:'12'},{kg:'9',reps:'12'}]},
+        {name:'Chest Press Machine',sets:[{kg:'3.5',reps:'8'},{kg:'3.5',reps:'8'},{kg:'3.5',reps:'8'}]},
+        {name:'Seated Row Machine',sets:[{kg:'25',reps:'10'},{kg:'30',reps:'10'},{kg:'30',reps:'10'}]},
+        {name:'Lat Pulldown',sets:[{kg:'27.5',reps:'12'},{kg:'27.5',reps:'12'},{kg:'27.5',reps:'12'}]},
+      ]},
+      {id:'ses_ag3',clientId:alexId,clientName:'Alexandra G',date:'2026-02-27',type:'Strength',duration:60,rpe:6,exercises:'Leg Press, Leg Curl, Shoulder Press Machine, Chest Press Machine, Seated Row, Lat Pulldown',notes:'W3P1 — Feeling very good.',exerciseData:[
+        {name:'Leg Press',sets:[{kg:'61',reps:'10'},{kg:'77',reps:'10'},{kg:'85',reps:'10'}]},
+        {name:'Leg Curl',sets:[{kg:'26',reps:'12'},{kg:'33',reps:'12'},{kg:'33',reps:'12'}]},
+        {name:'Shoulder Press Machine',sets:[{kg:'10',reps:'12'},{kg:'10',reps:'12'},{kg:'10',reps:'12'}]},
+        {name:'Chest Press Machine',sets:[{kg:'5.7',reps:'8'},{kg:'5.7',reps:'8'},{kg:'5.7',reps:'8'}]},
+        {name:'Seated Row Machine',sets:[{kg:'27.5',reps:'10'},{kg:'35',reps:'10'},{kg:'35',reps:'10'}]},
+        {name:'Lat Pulldown',sets:[{kg:'30',reps:'12'},{kg:'30',reps:'12'},{kg:'30',reps:'12'}]},
+      ]},
+      {id:'ses_ag4',clientId:alexId,clientName:'Alexandra G',date:'2026-03-04',type:'Strength',duration:60,rpe:6,exercises:'Leg Press, Leg Curl, Shoulder Press Machine, Chest Press Machine, Seated Row, Lat Pulldown',notes:'W4P1 — Feeling very good. Leg press 93→101kg.',exerciseData:[
+        {name:'Leg Press',sets:[{kg:'93',reps:'10'},{kg:'101',reps:'10'},{kg:'101',reps:'10'}]},
+        {name:'Leg Curl',sets:[{kg:'35.5',reps:'12'},{kg:'35.5',reps:'12'},{kg:'35.5',reps:'12'}]},
+        {name:'Shoulder Press Machine',sets:[{kg:'19',reps:'12'},{kg:'19',reps:'12'},{kg:'19',reps:'12'}]},
+        {name:'Chest Press Machine',sets:[{kg:'16.4',reps:'8'},{kg:'16.4',reps:'8'},{kg:'16.4',reps:'8'}]},
+        {name:'Lat Pulldown',sets:[{kg:'30',reps:'12'},{kg:'30',reps:'12'},{kg:'30',reps:'12'}]},
+      ]},
+      {id:'ses_ag5',clientId:alexId,clientName:'Alexandra G',date:'2026-03-11',type:'Strength',duration:60,rpe:6,exercises:'Leg Press, Leg Curl, Shoulder Press Machine, Chest Press Machine, Seated Row, Lat Pulldown',notes:'W5P1 — Feeling very good. Leg press 3x100kg.',exerciseData:[
+        {name:'Leg Press',sets:[{kg:'100',reps:'12'},{kg:'100',reps:'12'},{kg:'100',reps:'12'}]},
+        {name:'Leg Curl',sets:[{kg:'38',reps:'12'},{kg:'38',reps:'12'},{kg:'38',reps:'12'}]},
+        {name:'Shoulder Press Machine',sets:[{kg:'19',reps:'12'},{kg:'19',reps:'12'},{kg:'19',reps:'12'}]},
+        {name:'Chest Press Machine',sets:[{kg:'16.4',reps:'8'},{kg:'21.4',reps:'8'},{kg:'21.4',reps:'8'}]},
+        {name:'Seated Row Machine',sets:[{kg:'',reps:'10'},{kg:'',reps:'10'},{kg:'',reps:'10'}]},
+        {name:'Lat Pulldown',sets:[{kg:'30',reps:'12'},{kg:'30',reps:'12'},{kg:'30',reps:'12'}]},
+      ]},
+    ];
+    alexSessions.forEach(s=>{if(!ses.find(x=>x.id===s.id))ses.push(s);});
+    const deduped=[...new Map(ses.map(s=>[s.id,s])).values()];
+    localStorage.setItem('pthub_sessions',JSON.stringify(deduped));
+    localStorage.setItem('pthub_alex_v1','1');
+  }catch(e){console.error('Alexandra migration:',e);}
+}
 initTheme();initData();
 // ── HILDE J — full data migration ──
 if(!localStorage.getItem('pthub_hilde_v2')){
