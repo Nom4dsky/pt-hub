@@ -312,9 +312,9 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;}
 /* ── MISC ── */
 .back-btn{display:inline-flex;align-items:center;gap:6px;color:var(--text3);font-size:9px;cursor:pointer;margin-bottom:16px;background:none;border:none;font-family:var(--font-display);transition:color .13s;padding:0;font-weight:700;text-transform:uppercase;letter-spacing:.16em;}
 .back-btn:hover{color:var(--accent);}
-.d-av{width:44px;height:44px;border-radius:50%;flex-shrink:0;overflow:hidden;cursor:pointer;transition:transform .15s;border:2px solid var(--border);}
+.d-av{width:40px;height:40px;border-radius:50%;flex-shrink:0;overflow:hidden;cursor:pointer;transition:transform .15s;}
 .d-av:hover{transform:scale(1.06);}
-.d-av canvas{display:block;width:100%;height:100%;background:transparent;}
+.d-av canvas{display:block;width:100%;height:100%;}
 .lp-av-canvas{image-rendering:pixelated;image-rendering:crisp-edges;display:block;}
 .detail-acts{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;}
 .detail-hero{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px;}
@@ -655,7 +655,7 @@ function renderClientList(){
       ? '<span class="badge b-amber" style="font-size:9px">Check</span>'
       : c.injury ? '<span style="font-size:15px">⚠</span>' : '';
     return`<div class="lp-item${isSelected?' active':''}" onclick="nav('clientDetail','${c.id}')">
-      <div class="lp-av" style="background:transparent;border-radius:50%;overflow:hidden;image-rendering:pixelated"><canvas class="lp-av-canvas" id="lp_av_${c.id}" width="64" height="64" style="width:32px;height:48px"></canvas></div>
+      <div class="lp-av" style="background:transparent;border-radius:50%;overflow:hidden;image-rendering:pixelated"><canvas class="lp-av-canvas" id="lp_av_${c.id}" width="64" height="64" style="width:34px;height:34px;border-radius:50%"></canvas></div>
       <div style="flex:1;min-width:0">
         <div class="lp-name">${c.name}</div>
         <div class="lp-sub">${c.phase||c.type||'—'}</div>
@@ -767,51 +767,25 @@ const _origFullSync=typeof fullSync!=='undefined'?fullSync:null;
 
 function generateAvatar(clientId, canvasEl){
   if(!canvasEl) return;
-  // Just draw the SVG icon onto the canvas via an image
-  // We use a deterministic gender based on client id
-  const clients = DB.get('clients')||[];
-  const c = clients.find(x=>x.id===clientId);
-  const gender = c?.gender || (clientId.charCodeAt(2)%2===0 ? 'f' : 'm');
-  const color = c?.color || '#888';
-  const ctx = canvasEl.getContext('2d');
-  const W = canvasEl.width||32, H = canvasEl.height||48;
+  const clients=DB.get('clients')||[];
+  const c=clients.find(x=>x.id===clientId);
+  if(!c)return;
+  const initials=getInitials(c.name);
+  const W=canvasEl.width||40, H=canvasEl.height||40;
+  const ctx=canvasEl.getContext('2d');
   ctx.clearRect(0,0,W,H);
-  // Background circle
-  ctx.fillStyle = color+'22';
-  ctx.fillRect(0,0,W,H);
-  // Draw person icon via path
-  ctx.fillStyle = color;
-  const s = Math.min(W,H);
-  const ox = (W-s)/2, oy = (H-s)/2;
-  ctx.save();
-  ctx.translate(ox, oy);
-  ctx.scale(s/24, s/24);
-  if(gender==='f'){
-    // Female silhouette
-    ctx.beginPath();
-    ctx.arc(12,5,4,0,Math.PI*2); ctx.fill(); // head
-    ctx.beginPath();
-    ctx.moveTo(7,22); ctx.lineTo(8,13); ctx.quadraticCurveTo(12,10,16,13); ctx.lineTo(17,22); ctx.closePath(); ctx.fill(); // dress/body
-    ctx.beginPath();
-    ctx.moveTo(8,14); ctx.lineTo(5,20); ctx.lineTo(7,21); ctx.lineTo(9,16); ctx.closePath(); ctx.fill(); // left arm
-    ctx.beginPath();
-    ctx.moveTo(16,14); ctx.lineTo(19,20); ctx.lineTo(17,21); ctx.lineTo(15,16); ctx.closePath(); ctx.fill(); // right arm
-  } else {
-    // Male silhouette
-    ctx.beginPath();
-    ctx.arc(12,5,4,0,Math.PI*2); ctx.fill(); // head
-    ctx.beginPath();
-    ctx.moveTo(7,22); ctx.lineTo(8,13); ctx.lineTo(16,13); ctx.lineTo(17,22); ctx.closePath(); ctx.fill(); // torso
-    ctx.beginPath();
-    ctx.moveTo(8,22); ctx.lineTo(8,18); ctx.lineTo(11,18); ctx.lineTo(11,22); ctx.closePath(); ctx.fill(); // left leg
-    ctx.beginPath();
-    ctx.moveTo(13,22); ctx.lineTo(13,18); ctx.lineTo(16,18); ctx.lineTo(16,22); ctx.closePath(); ctx.fill(); // right leg
-    ctx.beginPath();
-    ctx.moveTo(8,14); ctx.lineTo(5,19); ctx.lineTo(7,20); ctx.lineTo(9,15); ctx.closePath(); ctx.fill(); // left arm
-    ctx.beginPath();
-    ctx.moveTo(16,14); ctx.lineTo(19,19); ctx.lineTo(17,20); ctx.lineTo(15,15); ctx.closePath(); ctx.fill(); // right arm
-  }
-  ctx.restore();
+  // Dark circle bg
+  ctx.fillStyle='#252422';
+  ctx.beginPath();
+  ctx.arc(W/2,H/2,Math.min(W,H)/2,0,Math.PI*2);
+  ctx.fill();
+  // White initials
+  ctx.fillStyle='#FFFCF2';
+  ctx.font=`bold ${Math.round(Math.min(W,H)*0.38)}px 'Oswald',sans-serif`;
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.letterSpacing='0.05em';
+  ctx.fillText(initials,W/2,H/2+1);
 }
 
 
@@ -4161,6 +4135,160 @@ function ft(s){return`${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).to
 
 document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)closeM(o.id.replace('modal-',''));});});
 
+// ── HANNE K — full data migration ──
+if(!localStorage.getItem('pthub_hanne_v1')){
+  try{
+    const cl=JSON.parse(localStorage.getItem('pthub_clients')||'[]');
+    const hi=cl.findIndex(c=>c.name==='Hanne K'||c.id==='hanne');
+    const hanneId=hi>=0?cl[hi].id:'hanne';
+    if(hi>=0){
+      cl[hi]={...cl[hi],
+        name:'Hanne K',gender:'f',type:'In-person',status:'Active',
+        goals:'Health & fitness',
+        phase:'Strength Phase — HANNE FBW',
+        start:'2025-10-24',
+        injuryZones:['Right knee','Left knee'],
+        injury:'Right knee, Left knee — knee rehab, pain-free range priority',
+        mainNotes:'Started Oct 2025 with knee rehab focus. FBW + knee health protocol weeks 1–6 (Terminal Knee Extensions, Sled Pull backwards, Step-Downs, Leg Press shallow). Progressed to ME+RE phase Dec 2025 (Trap Bar DL ramp 32→47kg, RFESS, Copenhagen raises). Now on HANNE FBW Feb 2026 — Goblet Squat heels elevated, BB RDL, KB Swings, Ring Rows, Push-Ups. First back squat March 2026 (15kg bar). Great attitude, consistent, feels great in all sessions. Mini band + green band used throughout.',
+        nextAssessment:'2026-04-15',
+        color:'#22c55e'
+      };
+      localStorage.setItem('pthub_clients',JSON.stringify(cl));
+    }
+
+    // Current program
+    const prgs=JSON.parse(localStorage.getItem('pthub_programs')||'[]');
+    const progId='prog_hanne_fbw';
+    if(!prgs.find(p=>p.id===progId)){
+      prgs.push({
+        id:progId,clientId:hanneId,
+        name:'Hanne — FBW Strength Block',
+        phase:'Strength',status:'Active',
+        start:'2026-02-04',end:'2026-05-01',
+        goal:'Full body strength, knee rehab ongoing. Pain-free range priority. Goblet squats, RDL, KB swings, pulls, push-ups.',
+        weeks:[
+          {name:'Current',days:[{name:'HANNE FBW',exercises:[
+            {name:'KB Swing',sets:'4',reps:'10',load:'12kg',notes:'Tension > load, 75-90s rest'},
+            {name:'Back Squat',sets:'3',reps:'8',load:'15kg bar',notes:'Pain-free range only, 90s rest'},
+            {name:'Copenhagen Plank',sets:'3',reps:'20-30s',load:'BW',notes:'Bent knee, pelvis stacked'},
+            {name:'Ring Pull Up',sets:'3',reps:'8-12',load:'BW',notes:'No trunk rotation, 60-90s'},
+            {name:'Push Up',sets:'3',reps:'8-10',load:'BW',notes:'Elevated or floor with band support'},
+          ]}]}
+        ]
+      });
+      localStorage.setItem('pthub_programs',JSON.stringify(prgs));
+    }
+
+    // All 13 sessions
+    const ses=JSON.parse(localStorage.getItem('pthub_sessions')||'[]');
+    const hanneSessions=[
+      {id:'ses_hk1',clientId:hanneId,clientName:'Hanne K',date:'2025-10-24',type:'Strength',duration:55,rpe:null,exercises:'Terminal Knee Extension, Step-Downs, Leg Press, Romanian Deadlift, Supported DB Row, Incline Chest Press, Push-Ups, Captains Chair Knee Raises',notes:'Session 1 — knee rehab. Pain while stepping during step-downs.',exerciseData:[{name:'Leg Press',sets:[{kg:'34',reps:'12'},{kg:'34',reps:'12'}]},{name:'Romanian Deadlift',sets:[{kg:'30',reps:'10'},{kg:'30',reps:'10'},{kg:'30',reps:'10'}]},{name:'Supported DB Row',sets:[{kg:'12',reps:'20'},{kg:'16',reps:'20'}]},{name:'Incline DB Bench Press',sets:[{kg:'8',reps:'10'},{kg:'12',reps:'10'}]}]},
+      {id:'ses_hk2',clientId:hanneId,clientName:'Hanne K',date:'2025-10-30',type:'Strength',duration:55,rpe:null,exercises:'TKE, Sled Pull, Leg Press, Supported DB Row, Incline Chest Press, Back Extensions, Captains Chair Knee Raises',notes:'Mini band, green band. 45kg leg press — sensation in right knee.',exerciseData:[{name:'Leg Press',sets:[{kg:'37',reps:'12'},{kg:'45',reps:'12'},{kg:'37',reps:'12'}]},{name:'Supported DB Row',sets:[{kg:'19',reps:'20'},{kg:'19',reps:'20'},{kg:'19',reps:'20'}]},{name:'Incline DB Bench Press',sets:[{kg:'14',reps:'10'},{kg:'14',reps:'10'},{kg:'14',reps:'10'}]},{name:'Sled Pull',sets:[{kg:'',reps:'40m'},{kg:'',reps:'40m'},{kg:'',reps:'40m'},{kg:'',reps:'40m'}]}]},
+      {id:'ses_hk3',clientId:hanneId,clientName:'Hanne K',date:'2025-11-06',type:'Strength',duration:55,rpe:null,exercises:'TKE, Sled Pull 75kg, Leg Press, Split Squat ISO Hold, TRX Row, Push-Ups, Captains Chair Knee Raises',notes:'Mini band. Split Squat Iso Hold very challenging. All feels good.',exerciseData:[{name:'Leg Press',sets:[{kg:'0',reps:'12'},{kg:'20',reps:'12'},{kg:'30',reps:'12'}]},{name:'Split Squat',sets:[{kg:'BW',reps:'30s'},{kg:'BW',reps:'30s'},{kg:'BW',reps:'30s'}]},{name:'TRX Row',sets:[{kg:'BW',reps:'12'},{kg:'BW',reps:'12'},{kg:'BW',reps:'12'}]},{name:'Sled Pull',sets:[{kg:'75',reps:'50m'},{kg:'75',reps:'50m'}]}]},
+      {id:'ses_hk4',clientId:hanneId,clientName:'Hanne K',date:'2025-11-13',type:'Strength',duration:55,rpe:null,exercises:'TKE, Sled Pull 90kg, Leg Press, Face Pull, Captains Chair Knee Raises',notes:'Mini band. All feels good.',exerciseData:[{name:'Sled Pull',sets:[{kg:'90',reps:'50m'},{kg:'90',reps:'50m'}]},{name:'Face Pull',sets:[{kg:'7.5',reps:'15'},{kg:'7.5',reps:'15'},{kg:'7.5',reps:'15'}]}]},
+      {id:'ses_hk5',clientId:hanneId,clientName:'Hanne K',date:'2025-11-26',type:'Strength',duration:55,rpe:null,exercises:'Sled Pull 90kg, Hip Adduction, Face Pull, Captains Chair Knee Raises',notes:'Mini band.',exerciseData:[{name:'Sled Pull',sets:[{kg:'90',reps:'50m'},{kg:'90',reps:'50m'}]},{name:'Face Pull',sets:[{kg:'7.5',reps:'15'},{kg:'7.5',reps:'15'},{kg:'7.5',reps:'15'}]}]},
+      {id:'ses_hk6',clientId:hanneId,clientName:'Hanne K',date:'2025-12-04',type:'Strength',duration:55,rpe:null,exercises:'Sled Pull 90kg, Hip Adduction, Face Pull, Captains Chair Knee Raises',notes:'Mini band.',exerciseData:[{name:'Sled Pull',sets:[{kg:'90',reps:'50m'},{kg:'90',reps:'50m'}]},{name:'Face Pull',sets:[{kg:'7.5',reps:'15'},{kg:'7.5',reps:'15'},{kg:'7.5',reps:'15'}]}]},
+      {id:'ses_hk7',clientId:hanneId,clientName:'Hanne K',date:'2025-12-18',type:'Strength',duration:60,rpe:null,exercises:'Trap Bar DL, RFESS, Copenhagen Raises, 1-Arm Cable Row, Pallof Press, Face Pull',notes:'ME+RE 1. Trap bar ramp 32→47kg.',exerciseData:[{name:'Trap Bar Deadlift',sets:[{kg:'32',reps:'5'},{kg:'42',reps:'5'},{kg:'47',reps:'5'},{kg:'47',reps:'5'},{kg:'47',reps:'5'}]},{name:'Split Squat',sets:[{kg:'BW',reps:'6'},{kg:'BW',reps:'6'},{kg:'BW',reps:'6'}]}]},
+      {id:'ses_hk8',clientId:hanneId,clientName:'Hanne K',date:'2026-01-08',type:'Strength',duration:60,rpe:null,exercises:'Trap Bar DL, RFESS +4kg, Copenhagen Raises 10kg, 1-Arm Cable Row, Cable Chest Press',notes:'ME+RE 2. Trap bar 42kg×4 sets.',exerciseData:[{name:'Trap Bar Deadlift',sets:[{kg:'32',reps:'5'},{kg:'42',reps:'5'},{kg:'42',reps:'5'},{kg:'42',reps:'5'},{kg:'42',reps:'5'}]},{name:'Copenhagen Plank',sets:[{kg:'10',reps:'15'},{kg:'10',reps:'15'},{kg:'10',reps:'15'}]},{name:'Single Arm Row',sets:[{kg:'8.75',reps:'10'},{kg:'11.25',reps:'10'},{kg:'11.25',reps:'10'}]}]},
+      {id:'ses_hk9',clientId:hanneId,clientName:'Hanne K',date:'2026-01-29',type:'Strength',duration:60,rpe:null,exercises:'Trap Bar DL, RFESS +4kg, Copenhagen Raises, 1-Arm Cable Row, Cable Chest Press, Leg Curl, Hip Adduction, Hip Abduction',notes:'ME+RE 3. Leg curl 4×12 44kg, Hip add 3×12 52.5kg.',exerciseData:[{name:'Trap Bar Deadlift',sets:[{kg:'32',reps:'5'},{kg:'42',reps:'5'},{kg:'42',reps:'5'},{kg:'42',reps:'5'},{kg:'42',reps:'5'}]},{name:'Leg Curl',sets:[{kg:'44',reps:'12'},{kg:'44',reps:'12'},{kg:'44',reps:'12'},{kg:'44',reps:'12'}]}]},
+      {id:'ses_hk10',clientId:hanneId,clientName:'Hanne K',date:'2026-02-04',type:'Strength',duration:60,rpe:null,exercises:'Goblet Squat heels elevated, BB RDL, Copenhagen Plank, Lat Pulldown, Push-Ups',notes:'HANNE FBW. Goblet 8→10kg, RDL 25kg.',exerciseData:[{name:'Goblet Squat',sets:[{kg:'8',reps:'8'},{kg:'10',reps:'8'},{kg:'10',reps:'8'},{kg:'10',reps:'8'}]},{name:'BB RDL',sets:[{kg:'25',reps:'8'},{kg:'25',reps:'8'},{kg:'25',reps:'8'}]},{name:'Lat Pulldown',sets:[{kg:'25',reps:'12'},{kg:'25',reps:'12'},{kg:'25',reps:'12'}]}]},
+      {id:'ses_hk11',clientId:hanneId,clientName:'Hanne K',date:'2026-02-12',type:'Strength',duration:60,rpe:null,exercises:'Goblet Squat heels elevated, BB RDL, Copenhagen Plank, Lat Pulldown, Push-Ups',notes:'Goblet 12kg, RDL 30kg, Lat pulldown 30kg.',exerciseData:[{name:'Goblet Squat',sets:[{kg:'12',reps:'8'},{kg:'12',reps:'8'},{kg:'12',reps:'8'},{kg:'12',reps:'8'}]},{name:'BB RDL',sets:[{kg:'30',reps:'8'},{kg:'30',reps:'8'},{kg:'30',reps:'8'}]},{name:'Lat Pulldown',sets:[{kg:'30',reps:'12'},{kg:'30',reps:'12'},{kg:'30',reps:'12'}]}]},
+      {id:'ses_hk12',clientId:hanneId,clientName:'Hanne K',date:'2026-02-26',type:'Strength',duration:60,rpe:null,exercises:'Goblet Squat heels elevated, KB Swings 12kg, Copenhagen Plank, Ring Row, Push-Ups',notes:'KB swings introduced.',exerciseData:[{name:'Goblet Squat',sets:[{kg:'12',reps:'8'},{kg:'12',reps:'8'},{kg:'12',reps:'8'},{kg:'12',reps:'8'}]},{name:'KB Swing',sets:[{kg:'12',reps:'10'},{kg:'12',reps:'10'},{kg:'12',reps:'10'},{kg:'12',reps:'10'}]}]},
+      {id:'ses_hk13',clientId:hanneId,clientName:'Hanne K',date:'2026-03-12',type:'Strength',duration:60,rpe:null,exercises:'KB Swings 12kg, Back Squat 15kg, Copenhagen Plank, Ring Row, Push-Ups',notes:'First back squat! 15kg bar, pain-free.',exerciseData:[{name:'KB Swing',sets:[{kg:'12',reps:'10'},{kg:'12',reps:'10'},{kg:'12',reps:'10'},{kg:'12',reps:'10'}]},{name:'Back Squat',sets:[{kg:'15',reps:'8'},{kg:'15',reps:'8'},{kg:'15',reps:'8'}]}]},
+    ];
+    hanneSessions.forEach(s=>{if(!ses.find(x=>x.id===s.id))ses.push(s);});
+    localStorage.setItem('pthub_sessions',JSON.stringify(ses));
+    localStorage.setItem('pthub_hanne_v1','1');
+  }catch(e){console.error('Hanne migration:',e);}
+}
+// ── MAXIME L — full data migration ──
+if(!localStorage.getItem('pthub_maxime_v1')){
+  try{
+    const cl=JSON.parse(localStorage.getItem('pthub_clients')||'[]');
+    const mi=cl.findIndex(c=>c.name==='Maxime L'||c.id==='maxime');
+    const maxId=mi>=0?cl[mi].id:'maxime';
+    if(mi>=0){
+      cl[mi]={...cl[mi],
+        name:'Maxime L',gender:'m',type:'Hybrid',status:'Active',
+        goals:'Strength,Health & fitness',
+        phase:'Phase 2 — Pull Strength Focus',
+        start:'2026-01-14',
+        injuryZones:['Upper back'],
+        injury:'Upper back — forward shoulder posture from sitting job, thoracic flexion',
+        mainNotes:'44yo male, ~94kg. Sitting job → thoracic flexion, forward shoulders. Lower body > upper body strength. Primary goals: get stronger (esp. upper body), improve posture, first strict pull-up long-term. 1x/week with PT, 1x/week solo same session, 2x/week cardio. Focus: horizontal & vertical pulling, scapular control, hip hinge, anti-flexion core. Phase 1 (Jan-Feb): Capacity/Technical Base — KB/Trap Bar deadlift progression 24→82kg, lat pulldown 35→40kg, building pull-up base. Phase 2 (from ~Feb 25): Med Ball Slams, Trap Bar heavier, Assisted Pull-Ups, DB Incline, Chest-Supported Row, DB Pullover, Cable Chop.',
+        nextAssessment:'2026-04-01',
+        color:'#3b82f6'
+      };
+      localStorage.setItem('pthub_clients',JSON.stringify(cl));
+    }
+
+    // Current program — Phase 2 (from screenshot)
+    const prgs=JSON.parse(localStorage.getItem('pthub_programs')||'[]');
+    const progId='prog_maxime_p2';
+    if(!prgs.find(p=>p.id===progId)){
+      prgs.push({
+        id:progId,clientId:maxId,
+        name:'Maxime — Phase 2 Pull Strength',
+        phase:'Strength',status:'Active',
+        start:'2026-02-25',end:'2026-05-01',
+        goal:'Upper body strength, pull-up progression, posture. Trap Bar DL heavy, Assisted Pull-Ups, DB Incline, Chest-Supported Row, Med Ball Slams.',
+        weeks:[
+          {name:'Day 1 (PT Session)',days:[{name:'PT Session',exercises:[
+            {name:'Med Ball Slam',sets:'3-4',reps:'5',load:'',notes:'Rest 60s'},
+            {name:'Trap Bar Deadlift',sets:'3',reps:'5',load:'',notes:'Rest 2-3 min'},
+            {name:'Assisted Pull Up',sets:'5',reps:'3-5',load:'',notes:'Rest 2-3 min'},
+            {name:'DB Incline Press',sets:'4',reps:'4-6',load:'',notes:'Rest 2-3 min'},
+            {name:'Chest Supported Row',sets:'4',reps:'6-8',load:'',notes:'Rest 2 min'},
+            {name:'DB Pullover',sets:'3',reps:'10-12',load:'',notes:'Rest 60s'},
+            {name:'Half-Kneeling Cable Chop',sets:'3',reps:'8',load:'',notes:'Per side, rest 60s'},
+          ]}]},
+          {name:'Day 2 (Running + Upper)',days:[{name:'Running + Upper Add-On',exercises:[
+            {name:'Assisted Pull Up',sets:'4',reps:'4-6',load:'',notes:'RIR 2'},
+            {name:'Seated Cable Row',sets:'3',reps:'8-10',load:'',notes:'RIR 2'},
+            {name:'DB Incline Press',sets:'3',reps:'6-8',load:'',notes:'RIR 2'},
+            {name:'Face Pull',sets:'2-3',reps:'12-15',load:'',notes:'RIR 1'},
+            {name:'Pallof Press',sets:'2-3',reps:'10',load:'',notes:'Per side, RIR 2'},
+          ]}]},
+          {name:'Day 3 (Solo Strength)',days:[{name:'Solo Strength + Finisher',exercises:[
+            {name:'Lat Pulldown',sets:'4',reps:'6-8',load:'',notes:'Neutral grip, RIR 2'},
+            {name:'Machine Chest Press',sets:'4',reps:'6-8',load:'',notes:'RIR 2'},
+            {name:'Seated Cable Row',sets:'3',reps:'8-10',load:'',notes:'RIR 2'},
+            {name:'DB Shoulder Press',sets:'3',reps:'8',load:'',notes:'RIR 2'},
+            {name:'Face Pull',sets:'3',reps:'12-15',load:'',notes:'RIR 1'},
+            {name:'Leg Press',sets:'2-3',reps:'10-12',load:'',notes:'RIR 2'},
+          ]}]},
+          {name:'Day 4 (Zone 2 Row)',days:[{name:'Zone 2 Row — Optional',exercises:[
+            {name:'Rowing Machine',sets:'1',reps:'20-50 min',load:'',notes:'Zone 2, talk test — speak in full sentences'},
+          ]}]},
+        ]
+      });
+      localStorage.setItem('pthub_programs',JSON.stringify(prgs));
+    }
+
+    // 17 sessions
+    const ses=JSON.parse(localStorage.getItem('pthub_sessions')||'[]');
+    const maxSessions=[
+      {id:'ses_mx1',clientId:maxId,clientName:'Maxime L',date:'2026-01-14',type:'Strength',duration:60,rpe:null,exercises:'KB Deadlift, Split Squat, Lat Pulldown, Half-Kneeling DB Press, Chest-Supported Row, Face Pull, Dead Bug',notes:'Phase 1 Session 1. Tired at end.',exerciseData:[{name:'KB Deadlift',sets:[{kg:'24',reps:'10'}]},{name:'Split Squat',sets:[{kg:'6',reps:'10'},{kg:'4',reps:'8'},{kg:'4',reps:'8'}]},{name:'Lat Pulldown',sets:[{kg:'35',reps:'12'},{kg:'35',reps:'12'},{kg:'35',reps:'12'}]},{name:'Face Pull',sets:[{kg:'5',reps:'15'},{kg:'5',reps:'15'},{kg:'5',reps:'15'}]}]},
+      {id:'ses_mx2',clientId:maxId,clientName:'Maxime L',date:'2026-01-17',type:'Strength',duration:60,rpe:null,exercises:'KB Deadlift, Split Squat, Half-Kneeling DB Press, Lat Pulldown, Face Pull, Chest-Supported Row',notes:'Solo. Tired at end. KB 24kg felt too easy.',exerciseData:[{name:'KB Deadlift',sets:[{kg:'24',reps:'10'},{kg:'24',reps:'10'},{kg:'24',reps:'10'}]},{name:'Split Squat',sets:[{kg:'7',reps:'10'},{kg:'7',reps:'10'},{kg:'7',reps:'10'}]},{name:'Lat Pulldown',sets:[{kg:'35',reps:'12'},{kg:'35',reps:'12'},{kg:'35',reps:'12'}]},{name:'Face Pull',sets:[{kg:'5',reps:'15'},{kg:'5',reps:'15'},{kg:'5',reps:'15'}]}]},
+      {id:'ses_mx3',clientId:maxId,clientName:'Maxime L',date:'2026-01-21',type:'Strength',duration:75,rpe:null,exercises:'KB Deadlift, Split Squat, Lat Pulldown, Incline DB Bench Press, Single Arm KB Row, Face Pull, Dead Bug',notes:'FBW coached. Tired at end.',exerciseData:[{name:'KB Deadlift',sets:[{kg:'32',reps:'8'}]},{name:'Split Squat',sets:[{kg:'8',reps:'8'}]},{name:'Lat Pulldown',sets:[{kg:'35',reps:'12'},{kg:'35',reps:'12'},{kg:'35',reps:'12'},{kg:'35',reps:'12'}]},{name:'Incline DB Bench Press',sets:[{kg:'8',reps:'8'},{kg:'8',reps:'8'},{kg:'8',reps:'8'}]},{name:'Face Pull',sets:[{kg:'7.5',reps:'15'},{kg:'7.5',reps:'15'},{kg:'7.5',reps:'15'}]}]},
+      {id:'ses_mx4',clientId:maxId,clientName:'Maxime L',date:'2026-01-25',type:'Strength',duration:60,rpe:null,exercises:'KB Deadlift, Split Squat, Lat Pulldown, Incline DB Bench Press, Single Arm KB Row, Face Pull, Dead Bug',notes:'Solo. Tired at end.',exerciseData:[{name:'KB Deadlift',sets:[{kg:'32',reps:'8'}]},{name:'Lat Pulldown',sets:[{kg:'35',reps:'12'},{kg:'35',reps:'12'},{kg:'35',reps:'12'},{kg:'35',reps:'12'}]},{name:'Incline DB Bench Press',sets:[{kg:'8',reps:'8'},{kg:'8',reps:'8'},{kg:'8',reps:'8'}]},{name:'Face Pull',sets:[{kg:'7.5',reps:'15'},{kg:'7.5',reps:'15'},{kg:'7.5',reps:'15'}]}]},
+      {id:'ses_mx5',clientId:maxId,clientName:'Maxime L',date:'2026-01-26',type:'Cardio',duration:54,rpe:null,exercises:'Row Erg 2302m, Run 5.46km',notes:'RowErg 13min @ 2:49/500m. Run 41min 7:31/km.',exerciseData:[{name:'Rowing Machine',sets:[{kg:'',reps:'2302m'}]},{name:'Treadmill',sets:[{kg:'',reps:'5.46km'}]}]},
+      {id:'ses_mx6',clientId:maxId,clientName:'Maxime L',date:'2026-01-28',type:'Strength',duration:60,rpe:null,exercises:'Trap Bar Deadlift, Goblet Squat, Lat Pulldown, Incline DB Bench Press, Face Pull, Active Hang',notes:'First Trap Bar session. 32→42kg.',exerciseData:[{name:'Trap Bar Deadlift',sets:[{kg:'32',reps:'8'},{kg:'42',reps:'8'},{kg:'42',reps:'8'},{kg:'42',reps:'8'}]},{name:'Goblet Squat',sets:[{kg:'8',reps:'12'},{kg:'8',reps:'8'},{kg:'8',reps:'8'}]},{name:'Lat Pulldown',sets:[{kg:'35',reps:'12'},{kg:'37.5',reps:'12'},{kg:'37.5',reps:'12'}]},{name:'Face Pull',sets:[{kg:'7.5',reps:'15'},{kg:'7.5',reps:'15'},{kg:'7.5',reps:'15'}]}]},
+      {id:'ses_mx7',clientId:maxId,clientName:'Maxime L',date:'2026-02-04',type:'Strength',duration:60,rpe:null,exercises:'Scap Pull-Ups, Trap Bar Deadlift, Goblet Squat, Lat Pulldown, Incline DB Bench Press, Chest Fly Machine, Face Pull',notes:'Coached. Good session. Chest felt at fly machine, incline mostly arms.',exerciseData:[{name:'Trap Bar Deadlift',sets:[{kg:'42',reps:'8'},{kg:'52',reps:'8'},{kg:'52',reps:'10'},{kg:'52',reps:'11'}]},{name:'Goblet Squat',sets:[{kg:'8',reps:'11'},{kg:'12',reps:'8'},{kg:'12',reps:'8'}]},{name:'Lat Pulldown',sets:[{kg:'35',reps:'12'},{kg:'40',reps:'12'},{kg:'35',reps:'8'},{kg:'35',reps:'8'}]},{name:'Incline DB Bench Press',sets:[{kg:'8',reps:'10'},{kg:'8',reps:'10'},{kg:'8',reps:'6'}]},{name:'Chest Fly Machine',sets:[{kg:'20',reps:'12'},{kg:'20',reps:'8'}]}]},
+      {id:'ses_mx8',clientId:maxId,clientName:'Maxime L',date:'2026-02-07',type:'Strength',duration:60,rpe:null,exercises:'Scap Pull-Ups, Trap Bar Deadlift, Goblet Squat, Lat Pulldown, Incline DB Bench Press, Chest Fly Machine, Face Pull',notes:'Solo. Same as coached session. Good.',exerciseData:[{name:'Trap Bar Deadlift',sets:[{kg:'42',reps:'8'},{kg:'52',reps:'8'},{kg:'52',reps:'10'},{kg:'52',reps:'11'}]},{name:'Goblet Squat',sets:[{kg:'8',reps:'11'},{kg:'12',reps:'8'},{kg:'12',reps:'8'}]},{name:'Lat Pulldown',sets:[{kg:'35',reps:'12'},{kg:'40',reps:'12'},{kg:'35',reps:'8'},{kg:'35',reps:'8'}]},{name:'Incline DB Bench Press',sets:[{kg:'8',reps:'10'},{kg:'8',reps:'10'},{kg:'8',reps:'6'}]}]},
+      {id:'ses_mx9',clientId:maxId,clientName:'Maxime L',date:'2026-02-11',type:'Strength',duration:60,rpe:null,exercises:'Scap Pull-Ups, Trap Bar Deadlift, Goblet Squat, Half-Kneeling KB Press, TRX Row, KB Halo',notes:'Good. Trap bar 52→67kg.',exerciseData:[{name:'Trap Bar Deadlift',sets:[{kg:'52',reps:'8'},{kg:'62',reps:'8'},{kg:'67',reps:'10'},{kg:'67',reps:'11'}]},{name:'Goblet Squat',sets:[{kg:'12',reps:'12'},{kg:'12',reps:'12'},{kg:'12',reps:'12'}]},{name:'TRX Row',sets:[{kg:'BW',reps:'12'},{kg:'BW',reps:'12'},{kg:'BW',reps:'12'},{kg:'BW',reps:'12'}]}]},
+      {id:'ses_mx10',clientId:maxId,clientName:'Maxime L',date:'2026-02-13',type:'Mixed',duration:60,rpe:null,exercises:'Run 5.49km, DB Press, Chest-Supported Row, TRX Face Pull',notes:'Run 38:42 avg 7:02/km. Switched to TRX face pull — no machine space.',exerciseData:[{name:'Treadmill',sets:[{kg:'',reps:'5.49km'}]},{name:'DB Bench Press',sets:[{kg:'10',reps:'10'},{kg:'10',reps:'10'},{kg:'10',reps:'8'}]},{name:'Chest Supported Row',sets:[{kg:'11',reps:'12'},{kg:'11',reps:'12'},{kg:'11',reps:'12'}]}]},
+      {id:'ses_mx11',clientId:maxId,clientName:'Maxime L',date:'2026-02-15',type:'Strength',duration:60,rpe:null,exercises:'Trap Bar Deadlift 62kg, Goblet Squat, Half-Kneeling KB Press, TRX Row, KB Halo',notes:'Solo. Belt tension focus. Harder than last time.',exerciseData:[{name:'Trap Bar Deadlift',sets:[{kg:'62',reps:'10'},{kg:'62',reps:'10'},{kg:'62',reps:'10'},{kg:'62',reps:'10'}]},{name:'Goblet Squat',sets:[{kg:'12',reps:'12'},{kg:'12',reps:'12'},{kg:'12',reps:'12'}]},{name:'TRX Row',sets:[{kg:'BW',reps:'12'},{kg:'BW',reps:'12'},{kg:'BW',reps:'12'},{kg:'BW',reps:'12'}]},{name:'KB Halo',sets:[{kg:'8',reps:'5'},{kg:'8',reps:'5'},{kg:'8',reps:'5'}]}]},
+      {id:'ses_mx12',clientId:maxId,clientName:'Maxime L',date:'2026-02-22',type:'Mixed',duration:40,rpe:null,exercises:'Treadmill Walk 40min, TRX Row, DB Press, Face Pull, Dead Hang, KB Halo',notes:'Incline walk 6km/h incline 5. Felt easy on all accessory work.',exerciseData:[{name:'Treadmill',sets:[{kg:'',reps:'40min incline 5'}]},{name:'TRX Row',sets:[{kg:'BW',reps:'12'},{kg:'BW',reps:'12'},{kg:'BW',reps:'12'}]},{name:'DB Bench Press',sets:[{kg:'8',reps:'8'},{kg:'8',reps:'8'},{kg:'8',reps:'8'}]},{name:'Face Pull',sets:[{kg:'7.5',reps:'12'},{kg:'7.5',reps:'12'}]}]},
+      {id:'ses_mx13',clientId:maxId,clientName:'Maxime L',date:'2026-02-25',type:'Strength',duration:null,rpe:null,exercises:'PT Coached strength session',notes:'Phase 2 begins. Maxime Strength w.PT',exerciseData:[]},
+      {id:'ses_mx14',clientId:maxId,clientName:'Maxime L',date:'2026-02-27',type:'Mixed',duration:null,rpe:null,exercises:'Run + Pull strength',notes:'Great feeling. Run + upper pull strength.',exerciseData:[]},
+      {id:'ses_mx15',clientId:maxId,clientName:'Maxime L',date:'2026-02-28',type:'Mixed',duration:60,rpe:null,exercises:'Treadmill Walk 30min, Assisted Pull-Ups, TRX Row, DB Press, Face Pull, Dead Hang',notes:'Assisted pull-ups 6×5/4/4, extra slow eccentrics. Grip fatigued on dead hang.',exerciseData:[{name:'Assisted Pull Up',sets:[{kg:'',reps:'5'},{kg:'',reps:'4'},{kg:'',reps:'4'}]},{name:'TRX Row',sets:[{kg:'BW',reps:'12'},{kg:'BW',reps:'12'},{kg:'BW',reps:'10'}]},{name:'DB Bench Press',sets:[{kg:'8',reps:'8'},{kg:'8',reps:'8'},{kg:'8',reps:'8'}]},{name:'Face Pull',sets:[{kg:'10',reps:'15'},{kg:'10',reps:'15'},{kg:'10',reps:'15'}]}]},
+    ];
+    maxSessions.forEach(s=>{if(!ses.find(x=>x.id===s.id))ses.push(s);});
+    localStorage.setItem('pthub_sessions',JSON.stringify(ses));
+    localStorage.setItem('pthub_maxime_v1','1');
+  }catch(e){console.error('Maxime migration:',e);}
+}
 initTheme();initData();
 // ── HILDE J — full data migration ──
 if(!localStorage.getItem('pthub_hilde_v1')){
