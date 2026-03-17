@@ -2284,15 +2284,12 @@ function buildBody(c){
     {keys:['lat','lats'],                   label:'Lats',     f:null,           b:{x:18,y:65}},
   ];
 
-  // Match from structured injuryZones array (new) or fallback to text parsing (legacy)
+  // Only use structured injuryZones array — never fall back to text parsing
   let matched = [];
   if(c.injuryZones && c.injuryZones.length){
-    // Use structured zone names to find body zone definitions
     matched = zones.filter(z => c.injuryZones.some(iz =>
       z.keys.some(k => iz.toLowerCase().includes(k)) || z.label.toLowerCase() === iz.toLowerCase()
     ));
-  } else if(t){
-    matched = zones.filter(z=>z.keys.some(k=>t.includes(k)));
   }
 
   const dot = coord => coord
@@ -7551,15 +7548,12 @@ function buildBody(c){
     {keys:['lat','lats'],                   label:'Lats',     f:null,           b:{x:18,y:65}},
   ];
 
-  // Match from structured injuryZones array (new) or fallback to text parsing (legacy)
+  // Only use structured injuryZones array — never fall back to text parsing
   let matched = [];
   if(c.injuryZones && c.injuryZones.length){
-    // Use structured zone names to find body zone definitions
     matched = zones.filter(z => c.injuryZones.some(iz =>
       z.keys.some(k => iz.toLowerCase().includes(k)) || z.label.toLowerCase() === iz.toLowerCase()
     ));
-  } else if(t){
-    matched = zones.filter(z=>z.keys.some(k=>t.includes(k)));
   }
 
   const dot = coord => coord
