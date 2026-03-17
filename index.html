@@ -57,7 +57,7 @@ html,body{height:100%;height:100dvh;background:var(--bg);color:var(--text);font-
 #right-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
 #right-topbar{height:var(--topbar);background:var(--white-pure);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0;}
 #right-content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:24px;padding-bottom:calc(24px + env(safe-area-inset-bottom));}
-@media(max-width:900px){
+@media(max-width:1100px){
   #left-panel{position:fixed;top:0;left:58px;bottom:0;z-index:15;transform:translateX(-100%);transition:transform .22s ease;box-shadow:var(--shadow-lg);}
   #left-panel.open{transform:translateX(0);}
   #overlay{display:none;position:fixed;inset:0;background:rgba(37,36,34,.5);z-index:14;}
@@ -101,7 +101,7 @@ html,body{height:100%;height:100dvh;background:var(--bg);color:var(--text);font-
 .rtb-sub{font-size:11px;color:var(--text3);font-family:var(--font-body);}
 .rtb-right{display:flex;align-items:center;gap:8px;margin-left:auto;}
 #menuBtn{display:none;}
-@media(max-width:900px){#menuBtn{display:flex;}}
+@media(max-width:1100px){#menuBtn{display:flex;}}
 
 /* ── BUTTONS ── */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;font-size:10px;font-family:var(--font-display);cursor:pointer;border:none;transition:all .15s;font-weight:700;letter-spacing:.14em;white-space:nowrap;text-transform:uppercase;position:relative;overflow:hidden;}
@@ -477,10 +477,11 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;}
       </div>
     </div>
     <div id="page-clients" class="page">
-      <div style="display:flex;align-items:center;justify-content:center;height:60vh;flex-direction:column;gap:12px;color:var(--text3)">
+      <div style="display:flex;align-items:center;justify-content:center;height:60vh;flex-direction:column;gap:14px;color:var(--text3)">
         <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".3"><circle cx="24" cy="16" r="8"/><path d="M8 40c0-8.8 7.2-16 16-16s16 7.2 16 16"/></svg>
-        <div style="font-size:14px">Select a client from the list</div>
-        <button class="btn btn-accent btn-sm" onclick="openM('addClient')">+ Add client</button>
+        <div style="font-family:'Oswald',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.1em">Select a client</div>
+        <button class="btn btn-dark btn-sm" onclick="toggleLeftPanel()">☰ Open client list</button>
+        <button class="btn btn-ghost btn-sm" onclick="openM('addClient')">+ Add client</button>
       </div>
     </div>
     <div id="page-clientDetail" class="page"><div id="cDetailContent"></div></div>
@@ -1455,7 +1456,7 @@ function nav(page,data){
   const _tbt=document.getElementById('rtbTitle');if(_tbt)_tbt.textContent=titles[page]||page;
   const _tbs=document.getElementById('rtbSub');if(_tbs)_tbs.textContent='';
   if(page==='dashboard')renderDash();
-  if(page==='clients'){curCid=null;renderClients();renderLeftPanel();}
+  if(page==='clients'){curCid=null;renderClients();renderLeftPanel();if(window.innerWidth<=1100){setTimeout(()=>{document.getElementById('left-panel').classList.add('open');document.getElementById('overlay').classList.add('show');},50);}}
   if(page==='log')initLog(data);
   if(page==='sessions'){renderSes();renderLeftPanel();}
   if(page==='programs'){renderProgs();renderLeftPanel();}
@@ -3727,11 +3728,20 @@ async function fullSync(){
     notionClients.forEach(p=>{
       const name = getTitle(p);
       if(!name) return;
-      const idx = localClients.findIndex(c=>c.notionPageId===p.id||c.name===name);
+      // Match by notionPageId first, then exact name, then fuzzy first name
+      const firstName = n => n.trim().split(/[\s,]/)[0].toLowerCase();
+      const lastName  = n => n.trim().split(/[\s,]/).pop().toLowerCase();
+      let idx = localClients.findIndex(c=>c.notionPageId===p.id);
+      if(idx<0) idx = localClients.findIndex(c=>c.name===name);
+      if(idx<0) idx = localClients.findIndex(c=>
+        firstName(c.name)===firstName(name) && lastName(c.name)===lastName(name)
+      );
+      if(idx<0) idx = localClients.findIndex(c=>
+        firstName(c.name)===firstName(name)
+      );
       const data = {
         notionPageId: p.id,
         notionId: p.id.replace(/-/g,''),
-        name,
         status: (()=>{
           const ns = p.properties?.Status?.status?.name||'Active';
           const map={'Active':'Active','Paused':'Paused','In progress':'Check','Done':'Archived'};
@@ -3745,16 +3755,31 @@ async function fullSync(){
         nextAssessment: getDate(p,'Next assessment')||'',
       };
       if(idx>=0){
+        // Keep local name — don't overwrite with Notion name
         localClients[idx]={...localClients[idx],...data};
       } else {
         localClients.push({
           id:'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
           sessions:0, lastSession:'',
           color:PALETTE[localClients.length%PALETTE.length],
-          ...data
+          name, ...data
         });
       }
     });
+    // Deduplicate clients by first name (keep the one with notionPageId)
+    const clientMap = new Map();
+    localClients.forEach(c=>{
+      const key = c.name.trim().split(/[\s,]/)[0].toLowerCase();
+      const existing = clientMap.get(key);
+      if(!existing) { clientMap.set(key,c); return; }
+      // Keep whichever has notionPageId, or more data
+      if(c.notionPageId && !existing.notionPageId) clientMap.set(key,c);
+      else if(c.notionPageId && existing.notionPageId) {
+        // Both have it — merge, keep local id and name
+        clientMap.set(key,{...c,...existing,notionPageId:c.notionPageId,notionId:c.notionId});
+      }
+    });
+    localClients=[...clientMap.values()];
     DB.set('clients', localClients);
     syncLog(`✓ Clients: ${localClients.length} total`,'ok');
 
@@ -4106,9 +4131,18 @@ function openSessionDetail(id){
     });
     html+=`</div>`;
   } else if(s.exercises){
-    html=`<div style="font-size:13px;color:var(--text2);line-height:1.7">${s.exercises}</div>`;
+    // Parse comma-separated exercise text into clean table rows
+    const exNames=s.exercises.split('|').join(',').split(',').map(e=>e.trim()).filter(Boolean);
+    html+=`<div style="display:flex;flex-direction:column;gap:10px">`;
+    exNames.forEach(name=>{
+      html+=`<div style="border:1px solid var(--border);padding:12px 14px">
+        <div style="font-size:13px;font-weight:700;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.04em">${name}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">No set data recorded</div>
+      </div>`;
+    });
+    html+=`</div>`;
   } else {
-    html=`<div style="color:var(--text3);font-size:13px">No exercise data recorded</div>`;
+    html=`<div style="color:var(--text3);font-size:13px;padding:12px 0">No exercise data recorded</div>`;
   }
 
   if(s.notes) html+=`<div style="margin-top:14px;padding:10px 14px;background:var(--bg);border-left:2px solid var(--accent)"><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;font-family:'Oswald',sans-serif">Notes</div><div style="font-size:13px;color:var(--text2);line-height:1.6">${s.notes}</div></div>`;
