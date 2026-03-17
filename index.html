@@ -1473,7 +1473,7 @@ function renderDash(){
   el('dashDate').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   el('kpiC').textContent=cl.filter(c=>c.status==='Active').length;
   el('kpiW').textContent=ses.filter(s=>s.date>=wAgo).length;
-  el('kpiTot').textContent=ses.length+cl.reduce((a,c)=>a+(c.sessions||0),0);
+  el('kpiTot').textContent=ses.length;
 
   // Check-ins due = clients with no session in 14+ days or status Check
   const checkDue = cl.filter(c=>c.status==='Active'&&(c.status==='Check'||(c.lastSession&&c.lastSession<new Date(Date.now()-14*86400000).toISOString().split('T')[0])||!c.lastSession)).length;
@@ -1507,7 +1507,7 @@ function renderDash(){
         ${c.injury?'<span style="font-size:14px" title="'+c.injury+'">⚠</span>':''}
       </div></td>
       <td style="color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px">${c.phase||'—'}</td>
-      <td style="font-family:'DM Mono',monospace;font-weight:600">${c.sessions||0}</td>
+      <td style="font-family:'DM Mono',monospace;font-weight:600">${(DB.get('sessions')||[]).filter(s=>s.clientId===c.id).length}</td>
       <td style="color:var(--text3);font-size:12px">${c.lastSession?fd(c.lastSession):'—'}</td>
       <td>${c.status==='Check'?'<span class="badge b-amber">Check-in needed</span>':c.status==='Paused'?'<span class="badge b-gray">Paused</span>':c.status==='Archived'?'<span class="badge b-gray">Archived</span>':''}</td>
     </tr>`).join('')}</tbody>
@@ -2088,7 +2088,7 @@ function renderCD(id){
       <div class="detail-acts"><button class="btn btn-accent btn-sm" onclick="nav('log','${id}')">+ Session</button><button class="btn btn-ghost btn-sm" onclick="openCI('${id}')">+ Check-in</button><button class="btn btn-ghost btn-sm" onclick="openNote('${id}')">+ Note</button><button class="btn btn-ghost btn-sm" onclick="editC('${id}')">Edit</button><button class="btn btn-ghost btn-sm" onclick="expCSV('${id}')">↓ CSV</button></div>
     </div>
     <div class="kpi-row mb16">
-      <div class="kpi"><div class="kpi-label">Total sessions</div><div class="kpi-value">${(c.sessions||0)+cSes.length}</div></div>
+      <div class="kpi"><div class="kpi-label">Total sessions</div><div class="kpi-value">${cSes.length}</div></div>
       <div class="kpi"><div class="kpi-label">Last session</div><div class="kpi-value" style="font-size:16px;padding-top:4px">${c.lastSession||cSes[0]?.date?fd(c.lastSession||cSes[0]?.date):'—'}</div></div>
       <div class="kpi"><div class="kpi-label">Started</div><div class="kpi-value" style="font-size:16px;padding-top:4px">${c.start?fd(c.start):'—'}</div></div>
       <div class="kpi"><div class="kpi-label">Check-ins</div><div class="kpi-value">${cCIs.length}</div></div>
@@ -6586,7 +6586,7 @@ function renderDash(){
   el('dashDate').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   el('kpiC').textContent=cl.filter(c=>c.status==='Active').length;
   el('kpiW').textContent=ses.filter(s=>s.date>=wAgo).length;
-  el('kpiTot').textContent=ses.length+cl.reduce((a,c)=>a+(c.sessions||0),0);
+  el('kpiTot').textContent=ses.length;
 
   // Check-ins due = clients with no session in 14+ days or status Check
   const checkDue = cl.filter(c=>c.status==='Active'&&(c.status==='Check'||(c.lastSession&&c.lastSession<new Date(Date.now()-14*86400000).toISOString().split('T')[0])||!c.lastSession)).length;
@@ -6620,7 +6620,7 @@ function renderDash(){
         ${c.injury?'<span style="font-size:14px" title="'+c.injury+'">⚠</span>':''}
       </div></td>
       <td style="color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px">${c.phase||'—'}</td>
-      <td style="font-family:'DM Mono',monospace;font-weight:600">${c.sessions||0}</td>
+      <td style="font-family:'DM Mono',monospace;font-weight:600">${(DB.get('sessions')||[]).filter(s=>s.clientId===c.id).length}</td>
       <td style="color:var(--text3);font-size:12px">${c.lastSession?fd(c.lastSession):'—'}</td>
       <td>${c.status==='Check'?'<span class="badge b-amber">Check-in needed</span>':c.status==='Paused'?'<span class="badge b-gray">Paused</span>':c.status==='Archived'?'<span class="badge b-gray">Archived</span>':''}</td>
     </tr>`).join('')}</tbody>
@@ -7201,7 +7201,7 @@ function renderCD(id){
       <div class="detail-acts"><button class="btn btn-accent btn-sm" onclick="nav('log','${id}')">+ Session</button><button class="btn btn-ghost btn-sm" onclick="openCI('${id}')">+ Check-in</button><button class="btn btn-ghost btn-sm" onclick="openNote('${id}')">+ Note</button><button class="btn btn-ghost btn-sm" onclick="editC('${id}')">Edit</button><button class="btn btn-ghost btn-sm" onclick="expCSV('${id}')">↓ CSV</button></div>
     </div>
     <div class="kpi-row mb16">
-      <div class="kpi"><div class="kpi-label">Total sessions</div><div class="kpi-value">${(c.sessions||0)+cSes.length}</div></div>
+      <div class="kpi"><div class="kpi-label">Total sessions</div><div class="kpi-value">${cSes.length}</div></div>
       <div class="kpi"><div class="kpi-label">Last session</div><div class="kpi-value" style="font-size:16px;padding-top:4px">${c.lastSession||cSes[0]?.date?fd(c.lastSession||cSes[0]?.date):'—'}</div></div>
       <div class="kpi"><div class="kpi-label">Started</div><div class="kpi-value" style="font-size:16px;padding-top:4px">${c.start?fd(c.start):'—'}</div></div>
       <div class="kpi"><div class="kpi-label">Check-ins</div><div class="kpi-value">${cCIs.length}</div></div>
