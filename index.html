@@ -4248,7 +4248,7 @@ if(!localStorage.getItem('pthub_hanne_v1')){
   }catch(e){console.error('Hanne migration:',e);}
 }
 // ── MAXIME L — full data migration ──
-if(!localStorage.getItem('pthub_maxime_v1')){
+if(!localStorage.getItem('pthub_maxime_v2')){
   try{
     const cl=JSON.parse(localStorage.getItem('pthub_clients')||'[]');
     const mi=cl.findIndex(c=>c.name==='Maxime L'||c.id==='maxime');
@@ -4332,7 +4332,28 @@ if(!localStorage.getItem('pthub_maxime_v1')){
     ];
     maxSessions.forEach(s=>{if(!ses.find(x=>x.id===s.id))ses.push(s);});
     localStorage.setItem('pthub_sessions',JSON.stringify(ses));
-    localStorage.setItem('pthub_maxime_v1','1');
+    // Add missing sessions
+    const allSes2=JSON.parse(localStorage.getItem('pthub_sessions')||'[]');
+    const extraSessions=[
+      {id:'ses_mx16',clientId:maxId,clientName:'Maxime L',date:'2026-02-08',type:'Cardio',duration:85,rpe:null,exercises:'Hot Flexibility Class 45min, Treadmill Walk 40min',notes:'Hot flexibility class — sweating, mobility focus. Incline walk 6km/h.',exerciseData:[{name:'Treadmill',sets:[{kg:'',reps:'40min incline 5'}]}]},
+      {id:'ses_mx17',clientId:maxId,clientName:'Maxime L',date:'2026-02-09',type:'Mixed',duration:60,rpe:null,exercises:'General conditioning, Dead Hang stretch',notes:'Hybrid light session ~60-70% load. Lot of lactate work. Dead hang passive stretch only, no scap pull-ups.',exerciseData:[{name:'Dead Hang',sets:[{kg:'BW',reps:'stretch'}]}]},
+      {id:'ses_mx18',clientId:maxId,clientName:'Maxime L',date:'2026-03-04',type:'Strength',duration:60,rpe:null,exercises:'Trap Bar Deadlift 72kg, Lat Pulldown, Hands Elevated Push-Ups, Barbell Row, KB Halo',notes:'PT coached. Trap bar dropped 82→72kg intentionally — technique reset / fatigue management.',exerciseData:[{name:'Trap Bar Deadlift',sets:[{kg:'32',reps:'10'},{kg:'52',reps:'9'},{kg:'72',reps:'5'},{kg:'72',reps:'5'},{kg:'72',reps:'5'},{kg:'72',reps:'5'}]},{name:'Lat Pulldown',sets:[{kg:'40',reps:'8'},{kg:'45',reps:'8'},{kg:'45',reps:'8'}]},{name:'Barbell Row',sets:[{kg:'bar',reps:'10'},{kg:'bar',reps:'10'},{kg:'bar',reps:'10'}]},{name:'KB Halo',sets:[{kg:'8',reps:'8'},{kg:'12',reps:'8'},{kg:'12',reps:'8'}]}]},
+      {id:'ses_mx19',clientId:maxId,clientName:'Maxime L',date:'2026-03-08',type:'Mixed',duration:60,rpe:null,exercises:'Row Erg 2041m, Trap Bar Deadlift 82kg, Lat Pulldown 50kg, KB Halo, Assisted Pull-Ups',notes:'Feeling strong — still had juice after session. Back to 82kg. Hit 50kg lat pulldown. Spontaneous pull-ups on way to changing room!',exerciseData:[{name:'Rowing Machine',sets:[{kg:'',reps:'2041m 10:08'}]},{name:'Trap Bar Deadlift',sets:[{kg:'82',reps:'5'},{kg:'82',reps:'5'},{kg:'82',reps:'5'},{kg:'82',reps:'5'}]},{name:'Lat Pulldown',sets:[{kg:'45',reps:'12'},{kg:'50',reps:'12'},{kg:'50',reps:'12'},{kg:'45',reps:'12'}]},{name:'KB Halo',sets:[{kg:'12',reps:'5'},{kg:'12',reps:'5'},{kg:'12',reps:'5'}]}]},
+      {id:'ses_mx20',clientId:maxId,clientName:'Maxime L',date:'2026-03-15',type:'Strength',duration:60,rpe:null,exercises:'Lat Pulldown 50kg, Machine Chest Press, Seated Cable Row 50kg, DB Shoulder Press, Face Pull 15kg, Leg Press, KB Swings',notes:'Solo Day 3. App not logging — reported via WhatsApp. Lat PD 50kg new high. Leg press intro 40kg. Face pull 15kg — far from RIR, can go heavier. Programme completed!',exerciseData:[{name:'Lat Pulldown',sets:[{kg:'50',reps:''}]},{name:'Seated Cable Row',sets:[{kg:'50',reps:''}]},{name:'DB Shoulder Press',sets:[{kg:'10',reps:''}]},{name:'Face Pull',sets:[{kg:'15',reps:'15'}]},{name:'Leg Press',sets:[{kg:'40',reps:''}]},{name:'KB Swing',sets:[{kg:'12',reps:''}]}]},
+    ];
+    extraSessions.forEach(s=>{if(!allSes2.find(x=>x.id===s.id))allSes2.push(s);});
+    // Deduplicate all by ID
+    const deduped2=[...new Map(allSes2.map(s=>[s.id,s])).values()];
+    localStorage.setItem('pthub_sessions',JSON.stringify(deduped2));
+    // Update Maxime notes with full coaching context
+    const cl2=JSON.parse(localStorage.getItem('pthub_clients')||'[]');
+    const mi2=cl2.findIndex(c=>c.name==='Maxime L'||c.id==='maxime');
+    if(mi2>=0){
+      cl2[mi2].mainNotes='44yo male, ~94kg. Desk job → thoracic flexion, forward shoulders. Lower body > upper body. Goals: upper body strength, posture, first pull-up. 1×PT + 1×solo + 2×cardio/week. Phase 1 (Jan 14–25): KB deadlift 24→32kg, lat PD 35kg, RPE 6-7. Bridge (Jan 28–Feb 11): Trap Bar intro 32→67kg, scap pull-ups, TRX row. Phase 2 (Feb 13–Mar 15): Assisted pull-ups introduced (−70kg assist, 3s ecc), Trap Bar peaked 82kg, lat PD hit 50kg, face pull 15kg, leg press intro 40kg. ✅ Consistent attendance, minimal soreness, enjoying training, feeling strong. ⚠️ Chest mind-muscle connection developing, seated cable row + leg press technique to review. 🎯 Phase 3: pull-up negatives, deadlift 85-90kg, dead hang 40s.';
+      cl2[mi2].lastSession='2026-03-15';
+      localStorage.setItem('pthub_clients',JSON.stringify(cl2));
+    }
+    localStorage.setItem('pthub_maxime_v2','1');
   }catch(e){console.error('Maxime migration:',e);}
 }
 initTheme();initData();
