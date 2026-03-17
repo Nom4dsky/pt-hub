@@ -198,13 +198,13 @@ html,body{height:100%;height:100dvh;background:var(--bg);color:var(--text);font-
 .log-sel:focus{border-color:var(--accent);}
 .ex-block{background:var(--white-pure);padding:18px 20px;margin-bottom:10px;border:1px solid var(--border);transition:border-color .15s;}
 .ex-block:focus-within{border-color:var(--accent);border-left:2px solid var(--accent);}
-.ex-inp{background:transparent;border:none;border-bottom:2px solid var(--border2);color:var(--text);font-family:var(--font-display);font-size:15px;font-weight:700;padding:4px 0;outline:none;width:100%;transition:border-color .15s;letter-spacing:.04em;text-transform:uppercase;}
+.ex-inp{background:transparent;border:none;border-bottom:2px solid var(--border2);color:var(--text);font-family:var(--font-display);font-size:18px;font-weight:700;padding:6px 0;outline:none;width:100%;transition:border-color .15s;letter-spacing:.04em;text-transform:uppercase;}
 .ex-inp:focus{border-color:var(--accent);}
 .ex-inp-wrap{position:relative;flex:1;}
 .sets-tbl{width:100%;border-collapse:collapse;}
-.sets-tbl th{font-size:9px;color:var(--text3);text-align:center;padding:5px 4px;text-transform:uppercase;letter-spacing:.14em;font-weight:700;font-family:var(--font-display);}
-.set-num-c{font-size:11px;color:var(--text3);font-family:var(--font-mono);text-align:center;padding:7px 2px;}
-.set-inp{background:transparent;border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:12px;padding:7px 5px;text-align:center;width:100%;outline:none;transition:all .15s;}
+.sets-tbl th{font-size:10px;color:var(--text3);text-align:center;padding:7px 6px;text-transform:uppercase;letter-spacing:.14em;font-weight:700;font-family:var(--font-display);}
+.set-num-c{font-size:13px;color:var(--text3);font-family:var(--font-mono);text-align:center;padding:10px 2px;}
+.set-inp{background:transparent;border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:15px;padding:10px 5px;text-align:center;width:100%;outline:none;transition:all .15s;}
 .set-inp:focus{border-color:var(--accent);}
 .add-set-btn{background:none;border:1px dashed var(--border2);color:var(--text3);cursor:pointer;font-size:9px;padding:8px;width:100%;margin-top:8px;transition:all .15s;font-family:var(--font-display);font-weight:700;text-transform:uppercase;letter-spacing:.14em;}
 .add-set-btn:hover{border-color:var(--accent);color:var(--accent);}
@@ -355,6 +355,11 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;}
 [data-theme="dark"] .d-av canvas{background:#3a3733;}
 [data-theme="dark"] #darkToggle{color:rgba(255,255,255,.35);}
 [data-theme="dark"] #darkToggle:hover{color:var(--accent);}
+/* ── SUPERSET / TRISET ── */
+.superset-group{border:1px solid var(--accent);margin-bottom:12px;position:relative;}
+.superset-label{position:absolute;top:-1px;left:12px;background:var(--accent);color:#fff;font-size:9px;font-weight:700;font-family:var(--font-display);text-transform:uppercase;letter-spacing:.14em;padding:2px 8px;}
+.superset-group .ex-block{border:none;border-bottom:1px dashed var(--border2);margin-bottom:0;}
+.superset-group .ex-block:last-child{border-bottom:none;}
 /* Default is light — toggle switches to dark */
 /* ── BODY MAP SVG ── */
 .bf{fill:var(--text);opacity:.13;}
@@ -539,7 +544,11 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;}
         <div style="display:flex;align-items:center;gap:7px"><div style="width:7px;height:7px;border-radius:50%;background:var(--accent-dk)"></div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em">Main work</div></div>
       </div>
       <div id="exBlocks"></div>
-      <button class="btn btn-ghost btn-sm" onclick="addEx()" style="font-size:11px;width:100%;justify-content:center;margin-bottom:12px">+ Add exercise</button>
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        <button class="btn btn-ghost btn-sm" onclick="addEx()" style="flex:1;justify-content:center;font-size:11px">+ Exercise</button>
+        <button class="btn btn-ghost btn-sm" onclick="addSupersetGroup(2)" style="flex:1;justify-content:center;font-size:11px">+ Superset</button>
+        <button class="btn btn-ghost btn-sm" onclick="addSupersetGroup(3)" style="flex:1;justify-content:center;font-size:11px">+ Triset</button>
+      </div>
       <div class="card mb12" style="margin-top:12px"><div class="card-label">Session notes</div><textarea id="logNotes" placeholder="Coaching observations, technique cues, how client felt..." style="background:transparent;border:none;width:100%;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);resize:vertical;min-height:60px;outline:none;padding:0;line-height:1.6"></textarea></div>
       <div style="display:flex;gap:8px;padding-bottom:40px">
         <button class="btn btn-accent" style="flex:1;justify-content:center" onclick="saveSes()">Save session</button>
@@ -2797,6 +2806,44 @@ function addEx(){
   setTimeout(()=>div.querySelector('.ex-inp')?.focus(), 50);
 }
 
+function addSupersetGroup(count){
+  const groupId='sg'+Date.now();
+  const wrapper=document.createElement('div');
+  wrapper.className='superset-group';
+  wrapper.id=groupId;
+  const label=count===3?'Triset':'Superset';
+  wrapper.innerHTML=`<div class="superset-label">${label}</div><div style="padding-top:16px" id="${groupId}_inner"></div>
+    <button class="add-set-btn" onclick="addExToGroup('${groupId}')" style="margin:0;border-top:1px dashed var(--border2);border-radius:0">+ add exercise to ${label.toLowerCase()}</button>
+    <button onclick="document.getElementById('${groupId}').remove()" style="position:absolute;top:2px;right:6px;background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:16px;padding:0">×</button>`;
+  document.getElementById('exBlocks').appendChild(wrapper);
+  // Add the exercises
+  for(let i=0;i<count;i++) addExToGroup(groupId);
+}
+
+function addExToGroup(groupId){
+  exCnt++;const id='ex'+exCnt;
+  const div=document.createElement('div');
+  div.className='ex-block';div.id=id;
+  div.innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+      <div class="ex-inp-wrap" style="flex:1;position:relative">
+        <input type="text" class="ex-inp" placeholder="Exercise name..." autocomplete="off"
+          oninput="showAutocomplete(this,'${id}')"
+          onblur="hideAutocomplete('${id}')"
+          onkeydown="acKeyNav(event,'${id}',this)"
+          onfocus="if(this.value.trim())showAutocomplete(this,'${id}')"/>
+      </div>
+      <button onclick="document.getElementById('${id}').remove()" style="background:none;border:none;color:rgba(255,255,255,.6);cursor:pointer;font-size:20px;padding:0 4px;flex-shrink:0">×</button>
+    </div>
+    <table class="sets-tbl">
+      <thead><tr><th>Set</th><th>Target</th><th>kg done</th><th>Reps done</th><th>RPE</th><th></th></tr></thead>
+      <tbody id="${id}_sets">${mkSetRow(id,1,'','')}</tbody>
+    </table>
+    <button class="add-set-btn" onclick="addSet('${id}')">+ add set</button>`;
+  document.getElementById(groupId+'_inner').appendChild(div);
+  setTimeout(()=>div.querySelector('.ex-inp')?.focus(),50);
+}
+
 function acKeyNav(e, exBlockId, inp){
   const drop = document.getElementById('ac_'+exBlockId);
   if(!drop) return;
@@ -2824,7 +2871,20 @@ function mkSetRow(eid,n,target,targetReps){
     <td><input class="set-inp" type="number" placeholder="kg" min="0" step="0.5"/></td>
     <td><input class="set-inp" type="number" placeholder="reps" min="0"/></td>
     <td><input class="set-inp" type="number" placeholder="RPE" min="1" max="10"/></td>
+    <td><button onclick="deleteSet(this)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 4px;line-height:1;transition:color .13s" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">×</button></td>
   </tr>`;
+}
+
+function deleteSet(btn){
+  const row=btn.closest('tr');
+  const tbody=row.closest('tbody');
+  if(tbody.rows.length<=1) return; // keep at least 1 set
+  row.remove();
+  // Renumber remaining sets
+  [...tbody.rows].forEach((r,i)=>{
+    const num=r.querySelector('.set-num-c');
+    if(num) num.textContent=i+1;
+  });
 }
 
 function addSet(eid){
@@ -8160,7 +8220,20 @@ function mkSetRow(eid,n,target,targetReps){
     <td><input class="set-inp" type="number" placeholder="kg" min="0" step="0.5"/></td>
     <td><input class="set-inp" type="number" placeholder="reps" min="0"/></td>
     <td><input class="set-inp" type="number" placeholder="RPE" min="1" max="10"/></td>
+    <td><button onclick="deleteSet(this)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 4px;line-height:1;transition:color .13s" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">×</button></td>
   </tr>`;
+}
+
+function deleteSet(btn){
+  const row=btn.closest('tr');
+  const tbody=row.closest('tbody');
+  if(tbody.rows.length<=1) return; // keep at least 1 set
+  row.remove();
+  // Renumber remaining sets
+  [...tbody.rows].forEach((r,i)=>{
+    const num=r.querySelector('.set-num-c');
+    if(num) num.textContent=i+1;
+  });
 }
 
 function addSet(eid){
