@@ -6001,6 +6001,15 @@ if(!localStorage.getItem('pthub_alex_v2')){
     localStorage.setItem('pthub_alex_v2','1');
   }catch(e){console.error('Alexandra p2:',e);}
 }
+// ── Force re-push workout templates (add body JSON) ──
+if(!localStorage.getItem('pthub_wk_repush_v1')){
+  try{
+    const wks=JSON.parse(localStorage.getItem('pthub_workouts_lib')||'[]');
+    wks.forEach(w=>{delete w.notionPageId;delete w.notionId;});
+    localStorage.setItem('pthub_workouts_lib',JSON.stringify(wks));
+    localStorage.setItem('pthub_wk_repush_v1','1');
+  }catch(e){}
+}
 initTheme();initData();
 // ── HILDE J — full data migration ──
 if(!localStorage.getItem('pthub_hilde_v2')){
