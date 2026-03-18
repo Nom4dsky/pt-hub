@@ -4118,7 +4118,7 @@ function buildWkBlock(block, idx){
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <div style="font-size:10px;font-weight:700;color:var(--accent);font-family:'Oswald',sans-serif;min-width:20px">${label?String.fromCharCode(65+ei):String.fromCharCode(65+(idx||0))}</div>
         <input type="text" class="ex-inp" value="${ex.name||''}" placeholder="Exercise name..." style="flex:1;font-size:15px;padding:4px 0"
-          oninput="this.value=this.value" autocomplete="off"/>
+          oninput="showExAcInline(this)" onblur="setTimeout(()=>removeExAcInline(this),200)" autocomplete="off"/>
         <button onclick="this.closest('.wk-ex-row').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:0;flex-shrink:0" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">×</button>
       </div>
       <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:6px">
@@ -4154,7 +4154,8 @@ function addWkBlock(type){
     <div class="wk-ex-row" style="border-bottom:1px solid var(--border);padding:10px 0">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <div style="font-size:10px;font-weight:700;color:var(--accent);font-family:'Oswald',sans-serif;min-width:20px">${String.fromCharCode(65+i)}</div>
-        <input type="text" class="ex-inp" placeholder="Exercise name..." style="flex:1;font-size:15px;padding:4px 0" autocomplete="off"/>
+        <input type="text" class="ex-inp" placeholder="Exercise name..." style="flex:1;font-size:15px;padding:4px 0" autocomplete="off"
+          oninput="showExAcInline(this)" onblur="setTimeout(()=>removeExAcInline(this),200)"/>
         <button onclick="this.closest('.wk-ex-row').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:0;flex-shrink:0" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">×</button>
       </div>
       <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:6px">
@@ -4192,7 +4193,8 @@ function addExToWkBlock(bid){
   row.innerHTML=`
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
       <div style="font-size:10px;font-weight:700;color:var(--accent);font-family:'Oswald',sans-serif;min-width:20px">${nextLetter}</div>
-      <input type="text" class="ex-inp" placeholder="Exercise name..." style="flex:1;font-size:15px;padding:4px 0" autocomplete="off"/>
+      <input type="text" class="ex-inp" placeholder="Exercise name..." style="flex:1;font-size:15px;padding:4px 0" autocomplete="off"
+          oninput="showExAcInline(this)" onblur="setTimeout(()=>removeExAcInline(this),200)"/>
       <button onclick="this.closest('.wk-ex-row').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:0;flex-shrink:0">×</button>
     </div>
     <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:6px">
@@ -4236,11 +4238,59 @@ function buildWkMetconConfig(mc){
   };
   return configs[type]||configs.amrap;
 }
+function showExAc(inputEl, id){
+  const val=inputEl.value.trim().toLowerCase();
+  const drop=document.getElementById('ac_'+id);
+  if(!drop) return;
+  if(val.length<1){drop.style.display='none';return;}
+  const custom=DB.get('customExercises')||[];
+  const all=[...custom,...EXERCISE_DB.filter(e=>!custom.find(c=>c.n===e.n))];
+  const matched=all.filter(e=>e.n.toLowerCase().includes(val)).slice(0,10);
+  if(!matched.length){drop.style.display='none';return;}
+  drop.innerHTML=matched.map(e=>`<div class="ex-ac-item" onmousedown="document.getElementById('${id}').value='${e.n.replace(/'/g,"\'")}';document.getElementById('ac_${id}').style.display='none'">
+    <span class="ex-ac-name">${e.n}</span><span class="ex-ac-cat">${e.cat}</span>
+  </div>`).join('');
+  drop.style.display='block';
+}
+function hideExAc(id){
+  const drop=document.getElementById('ac_'+id);
+  if(drop) drop.style.display='none';
+}
+function showExAcInline(inputEl){
+  const val=inputEl.value.trim().toLowerCase();
+  // Remove existing dropdown for this input
+  const existing=inputEl.parentNode.querySelector('.ex-autocomplete');
+  if(existing) existing.remove();
+  if(val.length<1) return;
+  const custom=DB.get('customExercises')||[];
+  const all=[...custom,...EXERCISE_DB.filter(e=>!custom.find(c=>c.n===e.n))];
+  const matched=all.filter(e=>e.n.toLowerCase().includes(val)).slice(0,10);
+  if(!matched.length) return;
+  const drop=document.createElement('div');
+  drop.className='ex-autocomplete';
+  drop.style.cssText='position:absolute;top:100%;left:0;right:0;z-index:100';
+  drop.innerHTML=matched.map(e=>`<div class="ex-ac-item" onmousedown="this.closest('.ex-inp-wrap, div').querySelector('.ex-inp').value='${e.n.replace(/'/g,"\'")}';this.closest('.ex-autocomplete').remove()">
+    <span class="ex-ac-name">${e.n}</span><span class="ex-ac-cat">${e.cat}</span>
+  </div>`).join('');
+  // Wrap input in relative div if not already
+  inputEl.after(drop);
+}
+function removeExAcInline(inputEl){
+  const drop=inputEl.parentNode.querySelector('.ex-autocomplete');
+  if(drop) drop.remove();
+}
 function addWkMetconMovement(){
+  const mvId='wkmv'+Date.now();
   const row=document.createElement('div');
   row.className='metcon-mv-row';
+  row.style.position='relative';
   row.innerHTML=`
-    <input type="text" class="metcon-inp" placeholder="Movement"/>
+    <div style="position:relative;flex:1">
+      <input type="text" id="${mvId}" class="metcon-inp" placeholder="Movement"
+        oninput="showExAc(this,'${mvId}')" onblur="setTimeout(()=>hideExAc('${mvId}'),200)"
+        autocomplete="off" style="width:100%"/>
+      <div id="ac_${mvId}" class="ex-autocomplete" style="display:none;left:0;right:0"></div>
+    </div>
     <input type="text" class="metcon-inp" placeholder="Reps" style="text-align:center"/>
     <input type="text" class="metcon-inp" placeholder="Load" style="text-align:center"/>
     <button onclick="this.closest('.metcon-mv-row').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:0" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">×</button>`;
