@@ -4849,8 +4849,21 @@ async function pushWorkoutTemplateToNotion(w){
       if(idx>=0){wks[idx].notionPageId=pageId;DB.set('workouts_lib',wks);}
     }
     // Always update properties (includes Exercises=JSON)
-    await updatePage(pageId, props);
-    if(w.notionPageId) syncLog(`↑ Updated template: ${w.name}`,'ok');
+    try{
+      await updatePage(pageId, props);
+      if(w.notionPageId) syncLog(`↑ Updated template: ${w.name}`,'ok');
+    }catch(updateErr){
+      // Page was deleted/archived in Notion — create fresh
+      if(updateErr.message&&(updateErr.message.includes('archived')||updateErr.message.includes('400'))){
+        if(idx>=0){wks[idx].notionPageId=null;DB.set('workouts_lib',wks);}
+        const page=await createPage(dbs.workoutTemplates, props);
+        if(idx>=0){wks[idx].notionPageId=page.id;DB.set('workouts_lib',wks);}
+        await updatePage(page.id, props);
+        syncLog(`↑ Re-created archived template: ${w.name}`,'ok');
+      } else {
+        throw updateErr;
+      }
+    }
   }catch(e){syncLog(`✗ Template sync failed: ${e.message}`,'error');}
 }
 
@@ -5403,8 +5416,16 @@ async function pushSessionToNotion(session){
   };
   try {
     if(session.notionPageId){
-      await updatePage(session.notionPageId, props);
-      syncLog(`↑ Updated session: ${session.clientName} ${session.date}`,'ok');
+      try{
+        await updatePage(session.notionPageId, props);
+        syncLog(`↑ Updated session: ${session.clientName} ${session.date}`,'ok');
+      }catch(e){
+        if(e.message&&e.message.includes('archived')){
+          const ses=DB.get('sessions')||[];const idx=ses.findIndex(s=>s.id===session.id);
+          if(idx>=0){ses[idx].notionPageId=null;DB.set('sessions',ses);}
+          syncLog(`⚠ Session archived in Notion — will re-push next sync`,'warn');
+        } else { throw e; }
+      }
     } else {
       const title=`${session.clientName} – ${session.date}`;
       const existing=await findNotionPageByTitle(dbs.sessions, title);
