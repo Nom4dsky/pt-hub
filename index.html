@@ -504,6 +504,11 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;height:4p
   <div id="right-content">
     <div id="page-dashboard" class="page active">
       <div class="sec-hdr mb20"><div><div class="pg-title" id="dashGreet">Good morning 👋</div><div class="pg-sub" id="dashDate"></div></div></div>
+      <div id="factBanner" style="background:var(--sidebar);color:#fff;padding:14px 22px;margin-bottom:20px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;border-left:4px solid var(--accent)" onclick="nextFact()" title="Click for next fact">
+        <div style="font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);flex-shrink:0;padding-top:2px">DID YOU KNOW</div>
+        <div id="factText" style="font-size:13px;line-height:1.65;color:rgba(255,252,242,.85);flex:1;font-family:'Poppins',sans-serif"></div>
+        <div style="font-size:9px;color:rgba(255,252,242,.25);flex-shrink:0;padding-top:3px;font-family:'Oswald',sans-serif;letter-spacing:.1em">TAP FOR MORE</div>
+      </div>
       <div class="kpi-row">
         <div class="kpi"><div class="kpi-label">Active clients</div><div class="kpi-value" id="kpiC">—</div></div>
         <div class="kpi"><div class="kpi-label">This week</div><div class="kpi-value" id="kpiW">0</div><div class="kpi-sub">sessions</div></div>
@@ -1612,6 +1617,7 @@ function getInitials(n){return n.split(' ').map(x=>x[0]).join('').toUpperCase().
 
 // ── DASHBOARD ──
 function renderDash(){
+  showFact();
   const cl=DB.get('clients')||[],ses=DB.get('sessions')||[];
   const today=new Date().toISOString().split('T')[0];
   const wAgo=new Date(Date.now()-7*86400000).toISOString().split('T')[0];
@@ -2303,7 +2309,7 @@ function renderCD(id){
         </div>
         <div class="card card-sm"><div class="card-label">Strength levels</div>${buildStr(cAss)}</div>
         <div class="card card-sm" style="border-left:3px solid var(--accent)"><div class="card-label">Active program</div>${cPrg.filter(p=>p.status==='Active').map(p=>`<div onclick="navProgDetail('${p.id}')" style="cursor:pointer"><div style="font-weight:700;font-family:'Syne',sans-serif;font-size:14px;letter-spacing:-.2px;margin-bottom:5px">${p.name}</div><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="badge b-accent" style="font-size:9px">${p.phase}</span><span style="font-size:11px;color:var(--text3)">${p.start?fd(p.start):'—'} → ${p.end?fd(p.end):'ongoing'}</span></div>${p.goal?`<div style="font-size:12px;color:var(--text2);margin-top:6px">${p.goal}</div>`:''}</div>`).join('')||`<div style="font-size:13px;color:var(--text3)">No active program — <span onclick="openM('addProgram')" style="cursor:pointer;color:var(--accent);font-weight:500">add one →</span></div>`}
-                    <div class="card card-sm" style="border-left:3px solid var(--accent);margin-top:10px"><div class="card-label">Assigned workouts</div>${renderAssignedWorkouts(c.id)}</div>${(()=>{const wks=DB.get('workouts_lib')||[];const assigned=wks.filter(w=>(w.assignedClients||[]).includes(c.id));if(!assigned.length)return`<div style="font-size:13px;color:var(--text3)">No workouts assigned — <span onclick="nav('workouts')" style="cursor:pointer;color:var(--accent);font-weight:500">go to library →</span></div>`;return assigned.map(w=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)" ><div style="flex:1;cursor:pointer" onclick="nav('workoutDetail','${w.id}')"><div style="font-weight:700;font-family:'Oswald',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.04em">${w.name}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${w.category||''} · ${(w.blocks||[]).reduce((a,b)=>a+(b.exercises||[]).length,0)} exercises${w.metcon?'· Metcon':''}</div></div><button class="btn btn-accent btn-sm" onclick="loadWorkoutToLog('${w.id}')" style="flex-shrink:0;font-size:9px">▶ Log</button></div>`).join('');})()}</div>
+                    <div class="card card-sm" style="border-left:3px solid var(--accent);margin-top:10px"><div class="card-label">Assigned workouts</div>${renderAssignedWorkouts(c.id)}</div>
       </div>
     </div>
     ${cCIs.length?`<div class="card mb16"><div class="sec-hdr"><div class="card-label" style="margin:0">Weekly check-ins</div><button class="btn btn-ghost btn-sm" onclick="openCI('${id}')">+ Add</button></div><table class="tbl" style="font-size:12px"><thead><tr><th>Date</th><th>⚖️ kg</th><th>💤 Sleep</th><th>⚡ Energy</th><th>😰 Stress</th><th>💪 Soreness</th><th>🔥 Motivation</th><th>🍎 Appetite</th><th>Compliance</th><th>Notes</th></tr></thead><tbody>${cCIs.slice(0,8).map(ci=>`<tr><td style="white-space:nowrap">${fd(ci.date)}</td><td><span style="font-weight:700;font-family:'DM Mono',monospace;font-size:13px;color:var(--text)">${ci.weight?ci.weight+'kg':'—'}</span></td>${['sleep','energy','stress','soreness','motivation','appetite'].map(k=>`<td><span style="font-weight:700;font-family:'DM Mono',monospace;font-size:13px;color:var(--text)">${ci[k]||'—'}</span></td>`).join('')}<td><span class="badge ${ci.compliance==='Full'?'b-green':ci.compliance==='Partial'?'b-amber':'b-red'}" style="font-size:9px">${ci.compliance}</span></td><td style="color:var(--text3);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ci.notes||'—'}</td><td><button onclick="editCI('${ci.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:2px 4px;font-family:'Oswald',sans-serif">edit</button><button onclick="deleteCI('${ci.id}','${id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px 4px">×</button></td></tr>`).join('')}</tbody></table></div>`:`<div class="card mb16" style="display:flex;justify-content:space-between;align-items:center"><div><div class="card-label" style="margin-bottom:2px">Weekly check-ins</div><div style="font-size:13px;color:var(--text3)">No check-ins yet</div></div><button class="btn btn-ghost btn-sm" onclick="openCI('${id}')">+ Add first</button></div>`}
@@ -3964,6 +3970,79 @@ function deleteCI(id, clientId){
   const cis=DB.get('checkins')||[];
   DB.set('checkins', cis.filter(x=>x.id!==id));
   nav('clientDetail', clientId);
+}
+
+// ── DAILY FACTS ──
+const FACTS = [
+  "Muscle hypertrophy occurs primarily through two mechanisms: myofibrillar growth (more contractile proteins) and sarcoplasmic expansion (more fluid and energy stores). Both contribute to size but have different functional outcomes.",
+  "The sliding filament theory explains muscle contraction: myosin heads attach to actin filaments, pull them inward, and release — repeating hundreds of times per second during a single muscle action.",
+  "Type I (slow-twitch) muscle fibres are fatigue-resistant and rely on aerobic metabolism. Type II (fast-twitch) produce more force but fatigue quickly, relying on anaerobic glycolysis.",
+  "Women have the same array of muscle fibre types as men and respond to strength training with similar relative gains. The main difference is absolute muscle mass, not trainability.",
+  "DOMS (delayed-onset muscle soreness) peaks 24–72 hours after exercise and is primarily caused by eccentric muscle actions — the lowering phase of every rep you do.",
+  "A motor unit is a single motor neuron and all the muscle fibres it controls. Smaller motor units are recruited first; larger, more powerful ones are added as force demands increase — this is the Size Principle.",
+  "The heart is a muscle. Regular aerobic training increases stroke volume (the amount of blood pumped per beat), allowing a trained heart to deliver the same cardiac output at a lower heart rate.",
+  "Creatine phosphate in muscle can resynthesise ATP in under a second — fuelling explosive efforts of 1–10 seconds. Once depleted, it takes 3–5 minutes of rest to replenish fully.",
+  "Testosterone is anabolic but its role in acute training responses is often overstated. Mechanical tension on the muscle fibre itself is the primary driver of hypertrophy signalling.",
+  "The mTORC1 pathway is the master regulator of muscle protein synthesis. Resistance exercise activates it; adequate protein and calories keep it switched on during recovery.",
+  "Muscle protein synthesis (MPS) stays elevated for 24–48 hours after a hard training session — which is why total weekly volume matters more than any single session.",
+  "Leucine is the key amino acid for triggering MPS. It acts as a 'sensor' that tells cells nutrients are available. Around 2–3g of leucine per meal is enough to maximally stimulate this response.",
+  "Eccentric contractions produce more force than concentric contractions using the same muscle. The titin protein acts like a spring, contributing to force during the stretch phase.",
+  "The recommended protein intake for those doing regular strength training is 1.6–2.2g per kg of body weight per day — roughly double the general population recommendation.",
+  "Muscle fibres don't grow during training — they grow during recovery. Training is the stimulus; sleep, food and rest are where the adaptation actually happens.",
+  "After approximately 2–3 weeks of detraining, neural adaptations begin to decline. Muscle mass is more resilient — it can be maintained for 4–8 weeks with minimal training (as little as 1 session per week).",
+  "Bone density increases with resistance training. Mechanical load on bone stimulates osteoblasts (bone-building cells), making strength training one of the best long-term osteoporosis prevention strategies.",
+  "The cardiovascular system can redirect blood flow dramatically during exercise — from 15–20% of cardiac output to working muscles at rest, up to 80–85% during maximal effort.",
+  "VO2max — the maximum rate of oxygen consumption — is considered the gold standard of aerobic fitness. Elite endurance athletes can have values 2–3× higher than sedentary individuals.",
+  "Post-activation potentiation (PAP) is a temporary increase in muscle force production following a heavy contraction. It's the science behind why a heavy back squat before sprinting can improve sprint performance.",
+  "The 'repeated bout effect' means the second bout of the same eccentric exercise causes significantly less muscle damage and soreness — the muscle adapts rapidly after just one exposure.",
+  "Resting metabolic rate (RMR) accounts for 60–75% of total daily energy expenditure. Every kilogram of muscle burns approximately 13 kcal/day at rest — modest, but compounding over years.",
+  "Cortisol is often called a 'catabolic' hormone, but it plays an essential role in energy mobilisation during exercise. It's chronically elevated cortisol (from poor sleep or overtraining) that becomes problematic.",
+  "The stretch-shortening cycle (SSC) uses elastic energy stored in tendons and muscle during a stretch to amplify force in the subsequent contraction — the principle behind plyometrics and running economy.",
+  "Grip strength is one of the strongest predictors of all-cause mortality in population studies. It's a proxy for overall muscle mass and systemic health, not just hand strength.",
+  "Fascia is not just passive packaging — it transmits force between muscles, influences movement, and contains mechanoreceptors that contribute to proprioception and pain sensitivity.",
+  "The body adapts to training in a specific direction — SAID principle (Specific Adaptation to Imposed Demands). If you train slow, you get better at slow. Power requires training at high velocities.",
+  "Blood lactate is not the cause of the burning sensation during intense exercise — that's hydrogen ions. Lactate itself is actually a fuel source, continuously being oxidised by the heart, liver and slow-twitch muscle fibres.",
+  "Sleep is the single most powerful recovery tool available. Growth hormone is primarily secreted during deep sleep (slow-wave sleep), and just one night of sleep deprivation measurably reduces MPS by ~18%.",
+  "The force-velocity relationship means muscles produce maximum force at zero velocity (isometric) and maximum velocity at zero load. Training across this full spectrum optimises both strength and power.",
+  "Neural adaptations dominate the first 4–8 weeks of strength training. Beginners get stronger primarily by learning to recruit more motor units and coordinate muscles — before significant muscle growth occurs.",
+  "Creatine monohydrate is the most researched ergogenic supplement in sports science, with robust evidence for improving high-intensity exercise performance, muscle mass and recovery. It is safe for long-term use.",
+  "The heart rate response to exercise is controlled by two competing systems: the sympathetic nervous system increases rate, while the parasympathetic (vagal) system slows it. Trained athletes have stronger vagal tone — hence lower resting heart rates.",
+  "Tendon stiffness increases with strength training, which improves force transmission from muscle to bone. But tendons adapt more slowly than muscle — a key reason why progressive overload must be gradual.",
+  "Muscle cross-sectional area (CSA) is the strongest predictor of maximum force production. Bigger muscle fibres contain more actin and myosin, meaning more crossbridge attachments per contraction.",
+  "Exercise in a hot environment increases cardiovascular strain — the body simultaneously diverts blood to working muscles AND to the skin for cooling, creating competition for cardiac output.",
+  "The 'anabolic window' post-workout is real but wider than once thought — consuming protein within 2 hours of training is beneficial, but total daily protein intake matters far more than precise timing.",
+  "Carbohydrates are the preferred fuel for high-intensity exercise. At intensities above ~65% VO2max, fat oxidation can't keep up with energy demand — glycogen becomes indispensable.",
+  "Heart rate variability (HRV) reflects the balance between sympathetic and parasympathetic nervous system activity. High HRV generally indicates good recovery and readiness; low HRV signals accumulated fatigue.",
+  "Muscle fibres of the same type are not equal — their metabolic profiles, mitochondrial density and contractile speeds exist on a continuum. Training can shift fibres from Type IIx toward Type IIa (faster-to-recover).",
+  "Resistance training increases insulin sensitivity — trained muscle absorbs glucose more efficiently, both at rest and after meals. This is one of the most clinically significant effects of exercise.",
+  "The phosphagen system, glycolytic system, and oxidative system operate simultaneously during exercise — there is no single 'energy system' in use. The dominant system shifts with exercise intensity and duration.",
+  "Mechanical tension is considered the primary stimulus for muscle hypertrophy — the physical deformation of the sarcomere during loaded stretch and contraction activates the signalling cascades that lead to protein synthesis.",
+  "The human body has approximately 600 skeletal muscles, which make up roughly 40% of body weight in healthy adults. In elite bodybuilders, this figure can reach 50–55%.",
+  "Dehydration of just 2% of body weight measurably impairs both physical performance and cognitive function. For a 75kg person, that's only 1.5 litres of water — less than you might expect.",
+  "Periodisation — planned variation of training volume, intensity and exercise selection — produces significantly better long-term adaptations than monotonous training, by preventing accommodation (the plateau effect).",
+  "The brain limits muscular output before true peripheral failure. In most maximal efforts, the central nervous system holds back ~5–10% of motor unit recruitment as a protective reserve.",
+  "Protein synthesis and protein breakdown occur simultaneously in muscle at all times. Net muscle growth only occurs when synthesis exceeds breakdown — which requires adequate training stimulus AND nutrition.",
+  "Breathing pattern affects intra-abdominal pressure, spinal stability and force production. The Valsalva manoeuvre (breath-hold during maximal lifts) significantly increases spinal stiffness and peak force output.",
+  "Zone 2 cardio — steady-state work at roughly 60–70% max heart rate — is the most efficient zone for building mitochondrial density and improving fat oxidation, making it the foundation of aerobic capacity.",
+];
+
+let _factIdx = Math.floor(Math.random() * FACTS.length);
+function showFact(){
+  const el=document.getElementById('factText');
+  if(el) el.textContent=FACTS[_factIdx];
+}
+function nextFact(){
+  _factIdx=(_factIdx+1)%FACTS.length;
+  const el=document.getElementById('factText');
+  if(!el) return;
+  el.style.opacity='0';
+  el.style.transform='translateY(4px)';
+  el.style.transition='all .2s ease';
+  setTimeout(()=>{
+    el.textContent=FACTS[_factIdx];
+    el.style.opacity='1';
+    el.style.transform='translateY(0)';
+  },200);
 }
 
 // ── WORKOUT LIBRARY ──
