@@ -4053,25 +4053,19 @@ function nextFact(){
 function renderAssignedWorkouts(clientId){
   const wks=DB.get('workouts_lib')||[];
   const assigned=wks.filter(function(w){return (w.assignedClients||[]).includes(clientId);});
-  if(!assigned.length) return '<div style="font-size:13px;color:var(--text3)">No workouts assigned \u2014 go to the Workout Library to assign.</div>';
-  return assigned.map(function(w){
+  if(!assigned.length) return '<div style="font-size:13px;color:var(--text3)">No workouts assigned — go to the Workout Library to assign.</div>';
+  // Store workouts globally so onclick can reference by index
+  window._assignedWks=assigned;
+  return assigned.map(function(w,i){
     const exCount=(w.blocks||[]).reduce(function(a,b){return a+(b.exercises||[]).length;},0);
-    const wid=w.id.replace(/'/g,'');
-    const row=document.createElement('div');
-    row.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)';
-    const info=document.createElement('div');
-    info.style.cssText='flex:1;cursor:pointer';
-    info.onclick=function(){nav('workoutDetail',wid);};
-    info.innerHTML='<div style="font-weight:700;font-family:Oswald,sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.04em">'+w.name+'</div>'
-      +'<div style="font-size:11px;color:var(--text3);margin-top:2px">'+(w.category||'')+' \u00b7 '+exCount+' exercise'+(exCount!==1?'s':'')+(w.metcon?' \u00b7 Metcon':'')+'</div>';
-    const btn=document.createElement('button');
-    btn.className='btn btn-accent btn-sm';
-    btn.style.cssText='flex-shrink:0;font-size:9px';
-    btn.textContent='▶ Log';
-    btn.addEventListener('click',function(e){e.stopPropagation();loadWorkoutToLog(wid);});
-    row.appendChild(info);
-    row.appendChild(btn);
-    return row.outerHTML;
+    const notionOrId=w.id;
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">'
+      +'<div style="flex:1;cursor:pointer" onclick="nav(\"workoutDetail\",window._assignedWks['+i+'].id)">'
+      +'<div style="font-weight:700;font-family:Oswald,sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.04em">'+w.name+'</div>'
+      +'<div style="font-size:11px;color:var(--text3);margin-top:2px">'+(w.category||'')+' · '+exCount+' exercise'+(exCount!==1?'s':'')+(w.metcon?' · Metcon':'')+'</div>'
+      +'</div>'
+      +'<button class="btn btn-accent btn-sm" onclick="event.stopPropagation();loadWorkoutToLog(window._assignedWks['+i+'].id)" style="flex-shrink:0;font-size:9px">▶ Log</button>'
+      +'</div>';
   }).join('');
 }
 
@@ -4205,7 +4199,7 @@ function renderWorkoutEditor(){
     <div style="margin-bottom:16px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:var(--text3);font-family:'Oswald',sans-serif">Conditioning / Metcon</div>
-        <button class="btn btn-ghost btn-sm" id="wkMetconToggle" onclick="toggleWkMetcon()" style="font-size:10px">${w.metcon?'− Remove':'+ Add metcon'}</button>
+        <button class="btn btn-ghost btn-sm" id="wkMetconToggle" onclick="toggleWkMetcon()" style="font-size:10px">${(w.metcon&&(w.metcon.movements||[]).length)?'− Remove':'+ Add metcon'}</button>
       </div>
       <div id="wkMetconSection" style="display:${w.metcon?'block':'none'}">
         <div class="metcon-block">
