@@ -4482,21 +4482,122 @@ function loadWorkoutToLog(wkId){
   if(!w) return;
   nav('log');
   setTimeout(()=>{
+    // Clear existing
     document.getElementById('exBlocks').innerHTML='';
     exCnt=0;
+
+    // Set session type if matches
+    const typeEl=document.getElementById('logType');
+    if(typeEl&&w.category) typeEl.value=w.category;
+
+    // Warmup
+    if(w.warmup){
+      const wuEl=document.getElementById('warmupNotes');
+      if(wuEl) wuEl.value=w.warmup;
+    }
+
+    // Load blocks — respecting superset/triset grouping
     (w.blocks||[]).forEach(block=>{
-      (block.exercises||[]).forEach(ex=>{
-        addExFromProgram({
-          name:ex.name,
-          sets:ex.sets||'3',
-          reps:ex.reps||'',
-          load:ex.load||'',
-          notes:ex.notes||'',
+      const exs=block.exercises||[];
+      if(!exs.length) return;
+
+      if(block.type==='superset'||block.type==='triset'){
+        // Create a superset group wrapper
+        const groupId='sg'+Date.now()+'_'+Math.random().toString(36).slice(2,5);
+        const label=block.type==='triset'?'Triset':'Superset';
+        const wrapper=document.createElement('div');
+        wrapper.className='superset-group';
+        wrapper.id=groupId;
+        wrapper.innerHTML=`<div class="superset-label">${label}</div>
+          <div style="padding-top:16px" id="${groupId}_inner"></div>
+          <button class="add-set-btn" onclick="addExToGroup('${groupId}')" style="margin:0;border-top:1px dashed var(--border2);border-radius:0">+ add exercise to ${label.toLowerCase()}</button>
+          <button onclick="document.getElementById('${groupId}').remove()" style="position:absolute;top:2px;right:6px;background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:16px;padding:0">×</button>`;
+        document.getElementById('exBlocks').appendChild(wrapper);
+        exs.forEach(ex=>{
+          exCnt++;const id='ex'+exCnt;
+          const planned=parseInt(ex.sets)||3;
+          let setRows='';
+          for(let i=1;i<=planned;i++) setRows+=mkSetRow(id,i,ex.load||'',ex.reps||'');
+          const div=document.createElement('div');
+          div.className='ex-block';div.id=id;
+          div.innerHTML=`
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+              <div class="ex-inp-wrap" style="flex:1;position:relative">
+                <input type="text" class="ex-inp" value="${(ex.name||'').replace(/"/g,'&quot;')}" placeholder="Exercise name" autocomplete="off"
+                  oninput="showAutocomplete(this,'${id}')" onblur="hideAutocomplete('${id}')" onkeydown="acKeyNav(event,'${id}',this)"/>
+              </div>
+              <button onclick="document.getElementById('${id}').remove()" style="background:none;border:none;color:rgba(255,255,255,.6);cursor:pointer;font-size:20px;padding:0 4px;flex-shrink:0">×</button>
+            </div>
+            ${ex.notes?`<div style="font-size:11px;color:var(--text2);margin-bottom:8px;font-style:italic;border-left:2px solid var(--border2);padding-left:8px">${ex.notes}</div>`:''}
+            <table class="sets-tbl">
+              <thead><tr><th>Set</th><th>Target</th><th>kg done</th><th>Reps done</th><th>RPE</th><th></th></tr></thead>
+              <tbody id="${id}_sets">${setRows}</tbody>
+            </table>
+            <button class="add-set-btn" onclick="addSet('${id}')">+ add set</button>`;
+          document.getElementById(groupId+'_inner').appendChild(div);
+          if(ex.name) setTimeout(()=>showExHistoryBar(id,ex.name),100);
         });
-      });
+      } else {
+        // Single exercise block
+        exs.forEach(ex=>{
+          addExFromProgram({
+            name:ex.name,
+            sets:ex.sets||'3',
+            reps:ex.reps||'',
+            load:ex.load||'',
+            tempo:ex.tempo||'',
+            notes:ex.notes?`${ex.tempo?'Tempo: '+ex.tempo+' · ':''}${ex.rest?'Rest: '+ex.rest+' · ':''}${ex.rpe?'RPE: '+ex.rpe+' · ':''}${ex.notes}`:
+              [ex.tempo?'Tempo: '+ex.tempo:'',ex.rest?'Rest: '+ex.rest:'',ex.rpe?'RPE: '+ex.rpe:''].filter(Boolean).join(' · '),
+          });
+        });
+      }
     });
-    if(w.warmup) document.getElementById('warmupNotes').value=w.warmup;
-  },100);
+
+    // Load metcon if present
+    if(w.metcon){
+      const mb=document.getElementById('metconBlock');
+      const mt=document.getElementById('metconToggle');
+      if(mb){
+        mb.style.display='block';
+        if(mt) mt.textContent='− Remove metcon';
+        // Set type
+        wkMetconType=w.metcon.type||'amrap';
+        const activeBtn=document.querySelector(`.metcon-type-btn[onclick*="${wkMetconType}"]`);
+        setMetconType(wkMetconType,activeBtn);
+        // Add movements
+        const mm=document.getElementById('metconMovements');
+        if(mm){
+          mm.innerHTML='';
+          mcMoveCnt=0;
+          (w.metcon.movements||[]).forEach(mv=>{
+            addMetconMovement();
+            const rows=mm.querySelectorAll('.metcon-mv-row');
+            const last=rows[rows.length-1];
+            if(last){
+              const inps=last.querySelectorAll('input');
+              if(inps[0]) inps[0].value=mv.movement||'';
+              if(inps[1]) inps[1].value=mv.reps||'';
+              if(inps[2]) inps[2].value=mv.load||'';
+            }
+          });
+        }
+        // Set config fields
+        const cfg=w.metcon.config||{};
+        ['dur','rounds','interval','work','rest','timecap'].forEach(k=>{
+          const el=document.getElementById('mcDur'.replace('dur',k.charAt(0).toUpperCase()+k.slice(1)));
+          if(el&&cfg[k]) el.value=cfg[k];
+          // Also try lowercase mc prefix
+          const el2=document.getElementById('mc'+k.charAt(0).toUpperCase()+k.slice(1));
+          if(el2&&cfg[k]) el2.value=cfg[k];
+        });
+      }
+    }
+
+    // Scroll to top of exercise blocks
+    setTimeout(()=>{
+      document.getElementById('exBlocks')?.scrollIntoView({behavior:'smooth',block:'start'});
+    },200);
+  },150);
 }
 
 
