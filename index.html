@@ -5169,12 +5169,18 @@ async function fullSync(){
     // Push workout templates
     if(dbs.workoutTemplates){
       const wkTemplates=DB.get('workouts_lib')||[];
-      const newTemplates=wkTemplates.filter(w=>!w.notionPageId);
-      const updatedTemplates=wkTemplates.filter(w=>w.notionPageId&&w._dirty);
-      for(const w of [...newTemplates,...updatedTemplates]){
+      // Push: new ones, dirty ones, OR ones that have notionPageId but no blocks (need body JSON added)
+      const needsPush=wkTemplates.filter(w=>
+        !w.notionPageId ||
+        w._dirty ||
+        (w.notionPageId && !(w.blocks||[]).length && !w.metcon)===false && w._needsBodyPush
+      );
+      // Simpler: always push all templates — upsert will update or create
+      const allTemplates=wkTemplates.filter(w=>w.blocks?.length||w.metcon);
+      for(const w of allTemplates){
         await pushWorkoutTemplateToNotion(w).catch(e=>syncLog(`✗ Template ${w.name}: ${e.message}`,'error'));
       }
-      if(newTemplates.length) syncLog(`↑ Pushed ${newTemplates.length} new templates`,'ok');
+      syncLog(`↑ Synced ${allTemplates.length} workout templates`,'ok');
     }
 
     // Push programs without notionPageId
