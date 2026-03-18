@@ -4150,13 +4150,20 @@ async function fullSync(){
     if(newSes.length) syncLog(`↑ Pushed ${newSes.length} new sessions`,'ok');
 
     // Push check-ins without notionPageId
+    syncLog(`Check-ins DB id: ${dbs.checkins||'MISSING'}`);
+    const allCIs=DB.get('checkins')||[];
+    syncLog(`Local check-ins: ${allCIs.length} total`);
     if(dbs.checkins){
-      const allCIs=DB.get('checkins')||[];
       const newCIs=allCIs.filter(ci=>!ci.notionPageId);
+      syncLog(`Check-ins to push: ${newCIs.length}`);
       for(const ci of newCIs){
+        syncLog(`Pushing check-in: ${ci.clientName||ci.clientId} ${ci.date}`);
         await pushCheckinToNotion(ci).catch(e=>syncLog(`✗ Check-in ${ci.date}: ${e.message}`,'error'));
       }
       if(newCIs.length) syncLog(`↑ Pushed ${newCIs.length} new check-ins`,'ok');
+      else syncLog('No new check-ins to push (all already synced)');
+    } else {
+      syncLog('✗ Check-ins DB ID missing — cannot push','error');
     }
 
     // Push programs without notionPageId
