@@ -427,6 +427,7 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;}
   <div class="sb-item" id="sb-sessions" onclick="nav('sessions')"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="14" height="14" rx="2"/><path d="M5 9h8M5 6h8M5 12h5"/></svg></div>
   <div class="sb-div"></div>
   <div class="sb-item" id="sb-programs" onclick="nav('programs')"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2h10a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M6 7h6M6 10h6M6 13h3"/></svg></div>
+  <div class="sb-item" id="sb-workouts" onclick="nav('workouts')"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9h2m8 0h2M5 9a2 2 0 002 2V7a2 2 0 00-2 2zm6 0a2 2 0 002 2V7a2 2 0 00-2 2zM7 6V4m4 2V4M7 14v2m4-2v2"/></svg></div>
   <div class="sb-item" id="sb-assessments" onclick="nav('assessments')"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="2,14 5,9 8,11 11,6 14,8 16,4"/></svg></div>
   <div class="sb-bot">
     <div class="sb-div"></div>
@@ -597,6 +598,19 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;}
     <div id="page-programDetail" class="page">
       <button class="back-btn" onclick="nav('programs')"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 2L4 7l5 5"/></svg>Programs</button>
       <div id="progDetailContent"></div>
+    </div>
+    <div id="page-workouts" class="page">
+      <div class="sec-hdr mb16">
+        <div><div class="pg-title">Workout Library</div><div class="pg-sub">Standalone templates — assign to clients or use as session blueprints</div></div>
+        <button class="btn btn-accent" onclick="openNewWorkout()">+ New workout</button>
+      </div>
+      <div id="workoutLibrary"></div>
+    </div>
+    <div id="page-workoutDetail" class="page">
+      <div id="workoutDetailContent"></div>
+    </div>
+    <div id="page-workoutEdit" class="page">
+      <div id="workoutEditContent"></div>
     </div>
     <div id="page-assessments" class="page">
       <div class="sec-hdr mb16"><div class="pg-title">Assessments</div><button class="btn btn-accent" onclick="openM('addAssessment')">+ New</button></div>
@@ -1526,12 +1540,13 @@ function nav(page,data){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.sb-item').forEach(n=>n.classList.remove('active'));
   const pg=document.getElementById('page-'+page);if(pg)pg.classList.add('active');
-  const sb=document.getElementById('sb-'+page);if(sb)sb.classList.add('active');
+  const sbPage=page.startsWith('workout')?'workouts':page.startsWith('client')?'clients':page;
+  const sb=document.getElementById('sb-'+sbPage);if(sb)sb.classList.add('active');
   curPage=page;
   const rc=document.getElementById('right-content');
   if(rc)rc.scrollTo(0,0);
   closeLeftPanel();
-  const titles={dashboard:'Dashboard',clients:'Clients',clientDetail:'Client',log:'Log Session',sessions:'Session Log',programs:'Programs',assessments:'Assessments',setup:'Setup'};
+  const titles={dashboard:'Dashboard',clients:'Clients',clientDetail:'Client',log:'Log Session',sessions:'Session Log',programs:'Programs',workouts:'Workouts',workoutDetail:'Workout',workoutEdit:'Workout Editor',assessments:'Assessments',setup:'Setup'};
   const _tbt=document.getElementById('rtbTitle');if(_tbt)_tbt.textContent=titles[page]||page;
   const _tbs=document.getElementById('rtbSub');if(_tbs)_tbs.textContent='';
   if(page==='dashboard')renderDash();
@@ -1539,6 +1554,9 @@ function nav(page,data){
   if(page==='log')initLog(data);
   if(page==='sessions'){renderSes();renderLeftPanel();}
   if(page==='programs'){renderProgs();renderLeftPanel();}
+  if(page==='workouts'){renderWorkoutLibrary();}
+  if(page==='workoutDetail'&&data){renderWorkoutDetail(data);}
+  if(page==='workoutEdit'){renderWorkoutEditor();}
   if(page==='programDetail'){}
   if(page==='assessments')renderAss();
   if(page==='clientDetail'&&data){curCid=data;renderCD(data);renderLeftPanel();}
@@ -2565,7 +2583,7 @@ const EXERCISE_DB = [
 
   // ── HINGE PATTERN ──
   {n:'Deadlift',cat:'Hinge'},{n:'Romanian Deadlift',cat:'Hinge'},{n:'KB Deadlift',cat:'Hinge'},
-  {n:'Single Leg RDL',cat:'Hinge'},{n:'Good Morning',cat:'Hinge'},{n:'Nordic Curl',cat:'Hinge'},
+  {n:'Single Leg RDL',cat:'Hinge'},{n:'Single Leg Deadlift',cat:'Hinge'},{n:'Good Morning',cat:'Hinge'},{n:'Nordic Curl',cat:'Hinge'},
   {n:'Glute Bridge',cat:'Hinge'},{n:'Hip Thrust',cat:'Hinge'},{n:'Cable Pull Through',cat:'Hinge'},
   {n:'Sumo Deadlift',cat:'Hinge'},{n:'BB RDL',cat:'Hinge'},{n:'DB RDL',cat:'Hinge'},
   {n:'Barbell Hip Thrust',cat:'Hinge'},{n:'Single Leg Hip Thrust',cat:'Hinge'},
@@ -2577,11 +2595,16 @@ const EXERCISE_DB = [
   {n:'KB Swing',cat:'Kettlebell'},{n:'KB Clean',cat:'Kettlebell'},{n:'KB Press',cat:'Kettlebell'},
   {n:'KB Snatch',cat:'Kettlebell'},{n:'KB Turkish Get Up',cat:'Kettlebell'},
   {n:'KB Windmill',cat:'Kettlebell'},{n:'KB Goblet Squat',cat:'Kettlebell'},
+  {n:'KB Slingshot',cat:'Kettlebell'},{n:'KB Halo',cat:'Kettlebell'},
+  {n:'Single Leg Deadlift',cat:'Kettlebell'},{n:'KB Single Leg Deadlift',cat:'Kettlebell'},
+  {n:'KB One Arm Swing',cat:'Kettlebell'},{n:'KB Clean and Press',cat:'Kettlebell'},
+  {n:'KB Side Lunge',cat:'Kettlebell'},{n:'KB Bent Over Row',cat:'Kettlebell'},
+  {n:'KB Reverse Lunge and Press',cat:'Kettlebell'},
   {n:'KB Single Leg RDL',cat:'Kettlebell'},{n:'KB Row',cat:'Kettlebell'},
   {n:'KB Halo',cat:'Kettlebell'},{n:'KB Deadlift',cat:'Kettlebell'},
   {n:'KB Single Arm Swing',cat:'Kettlebell'},{n:'KB Figure 8',cat:'Kettlebell'},
   {n:'KB Around the World',cat:'Kettlebell'},{n:'KB Floor Press',cat:'Kettlebell'},
-  {n:'KB High Pull',cat:'Kettlebell'},{n:'KB Thruster',cat:'Kettlebell'},
+  {n:'KB High Pull',cat:'Kettlebell'},{n:'KB Thruster',cat:'Kettlebell'},{n:'Thruster',cat:'Kettlebell'},
   {n:'Double KB Front Squat',cat:'Kettlebell'},{n:'Double KB Clean',cat:'Kettlebell'},
   {n:'Double KB Press',cat:'Kettlebell'},{n:'KB Farmer Carry',cat:'Kettlebell'},
   {n:'KB Suitcase Carry',cat:'Kettlebell'},{n:'KB Bottoms-Up Press',cat:'Kettlebell'},
@@ -2612,7 +2635,7 @@ const EXERCISE_DB = [
   {n:'Bradford Press',cat:'Push'},{n:'Dumbbell Press 1-Arm',cat:'Push'},
 
   // ── PULL HORIZONTAL ──
-  {n:'Barbell Row',cat:'Pull'},{n:'DB Row',cat:'Pull'},{n:'Cable Row',cat:'Pull'},
+  {n:'Barbell Row',cat:'Pull'},{n:'Bent Over Row',cat:'Pull'},{n:'DB Row',cat:'Pull'},{n:'Clean and Press',cat:'Olympic'},{n:'Cable Row',cat:'Pull'},
   {n:'TRX Row',cat:'Pull'},{n:'Gorilla Row',cat:'Pull'},{n:'Chest Supported Row',cat:'Pull'},
   {n:'Pendlay Row',cat:'Pull'},{n:'Single Arm DB Row',cat:'Pull'},{n:'Machine Row',cat:'Pull'},
   {n:'Seal Row',cat:'Pull'},{n:'Meadows Row',cat:'Pull'},{n:'Banded Row',cat:'Pull'},
@@ -3899,6 +3922,491 @@ function deleteCI(id, clientId){
   DB.set('checkins', cis.filter(x=>x.id!==id));
   nav('clientDetail', clientId);
 }
+
+// ── WORKOUT LIBRARY ──
+// ═══════════════════════════════════════
+// WORKOUT LIBRARY
+// ═══════════════════════════════════════
+
+function renderWorkoutLibrary(){
+  const wks=DB.get('workouts_lib')||[];
+  const el=document.getElementById('workoutLibrary');
+  if(!el) return;
+  if(!wks.length){
+    el.innerHTML=`<div class="card" style="text-align:center;padding:40px 20px;color:var(--text3)">
+      <div style="font-size:32px;margin-bottom:12px">🏋️</div>
+      <div style="font-family:'Oswald',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">No workouts yet</div>
+      <div style="font-size:13px;margin-bottom:20px">Build reusable session templates for your clients</div>
+      <button class="btn btn-accent" onclick="openNewWorkout()">+ Create first workout</button>
+    </div>`;
+    return;
+  }
+  const cl=DB.get('clients')||[];
+  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">
+    ${wks.map(w=>{
+      const assignedTo=cl.filter(c=>(c.assignedWorkouts||[]).includes(w.id));
+      const exCount=(w.blocks||[]).reduce((a,b)=>a+(b.exercises||[]).length,0);
+      const hasMetcon=!!(w.metcon?.movements?.length);
+      return`<div class="card" style="cursor:pointer;transition:border-color .15s" onclick="nav('workoutDetail','${w.id}')" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+          <div style="font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;line-height:1.2;flex:1;padding-right:8px">${w.name}</div>
+          <div style="display:flex;gap:4px;flex-shrink:0">
+            <button onclick="event.stopPropagation();editWorkout('${w.id}')" class="btn btn-ghost btn-sm" style="font-size:9px">Edit</button>
+            <button onclick="event.stopPropagation();deleteWorkout('${w.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 2px">×</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+          ${w.category?`<span class="badge b-gray">${w.category}</span>`:''}
+          ${w.difficulty?`<span class="badge b-gray">${w.difficulty}</span>`:''}
+          ${hasMetcon?`<span class="badge b-accent">+ Metcon</span>`:''}
+        </div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:8px">${exCount} exercise${exCount!==1?'s':''} · ${(w.blocks||[]).length} block${(w.blocks||[]).length!==1?'s':''}</div>
+        ${w.notes?`<div style="font-size:11px;color:var(--text2);border-top:1px solid var(--border);padding-top:8px;line-height:1.5">${w.notes.slice(0,80)}${w.notes.length>80?'...':''}</div>`:''}
+        ${assignedTo.length?`<div style="font-size:10px;color:var(--text3);margin-top:8px;border-top:1px solid var(--border);padding-top:8px">Assigned to: ${assignedTo.map(c=>c.name).join(', ')}</div>`:''}
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function openNewWorkout(){
+  DB.set('wk_draft',{id:'wk_'+Date.now(),name:'',category:'Strength',difficulty:'Moderate',notes:'',blocks:[],warmup:'',metcon:null});
+  renderWorkoutEditor();
+  nav('workoutEdit');
+}
+
+function editWorkout(id){
+  const wks=DB.get('workouts_lib')||[];
+  const w=wks.find(x=>x.id===id);
+  if(!w) return;
+  DB.set('wk_draft',JSON.parse(JSON.stringify(w)));
+  renderWorkoutEditor();
+  nav('workoutEdit');
+}
+
+function deleteWorkout(id){
+  if(!confirm('Delete this workout template?')) return;
+  DB.set('workouts_lib',(DB.get('workouts_lib')||[]).filter(w=>w.id!==id));
+  renderWorkoutLibrary();
+}
+
+let wkBlockCnt=0;
+function renderWorkoutEditor(){
+  const w=DB.get('wk_draft');
+  if(!w) return;
+  const el=document.getElementById('workoutEditContent');
+  if(!el) return;
+  wkBlockCnt=0;
+
+  const cl=DB.get('clients')||[];
+  const assignedIds=w.assignedClients||[];
+
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+      <button class="back-btn" onclick="nav('workouts')" style="margin:0">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 2L4 7l5 5"/></svg>Library
+      </button>
+      <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;text-transform:uppercase" id="wkEditorTitle">${w.name||'New Workout'}</div>
+      <div style="margin-left:auto;display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="nav('workouts')">Cancel</button>
+        <button class="btn btn-accent btn-sm" onclick="saveWorkout()">Save workout</button>
+      </div>
+    </div>
+
+    <div class="g2 mb16">
+      <div class="fg"><label>Workout name</label>
+        <input type="text" id="wk-name" value="${w.name}" placeholder="e.g. Full Body A — Strength" oninput="document.getElementById('wkEditorTitle').textContent=this.value||'New Workout'"
+          style="background:transparent;border:1px solid var(--border2);color:var(--text);font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;padding:10px 12px;outline:none;width:100%;text-transform:uppercase;letter-spacing:.04em;transition:border-color .15s"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fg"><label>Category</label>
+          <select id="wk-cat" style="background:transparent;border:1px solid var(--border2);color:var(--text);font-family:var(--font-body);font-size:13px;padding:10px;outline:none;width:100%">
+            ${['Strength','Hypertrophy','Power','Conditioning','Mixed','Mobility','Rehab'].map(c=>`<option ${w.category===c?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div class="fg"><label>Difficulty</label>
+          <select id="wk-diff" style="background:transparent;border:1px solid var(--border2);color:var(--text);font-family:var(--font-body);font-size:13px;padding:10px;outline:none;width:100%">
+            ${['Easy','Moderate','Hard','Very Hard'].map(d=>`<option ${w.difficulty===d?'selected':''}>${d}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="fg mb16"><label>Workout notes / coaching context</label>
+      <textarea id="wk-notes" placeholder="Overall goal, key cues, client considerations..." style="background:transparent;border:1px solid var(--border2);color:var(--text);font-family:var(--font-body);font-size:13px;padding:10px;outline:none;width:100%;min-height:60px;resize:vertical;transition:border-color .15s">${w.notes||''}</textarea>
+    </div>
+
+    <div class="card mb12">
+      <div class="card-label">Warm-up</div>
+      <textarea id="wk-warmup" placeholder="e.g. 5 min bike, hip hinge drill, band activation..." style="background:transparent;border:none;width:100%;font-family:var(--font-body);font-size:13px;color:var(--text);resize:vertical;min-height:56px;outline:none;padding:0;line-height:1.6">${w.warmup||''}</textarea>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:var(--text3);font-family:'Oswald',sans-serif">Exercise Blocks</div>
+    </div>
+    <div id="wkBlocks">
+      ${(w.blocks||[]).map((b,i)=>buildWkBlock(b,i)).join('')}
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:16px">
+      <button class="btn btn-ghost btn-sm" onclick="addWkBlock('single')" style="flex:1;justify-content:center">+ Block</button>
+      <button class="btn btn-ghost btn-sm" onclick="addWkBlock('superset')" style="flex:1;justify-content:center">+ Superset</button>
+      <button class="btn btn-ghost btn-sm" onclick="addWkBlock('triset')" style="flex:1;justify-content:center">+ Triset</button>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:var(--text3);font-family:'Oswald',sans-serif">Conditioning / Metcon</div>
+        <button class="btn btn-ghost btn-sm" id="wkMetconToggle" onclick="toggleWkMetcon()" style="font-size:10px">${w.metcon?'− Remove':'+ Add metcon'}</button>
+      </div>
+      <div id="wkMetconSection" style="display:${w.metcon?'block':'none'}">
+        <div class="metcon-block">
+          <div class="metcon-type-row">
+            ${['amrap','emom','intervals','fortime'].map(t=>`<button class="metcon-type-btn ${(w.metcon?.type||'amrap')===t?'active':''}" onclick="setWkMetconType('${t}',this)">${t==='fortime'?'For Time':t.toUpperCase()}</button>`).join('')}
+          </div>
+          <div id="wkMetconConfig">${buildWkMetconConfig(w.metcon)}</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.16em;font-family:'Oswald',sans-serif;margin-bottom:8px">Movements</div>
+          <div id="wkMetconMovements">
+            ${(w.metcon?.movements||[]).map(m=>`<div class="metcon-mv-row">
+              <input type="text" class="metcon-inp" value="${m.movement||''}" placeholder="Movement"/>
+              <input type="text" class="metcon-inp" value="${m.reps||''}" placeholder="Reps" style="text-align:center"/>
+              <input type="text" class="metcon-inp" value="${m.load||''}" placeholder="Load" style="text-align:center"/>
+              <button onclick="this.closest('.metcon-mv-row').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:0" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">×</button>
+            </div>`).join('')}
+          </div>
+          <button onclick="addWkMetconMovement()" class="add-set-btn" style="margin-top:8px">+ add movement</button>
+          <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="fg"><label>Target / Score</label><input type="text" id="wkMetconResult" value="${w.metcon?.result||''}" placeholder="e.g. 5+ rounds" class="metcon-inp"/></div>
+            <div class="fg"><label>Notes</label><input type="text" id="wkMetconNotes" value="${w.metcon?.notes||''}" placeholder="Modifications, cues..." class="metcon-inp"/></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb16">
+      <div class="card-label">Assign to clients</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
+        ${cl.filter(c=>c.status!=='Archived').map(c=>`
+          <label style="display:flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--border2);cursor:pointer;font-size:12px;font-family:var(--font-body);transition:all .13s" id="wk-assign-wrap-${c.id}">
+            <input type="checkbox" id="wk-assign-${c.id}" ${assignedIds.includes(c.id)?'checked':''} onchange="updateWkAssign()" style="accent-color:var(--accent)"/>
+            ${c.name}
+          </label>`).join('')}
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;padding-bottom:40px">
+      <button class="btn btn-accent" onclick="saveWorkout()" style="flex:1;justify-content:center">Save workout</button>
+      <button class="btn btn-ghost" onclick="nav('workouts')">Cancel</button>
+    </div>`;
+
+  // Restore metcon type active state
+  if(w.metcon?.type){
+    document.querySelectorAll('#wkMetconSection .metcon-type-btn').forEach(b=>b.classList.remove('active'));
+    const activeBtn=document.querySelector(`#wkMetconSection .metcon-type-btn[onclick*="${w.metcon.type}"]`);
+    if(activeBtn) activeBtn.classList.add('active');
+  }
+}
+
+function buildWkBlock(block, idx){
+  wkBlockCnt++;
+  const bid='wkb'+wkBlockCnt;
+  const isSuper=block.type==='superset';
+  const isTriset=block.type==='triset';
+  const label=isTriset?'Triset':isSuper?'Superset':'';
+  const borderStyle=label?'border:1px solid var(--accent);position:relative;padding:16px 14px 14px;margin-bottom:10px':'';
+
+  const exHtml=(block.exercises||[{name:'',sets:'3',reps:'',load:'',tempo:'',rest:'',rpe:'',notes:''}]).map((ex,ei)=>`
+    <div class="wk-ex-row" style="border-bottom:1px solid var(--border);padding:10px 0;${label?'padding-left:0':''}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="font-size:10px;font-weight:700;color:var(--accent);font-family:'Oswald',sans-serif;min-width:20px">${label?String.fromCharCode(65+ei):String.fromCharCode(65+(idx||0))}</div>
+        <input type="text" class="ex-inp" value="${ex.name||''}" placeholder="Exercise name..." style="flex:1;font-size:15px;padding:4px 0"
+          oninput="this.value=this.value" autocomplete="off"/>
+        <button onclick="this.closest('.wk-ex-row').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:0;flex-shrink:0" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">×</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:6px">
+        ${[['Sets','sets',ex.sets||'3'],['Reps','reps',ex.reps||''],['Load','load',ex.load||''],['Tempo','tempo',ex.tempo||''],['Rest','rest',ex.rest||''],['RPE','rpe',ex.rpe||'']].map(([lbl,key,val])=>`
+          <div>
+            <div style="font-size:8px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;font-family:'Oswald',sans-serif;margin-bottom:3px">${lbl}</div>
+            <input type="text" data-field="${key}" value="${val}" placeholder="—"
+              style="background:transparent;border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:6px 4px;text-align:center;width:100%;outline:none;transition:border-color .15s"
+              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+          </div>`).join('')}
+      </div>
+      <input type="text" data-field="notes" value="${ex.notes||''}" placeholder="Coach notes, cues, alternatives..."
+        style="background:transparent;border:none;border-top:1px solid var(--border);color:var(--text2);font-family:var(--font-body);font-size:12px;padding:6px 0 0;width:100%;outline:none;font-style:italic"
+        onfocus="this.style.borderTopColor='var(--accent)'" onblur="this.style.borderTopColor='var(--border)'"/>
+    </div>`).join('');
+
+  return `<div id="${bid}" style="${borderStyle||'border:1px solid var(--border);padding:14px;margin-bottom:10px;position:relative'}">
+    ${label?`<div style="position:absolute;top:-1px;left:12px;background:var(--accent);color:#fff;font-size:9px;font-weight:700;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.14em;padding:2px 8px">${label}</div>
+    <button onclick="document.getElementById('${bid}').remove()" style="position:absolute;top:2px;right:6px;background:none;border:none;color:rgba(255,255,255,.6);cursor:pointer;font-size:16px;padding:0">×</button>`:''}
+    <div class="wk-ex-list">${exHtml}</div>
+    ${label?`<button onclick="addExToWkBlock('${bid}')" class="add-set-btn" style="margin-top:6px;border-color:var(--accent)">+ add exercise</button>`:''}
+  </div>`;
+}
+
+function addWkBlock(type){
+  wkBlockCnt++;
+  const bid='wkb'+wkBlockCnt;
+  const isSuper=type==='superset';
+  const isTriset=type==='triset';
+  const count=isTriset?3:isSuper?2:1;
+  const label=isTriset?'Triset':isSuper?'Superset':'';
+  const exRows=Array.from({length:count},(_,i)=>`
+    <div class="wk-ex-row" style="border-bottom:1px solid var(--border);padding:10px 0">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="font-size:10px;font-weight:700;color:var(--accent);font-family:'Oswald',sans-serif;min-width:20px">${String.fromCharCode(65+i)}</div>
+        <input type="text" class="ex-inp" placeholder="Exercise name..." style="flex:1;font-size:15px;padding:4px 0" autocomplete="off"/>
+        <button onclick="this.closest('.wk-ex-row').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:0;flex-shrink:0" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">×</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:6px">
+        ${['Sets','Reps','Load','Tempo','Rest','RPE'].map((lbl,j)=>`
+          <div>
+            <div style="font-size:8px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;font-family:'Oswald',sans-serif;margin-bottom:3px">${lbl}</div>
+            <input type="text" data-field="${lbl.toLowerCase()}" placeholder="—"
+              style="background:transparent;border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:6px 4px;text-align:center;width:100%;outline:none"
+              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+          </div>`).join('')}
+      </div>
+      <input type="text" data-field="notes" placeholder="Coach notes, cues..."
+        style="background:transparent;border:none;border-top:1px solid var(--border);color:var(--text2);font-family:var(--font-body);font-size:12px;padding:6px 0 0;width:100%;outline:none;font-style:italic"/>
+    </div>`).join('');
+
+  const wrapper=document.createElement('div');
+  wrapper.id=bid;
+  wrapper.style.cssText=`${label?`border:1px solid var(--accent);position:relative;`:'border:1px solid var(--border);'}padding:${label?'16px':'14px'} 14px 14px;margin-bottom:10px;`;
+  wrapper.innerHTML=`${label?`<div style="position:absolute;top:-1px;left:12px;background:var(--accent);color:#fff;font-size:9px;font-weight:700;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.14em;padding:2px 8px">${label}</div>
+    <button onclick="document.getElementById('${bid}').remove()" style="position:absolute;top:2px;right:6px;background:none;border:none;color:rgba(255,255,255,.6);cursor:pointer;font-size:16px;padding:0">×</button>`:''}
+    <div class="wk-ex-list">${exRows}</div>
+    ${label?`<button onclick="addExToWkBlock('${bid}')" class="add-set-btn" style="margin-top:6px;border-color:var(--accent)">+ add exercise</button>`:''}`;
+  document.getElementById('wkBlocks').appendChild(wrapper);
+  wrapper.querySelector('.ex-inp')?.focus();
+}
+
+function addExToWkBlock(bid){
+  const block=document.getElementById(bid);
+  if(!block) return;
+  const rows=block.querySelectorAll('.wk-ex-row');
+  const nextLetter=String.fromCharCode(65+rows.length);
+  const row=document.createElement('div');
+  row.className='wk-ex-row';
+  row.style.cssText='border-bottom:1px solid var(--border);padding:10px 0';
+  row.innerHTML=`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div style="font-size:10px;font-weight:700;color:var(--accent);font-family:'Oswald',sans-serif;min-width:20px">${nextLetter}</div>
+      <input type="text" class="ex-inp" placeholder="Exercise name..." style="flex:1;font-size:15px;padding:4px 0" autocomplete="off"/>
+      <button onclick="this.closest('.wk-ex-row').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:0;flex-shrink:0">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:6px">
+      ${['Sets','Reps','Load','Tempo','Rest','RPE'].map(lbl=>`
+        <div><div style="font-size:8px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;font-family:'Oswald',sans-serif;margin-bottom:3px">${lbl}</div>
+        <input type="text" data-field="${lbl.toLowerCase()}" placeholder="—"
+          style="background:transparent;border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:6px 4px;text-align:center;width:100%;outline:none"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+        </div>`).join('')}
+    </div>
+    <input type="text" data-field="notes" placeholder="Coach notes, cues..."
+      style="background:transparent;border:none;border-top:1px solid var(--border);color:var(--text2);font-family:var(--font-body);font-size:12px;padding:6px 0 0;width:100%;outline:none;font-style:italic"/>`;
+  block.querySelector('.wk-ex-list').appendChild(row);
+  row.querySelector('.ex-inp')?.focus();
+}
+
+let wkMetconType='amrap';
+function toggleWkMetcon(){
+  const sec=document.getElementById('wkMetconSection');
+  const btn=document.getElementById('wkMetconToggle');
+  const shown=sec.style.display!=='none';
+  sec.style.display=shown?'none':'block';
+  btn.textContent=shown?'+ Add metcon':'− Remove';
+  if(!shown && !document.querySelector('#wkMetconMovements .metcon-mv-row')) addWkMetconMovement();
+}
+function setWkMetconType(type,btnEl){
+  wkMetconType=type;
+  document.querySelectorAll('#wkMetconSection .metcon-type-btn').forEach(b=>b.classList.remove('active'));
+  if(btnEl) btnEl.classList.add('active');
+  document.getElementById('wkMetconConfig').innerHTML=buildWkMetconConfig({type});
+}
+function buildWkMetconConfig(mc){
+  const type=mc?.type||'amrap';
+  const cfg=mc?.config||{};
+  const inp=(id,lbl,ph,val)=>`<div class="fg" style="margin-bottom:8px"><div class="metcon-label">${lbl}</div><input type="text" id="${id}" class="metcon-inp" placeholder="${ph}" value="${val||''}"/></div>`;
+  const configs={
+    amrap:`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">${inp('wkMcDur','Duration','e.g. 12 min',cfg.dur)}${inp('wkMcRounds','Target Rounds','e.g. 5+',cfg.rounds)}</div>`,
+    emom:`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">${inp('wkMcDur','Duration','e.g. 12 min',cfg.dur)}${inp('wkMcInterval','Interval','e.g. every 60s',cfg.interval)}</div>`,
+    intervals:`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">${inp('wkMcWork','Work','e.g. 20s',cfg.work)}${inp('wkMcRest','Rest','e.g. 40s',cfg.rest)}${inp('wkMcRounds','Rounds','e.g. 8',cfg.rounds)}</div>`,
+    fortime:`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">${inp('wkMcRounds','Rounds','e.g. 3',cfg.rounds)}${inp('wkMcTimecap','Timecap','e.g. 15 min',cfg.timecap)}</div>`,
+  };
+  return configs[type]||configs.amrap;
+}
+function addWkMetconMovement(){
+  const row=document.createElement('div');
+  row.className='metcon-mv-row';
+  row.innerHTML=`
+    <input type="text" class="metcon-inp" placeholder="Movement"/>
+    <input type="text" class="metcon-inp" placeholder="Reps" style="text-align:center"/>
+    <input type="text" class="metcon-inp" placeholder="Load" style="text-align:center"/>
+    <button onclick="this.closest('.metcon-mv-row').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:0" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">×</button>`;
+  document.getElementById('wkMetconMovements').appendChild(row);
+}
+
+function collectWkBlocks(){
+  const blocks=[];
+  document.querySelectorAll('#wkBlocks > div').forEach(blockEl=>{
+    const label=blockEl.querySelector('[style*="var(--accent)"]')?.textContent?.trim();
+    const type=label==='Triset'?'triset':label==='Superset'?'superset':'single';
+    const exercises=[];
+    blockEl.querySelectorAll('.wk-ex-row').forEach(row=>{
+      const name=row.querySelector('.ex-inp')?.value?.trim()||'';
+      if(!name) return;
+      const ex={name};
+      row.querySelectorAll('[data-field]').forEach(inp=>{
+        if(inp.value.trim()) ex[inp.dataset.field]=inp.value.trim();
+      });
+      exercises.push(ex);
+    });
+    if(exercises.length) blocks.push({type,exercises});
+  });
+  return blocks;
+}
+
+function collectWkMetcon(){
+  const sec=document.getElementById('wkMetconSection');
+  if(!sec||sec.style.display==='none') return null;
+  const movements=[...document.querySelectorAll('#wkMetconMovements .metcon-mv-row')].map(row=>{
+    const inps=row.querySelectorAll('input');
+    return{movement:inps[0]?.value||'',reps:inps[1]?.value||'',load:inps[2]?.value||''};
+  }).filter(m=>m.movement);
+  if(!movements.length) return null;
+  const cfg={};
+  ['wkMcDur','wkMcRounds','wkMcInterval','wkMcWork','wkMcRest','wkMcTimecap'].forEach(id=>{
+    const el=document.getElementById(id);if(el&&el.value) cfg[id.replace('wkMc','').toLowerCase()]=el.value;
+  });
+  return{type:wkMetconType,config:cfg,movements,
+    result:document.getElementById('wkMetconResult')?.value||'',
+    notes:document.getElementById('wkMetconNotes')?.value||''};
+}
+
+function saveWorkout(){
+  const name=document.getElementById('wk-name')?.value?.trim();
+  if(!name){alert('Please enter a workout name');return;}
+  const draft=DB.get('wk_draft')||{};
+  const cl=DB.get('clients')||[];
+  const assignedClients=cl.filter(c=>document.getElementById('wk-assign-'+c.id)?.checked).map(c=>c.id);
+  const w={
+    ...draft, name,
+    category:document.getElementById('wk-cat')?.value||'Strength',
+    difficulty:document.getElementById('wk-diff')?.value||'Moderate',
+    notes:document.getElementById('wk-notes')?.value?.trim()||'',
+    warmup:document.getElementById('wk-warmup')?.value?.trim()||'',
+    blocks:collectWkBlocks(),
+    metcon:collectWkMetcon(),
+    assignedClients,
+    updatedAt:new Date().toISOString().split('T')[0],
+  };
+  const wks=DB.get('workouts_lib')||[];
+  const idx=wks.findIndex(x=>x.id===w.id);
+  if(idx>=0) wks[idx]=w; else wks.unshift(w);
+  DB.set('workouts_lib',wks);
+  // Update assigned clients
+  cl.forEach(c=>{
+    if(!c.assignedWorkouts) c.assignedWorkouts=[];
+    if(assignedClients.includes(c.id)){
+      if(!c.assignedWorkouts.includes(w.id)) c.assignedWorkouts.push(w.id);
+    } else {
+      c.assignedWorkouts=c.assignedWorkouts.filter(id=>id!==w.id);
+    }
+  });
+  DB.set('clients',cl);
+  nav('workoutDetail',w.id);
+}
+
+function renderWorkoutDetail(id){
+  const wks=DB.get('workouts_lib')||[];
+  const w=wks.find(x=>x.id===id);
+  if(!w) return;
+  const el=document.getElementById('workoutDetailContent');
+  if(!el) return;
+  const cl=DB.get('clients')||[];
+  const assigned=cl.filter(c=>(c.assignedWorkouts||[]).includes(w.id));
+
+  let html=`
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:20px">
+      <button class="back-btn" onclick="nav('workouts')" style="margin:0;flex-shrink:0">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 2L4 7l5 5"/></svg>Library
+      </button>
+      <div style="flex:1">
+        <div style="font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:.04em">${w.name}</div>
+        <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+          ${w.category?`<span class="badge b-gray">${w.category}</span>`:''}
+          ${w.difficulty?`<span class="badge b-gray">${w.difficulty}</span>`:''}
+          ${assigned.length?`<span class="badge b-accent">Assigned to ${assigned.length} client${assigned.length!==1?'s':''}</span>`:''}
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="btn btn-ghost btn-sm" onclick="editWorkout('${w.id}')">Edit</button>
+        <button class="btn btn-accent btn-sm" onclick="loadWorkoutToLog('${w.id}')">▶ Log session</button>
+      </div>
+    </div>`;
+
+  if(w.notes) html+=`<div class="card mb12" style="border-left:2px solid var(--accent)"><div style="font-size:13px;color:var(--text2);line-height:1.6">${w.notes}</div></div>`;
+  if(w.warmup) html+=`<div class="card mb12"><div class="card-label">Warm-up</div><div style="font-size:13px;color:var(--text2);line-height:1.6;white-space:pre-line">${w.warmup}</div></div>`;
+
+  if(w.blocks?.length){
+    html+=`<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:var(--text3);font-family:'Oswald',sans-serif;margin-bottom:10px">Exercise Blocks</div>`;
+    w.blocks.forEach((block,bi)=>{
+      const label=block.type==='triset'?'Triset':block.type==='superset'?'Superset':'';
+      html+=`<div style="${label?`border:1px solid var(--accent);position:relative;padding:16px 14px 14px;`:'border:1px solid var(--border);padding:14px;'}margin-bottom:10px">
+        ${label?`<div style="position:absolute;top:-1px;left:12px;background:var(--accent);color:#fff;font-size:9px;font-weight:700;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.14em;padding:2px 8px">${label}</div>`:''}
+        ${(block.exercises||[]).map((ex,ei)=>`
+          <div style="border-bottom:1px solid var(--border);padding:10px 0;display:flex;gap:10px;align-items:flex-start">
+            <div style="font-size:11px;font-weight:700;color:var(--accent);font-family:'Oswald',sans-serif;min-width:20px;padding-top:3px">${label?String.fromCharCode(65+ei):String.fromCharCode(65+bi)}</div>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:700;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">${ex.name}</div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                ${[['Sets',ex.sets],['Reps',ex.reps],['Load',ex.load],['Tempo',ex.tempo],['Rest',ex.rest],['RPE',ex.rpe]].filter(([,v])=>v).map(([k,v])=>`
+                  <div><div style="font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;font-weight:700;font-family:'Oswald',sans-serif">${k}</div>
+                  <div style="font-size:13px;font-weight:600;font-family:'DM Mono',monospace">${v}</div></div>`).join('')}
+              </div>
+              ${ex.notes?`<div style="font-size:11px;color:var(--text3);font-style:italic;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)">${ex.notes}</div>`:''}
+            </div>
+          </div>`).join('')}
+      </div>`;
+    });
+  }
+
+  if(w.metcon) html+=renderMetconSummary(w.metcon);
+
+  if(assigned.length){
+    html+=`<div class="card mt12"><div class="card-label">Assigned to</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+      ${assigned.map(c=>`<span class="badge b-gray" style="cursor:pointer" onclick="nav('clientDetail','${c.id}')">${c.name}</span>`).join('')}
+    </div></div>`;
+  }
+
+  el.innerHTML=html;
+}
+
+function loadWorkoutToLog(wkId){
+  const wks=DB.get('workouts_lib')||[];
+  const w=wks.find(x=>x.id===wkId);
+  if(!w) return;
+  nav('log');
+  setTimeout(()=>{
+    document.getElementById('exBlocks').innerHTML='';
+    exCnt=0;
+    (w.blocks||[]).forEach(block=>{
+      (block.exercises||[]).forEach(ex=>{
+        addExFromProgram({
+          name:ex.name,
+          sets:ex.sets||'3',
+          reps:ex.reps||'',
+          load:ex.load||'',
+          notes:ex.notes||'',
+        });
+      });
+    });
+    if(w.warmup) document.getElementById('warmupNotes').value=w.warmup;
+  },100);
+}
+
+
 
 // ── NOTION ──
 // ═══════════════════════════════════════
@@ -5788,6 +6296,7 @@ function regenAvatar(clientId){
   <div class="sb-item" id="sb-sessions" onclick="nav('sessions')"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="14" height="14" rx="2"/><path d="M5 9h8M5 6h8M5 12h5"/></svg></div>
   <div class="sb-div"></div>
   <div class="sb-item" id="sb-programs" onclick="nav('programs')"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2h10a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M6 7h6M6 10h6M6 13h3"/></svg></div>
+  <div class="sb-item" id="sb-workouts" onclick="nav('workouts')"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9h2m8 0h2M5 9a2 2 0 002 2V7a2 2 0 00-2 2zm6 0a2 2 0 002 2V7a2 2 0 00-2 2zM7 6V4m4 2V4M7 14v2m4-2v2"/></svg></div>
   <div class="sb-item" id="sb-assessments" onclick="nav('assessments')"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="2,14 5,9 8,11 11,6 14,8 16,4"/></svg></div>
   <div class="sb-bot">
     <div class="sb-div"></div>
@@ -7440,12 +7949,13 @@ function nav(page,data){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.sb-item').forEach(n=>n.classList.remove('active'));
   const pg=document.getElementById('page-'+page);if(pg)pg.classList.add('active');
-  const sb=document.getElementById('sb-'+page);if(sb)sb.classList.add('active');
+  const sbPage=page.startsWith('workout')?'workouts':page.startsWith('client')?'clients':page;
+  const sb=document.getElementById('sb-'+sbPage);if(sb)sb.classList.add('active');
   curPage=page;
   const rc=document.getElementById('right-content');
   if(rc)rc.scrollTo(0,0);
   closeLeftPanel();
-  const titles={dashboard:'Dashboard',clients:'Clients',clientDetail:'Client',log:'Log Session',sessions:'Session Log',programs:'Programs',assessments:'Assessments',setup:'Setup'};
+  const titles={dashboard:'Dashboard',clients:'Clients',clientDetail:'Client',log:'Log Session',sessions:'Session Log',programs:'Programs',workouts:'Workouts',workoutDetail:'Workout',workoutEdit:'Workout Editor',assessments:'Assessments',setup:'Setup'};
   const _tbt=document.getElementById('rtbTitle');if(_tbt)_tbt.textContent=titles[page]||page;
   const _tbs=document.getElementById('rtbSub');if(_tbs)_tbs.textContent='';
   if(page==='dashboard')renderDash();
@@ -7453,6 +7963,9 @@ function nav(page,data){
   if(page==='log')initLog(data);
   if(page==='sessions'){renderSes();renderLeftPanel();}
   if(page==='programs'){renderProgs();renderLeftPanel();}
+  if(page==='workouts'){renderWorkoutLibrary();}
+  if(page==='workoutDetail'&&data){renderWorkoutDetail(data);}
+  if(page==='workoutEdit'){renderWorkoutEditor();}
   if(page==='programDetail'){}
   if(page==='assessments')renderAss();
   if(page==='clientDetail'&&data){curCid=data;renderCD(data);renderLeftPanel();}
@@ -8479,7 +8992,7 @@ const EXERCISE_DB = [
 
   // ── HINGE PATTERN ──
   {n:'Deadlift',cat:'Hinge'},{n:'Romanian Deadlift',cat:'Hinge'},{n:'KB Deadlift',cat:'Hinge'},
-  {n:'Single Leg RDL',cat:'Hinge'},{n:'Good Morning',cat:'Hinge'},{n:'Nordic Curl',cat:'Hinge'},
+  {n:'Single Leg RDL',cat:'Hinge'},{n:'Single Leg Deadlift',cat:'Hinge'},{n:'Good Morning',cat:'Hinge'},{n:'Nordic Curl',cat:'Hinge'},
   {n:'Glute Bridge',cat:'Hinge'},{n:'Hip Thrust',cat:'Hinge'},{n:'Cable Pull Through',cat:'Hinge'},
   {n:'Sumo Deadlift',cat:'Hinge'},{n:'BB RDL',cat:'Hinge'},{n:'DB RDL',cat:'Hinge'},
   {n:'Barbell Hip Thrust',cat:'Hinge'},{n:'Single Leg Hip Thrust',cat:'Hinge'},
@@ -8491,11 +9004,16 @@ const EXERCISE_DB = [
   {n:'KB Swing',cat:'Kettlebell'},{n:'KB Clean',cat:'Kettlebell'},{n:'KB Press',cat:'Kettlebell'},
   {n:'KB Snatch',cat:'Kettlebell'},{n:'KB Turkish Get Up',cat:'Kettlebell'},
   {n:'KB Windmill',cat:'Kettlebell'},{n:'KB Goblet Squat',cat:'Kettlebell'},
+  {n:'KB Slingshot',cat:'Kettlebell'},{n:'KB Halo',cat:'Kettlebell'},
+  {n:'Single Leg Deadlift',cat:'Kettlebell'},{n:'KB Single Leg Deadlift',cat:'Kettlebell'},
+  {n:'KB One Arm Swing',cat:'Kettlebell'},{n:'KB Clean and Press',cat:'Kettlebell'},
+  {n:'KB Side Lunge',cat:'Kettlebell'},{n:'KB Bent Over Row',cat:'Kettlebell'},
+  {n:'KB Reverse Lunge and Press',cat:'Kettlebell'},
   {n:'KB Single Leg RDL',cat:'Kettlebell'},{n:'KB Row',cat:'Kettlebell'},
   {n:'KB Halo',cat:'Kettlebell'},{n:'KB Deadlift',cat:'Kettlebell'},
   {n:'KB Single Arm Swing',cat:'Kettlebell'},{n:'KB Figure 8',cat:'Kettlebell'},
   {n:'KB Around the World',cat:'Kettlebell'},{n:'KB Floor Press',cat:'Kettlebell'},
-  {n:'KB High Pull',cat:'Kettlebell'},{n:'KB Thruster',cat:'Kettlebell'},
+  {n:'KB High Pull',cat:'Kettlebell'},{n:'KB Thruster',cat:'Kettlebell'},{n:'Thruster',cat:'Kettlebell'},
   {n:'Double KB Front Squat',cat:'Kettlebell'},{n:'Double KB Clean',cat:'Kettlebell'},
   {n:'Double KB Press',cat:'Kettlebell'},{n:'KB Farmer Carry',cat:'Kettlebell'},
   {n:'KB Suitcase Carry',cat:'Kettlebell'},{n:'KB Bottoms-Up Press',cat:'Kettlebell'},
@@ -8526,7 +9044,7 @@ const EXERCISE_DB = [
   {n:'Bradford Press',cat:'Push'},{n:'Dumbbell Press 1-Arm',cat:'Push'},
 
   // ── PULL HORIZONTAL ──
-  {n:'Barbell Row',cat:'Pull'},{n:'DB Row',cat:'Pull'},{n:'Cable Row',cat:'Pull'},
+  {n:'Barbell Row',cat:'Pull'},{n:'Bent Over Row',cat:'Pull'},{n:'DB Row',cat:'Pull'},{n:'Clean and Press',cat:'Olympic'},{n:'Cable Row',cat:'Pull'},
   {n:'TRX Row',cat:'Pull'},{n:'Gorilla Row',cat:'Pull'},{n:'Chest Supported Row',cat:'Pull'},
   {n:'Pendlay Row',cat:'Pull'},{n:'Single Arm DB Row',cat:'Pull'},{n:'Machine Row',cat:'Pull'},
   {n:'Seal Row',cat:'Pull'},{n:'Meadows Row',cat:'Pull'},{n:'Banded Row',cat:'Pull'},
@@ -10810,6 +11328,7 @@ function regenAvatar(clientId){
   <div class="sb-item" id="sb-sessions" onclick="nav('sessions')"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="14" height="14" rx="2"/><path d="M5 9h8M5 6h8M5 12h5"/></svg></div>
   <div class="sb-div"></div>
   <div class="sb-item" id="sb-programs" onclick="nav('programs')"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2h10a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M6 7h6M6 10h6M6 13h3"/></svg></div>
+  <div class="sb-item" id="sb-workouts" onclick="nav('workouts')"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9h2m8 0h2M5 9a2 2 0 002 2V7a2 2 0 00-2 2zm6 0a2 2 0 002 2V7a2 2 0 00-2 2zM7 6V4m4 2V4M7 14v2m4-2v2"/></svg></div>
   <div class="sb-item" id="sb-assessments" onclick="nav('assessments')"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="2,14 5,9 8,11 11,6 14,8 16,4"/></svg></div>
   <div class="sb-bot">
     <div class="sb-div"></div>
