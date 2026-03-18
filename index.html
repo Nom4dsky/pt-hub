@@ -669,6 +669,39 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;}
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-weight">
+  <div class="modal" style="max-width:320px">
+    <div class="modal-handle"></div>
+    <div class="modal-hdr">
+      <div class="modal-title">Log Weight</div>
+      <button class="modal-close" onclick="closeM('weight')">×</button>
+    </div>
+    <input type="hidden" id="wt-cid"/>
+    <div style="display:flex;flex-direction:column;gap:14px;padding-bottom:8px">
+      <div class="fg">
+        <label>Date</label>
+        <input type="date" id="wt-date" class="fg input"/>
+      </div>
+      <div class="fg">
+        <label>Bodyweight (kg)</label>
+        <input type="number" id="wt-kg" placeholder="e.g. 74.5" step="0.1" min="0" style="background:transparent;border:1px solid var(--border2);color:var(--text);font-family:var(--font-mono);font-size:24px;padding:12px;outline:none;width:100%;text-align:center;transition:border-color .15s" autofocus/>
+      </div>
+      <div class="fg">
+        <label>Body fat % (optional)</label>
+        <input type="number" id="wt-bf" placeholder="e.g. 18" step="0.1" min="0" max="60" style="background:transparent;border:1px solid var(--border2);color:var(--text);font-family:var(--font-mono);font-size:18px;padding:10px;outline:none;width:100%;text-align:center;transition:border-color .15s"/>
+      </div>
+      <div class="fg">
+        <label>Notes (optional)</label>
+        <input type="text" id="wt-notes" placeholder="e.g. morning, fasted" style="background:transparent;border:1px solid var(--border2);color:var(--text);font-family:var(--font-body);font-size:13px;padding:10px;outline:none;width:100%;transition:border-color .15s"/>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-accent" onclick="saveWeight()" style="flex:1;justify-content:center">Save</button>
+      <button class="btn btn-ghost" onclick="closeM('weight')">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-sessionDetail">
   <div class="modal" style="max-width:640px">
     <div class="modal-handle"></div>
@@ -2141,7 +2174,7 @@ function renderCD(id){
         <canvas id="av_${c.id}" width="64" height="64"></canvas>
       </div>
       <div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap"><h2 style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;letter-spacing:-.4px">${c.name}</h2><span class="badge ${c.status==='Active'?'b-green':c.status==='Check'?'b-amber':'b-gray'}">${c.status}</span><span class="badge ${c.type==='Online'?'b-blue':c.type==='Hybrid'?'b-dark':'b-gray'}">${c.type}</span>${c.injury?'<span class="badge b-red">⚠ Injury</span>':''}</div><div style="font-size:13px;color:var(--text2)">${c.goals||'No goals set'}</div></div>
-      <div class="detail-acts"><button class="btn btn-accent btn-sm" onclick="nav('log','${id}')">+ Session</button><button class="btn btn-ghost btn-sm" onclick="openCI('${id}')">+ Check-in</button><button class="btn btn-ghost btn-sm" onclick="openNote('${id}')">+ Note</button><button class="btn btn-ghost btn-sm" onclick="editC('${id}')">Edit</button><button class="btn btn-ghost btn-sm" onclick="expCSV('${id}')">↓ CSV</button></div>
+      <div class="detail-acts"><button class="btn btn-accent btn-sm" onclick="nav('log','${id}')">+ Session</button><button class="btn btn-ghost btn-sm" onclick="openCI('${id}')">+ Check-in</button><button class="btn btn-ghost btn-sm" onclick="openWeightModal('${id}')">⚖ Weight</button><button class="btn btn-ghost btn-sm" onclick="openNote('${id}')">+ Note</button><button class="btn btn-ghost btn-sm" onclick="editC('${id}')">Edit</button><button class="btn btn-ghost btn-sm" onclick="expCSV('${id}')">↓ CSV</button></div>
     </div>
     <div class="kpi-row mb16">
       <div class="kpi">
@@ -4468,6 +4501,51 @@ function checkSetup(){
 }
 
 // ── SESSION EDIT / DELETE ──
+function openWeightModal(cid){
+  document.getElementById('wt-cid').value=cid;
+  document.getElementById('wt-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('wt-kg').value='';
+  document.getElementById('wt-bf').value='';
+  document.getElementById('wt-notes').value='';
+  openM('weight');
+  setTimeout(()=>document.getElementById('wt-kg')?.focus(),300);
+}
+
+function saveWeight(){
+  const cid=document.getElementById('wt-cid').value;
+  const kg=parseFloat(document.getElementById('wt-kg').value);
+  if(!kg){alert('Please enter a weight');return;}
+  const bf=parseFloat(document.getElementById('wt-bf').value)||null;
+  const notes=document.getElementById('wt-notes').value.trim();
+  const date=document.getElementById('wt-date').value;
+  // Save as a minimal check-in with just weight data
+  const cis=DB.get('checkins')||[];
+  // Check if check-in already exists for this date+client
+  const existing=cis.find(ci=>ci.clientId===cid&&ci.date===date);
+  if(existing){
+    // Update existing check-in weight
+    existing.weight=kg;
+    if(bf) existing.bf=bf;
+    if(notes) existing.notes=existing.notes?existing.notes+' | '+notes:notes;
+    DB.set('checkins',cis);
+    if(DB.get('workerUrl')||DB.get('notionDbs')) pushCheckinToNotion(existing).catch(()=>{});
+  } else {
+    // Create minimal check-in
+    const ci={
+      id:'ci_'+Date.now(),clientId:cid,
+      date,weight:kg,bf,
+      notes,
+      compliance:'Full',
+      sleep:null,energy:null,stress:null,soreness:null,motivation:null,appetite:null
+    };
+    cis.unshift(ci);
+    DB.set('checkins',cis);
+    if(DB.get('workerUrl')||DB.get('notionDbs')) pushCheckinToNotion(ci).catch(()=>{});
+  }
+  closeM('weight');
+  nav('clientDetail',cid);
+}
+
 function openSessionDetail(id){
   const ses=DB.get('sessions')||[];
   const s=ses.find(x=>x.id===id);
@@ -7947,7 +8025,7 @@ function renderCD(id){
         <canvas id="av_${c.id}" width="64" height="64"></canvas>
       </div>
       <div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap"><h2 style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;letter-spacing:-.4px">${c.name}</h2><span class="badge ${c.status==='Active'?'b-green':c.status==='Check'?'b-amber':'b-gray'}">${c.status}</span><span class="badge ${c.type==='Online'?'b-blue':c.type==='Hybrid'?'b-dark':'b-gray'}">${c.type}</span>${c.injury?'<span class="badge b-red">⚠ Injury</span>':''}</div><div style="font-size:13px;color:var(--text2)">${c.goals||'No goals set'}</div></div>
-      <div class="detail-acts"><button class="btn btn-accent btn-sm" onclick="nav('log','${id}')">+ Session</button><button class="btn btn-ghost btn-sm" onclick="openCI('${id}')">+ Check-in</button><button class="btn btn-ghost btn-sm" onclick="openNote('${id}')">+ Note</button><button class="btn btn-ghost btn-sm" onclick="editC('${id}')">Edit</button><button class="btn btn-ghost btn-sm" onclick="expCSV('${id}')">↓ CSV</button></div>
+      <div class="detail-acts"><button class="btn btn-accent btn-sm" onclick="nav('log','${id}')">+ Session</button><button class="btn btn-ghost btn-sm" onclick="openCI('${id}')">+ Check-in</button><button class="btn btn-ghost btn-sm" onclick="openWeightModal('${id}')">⚖ Weight</button><button class="btn btn-ghost btn-sm" onclick="openNote('${id}')">+ Note</button><button class="btn btn-ghost btn-sm" onclick="editC('${id}')">Edit</button><button class="btn btn-ghost btn-sm" onclick="expCSV('${id}')">↓ CSV</button></div>
     </div>
     <div class="kpi-row mb16">
       <div class="kpi">
