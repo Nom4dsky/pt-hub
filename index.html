@@ -3130,7 +3130,9 @@ function saveSes(){
   const idx=cl.findIndex(c=>c.id===cid);cl[idx].lastSession=s.date;DB.set('clients',cl);
   if(sesRun)toggleSes();
   // Push to Notion if configured
-  if(DB.get('workerUrl')||DB.get('notionDbs')) pushSessionToNotion(s).catch(()=>{});
+  if(DB.get('workerUrl')||DB.get('notionDbs')){
+    pushSessionToNotion(s).then(()=>pushWorkoutToNotion(s)).catch(()=>{});
+  }
   clearLog();
   nav('clientDetail',cid);
 }
@@ -3906,6 +3908,7 @@ const DB_IDS_DEFAULT = {
   sessions:    '325d5b395866808ab3e6f4d76f9ac681',
   assessments: '325d5b39586680c6ad08d379891b0741',
   checkins:    '325d5b395866801d8381e1ba48f827a5',
+  workouts:    '327d5b39586680379130ea2231da9d58',
   programs:    '325d5b39586680f9ac2ef9353cd034ba',
   notes:       '325d5b395866807ea641f62a2f9f7e84',
 };
@@ -4208,6 +4211,15 @@ async function fullSync(){
     }
     if(newSes.length) syncLog(`↑ Pushed ${newSes.length} new sessions`,'ok');
 
+    // Push workout details for sessions that need it
+    if(dbs.workouts){
+      const sesNeedingWorkout=(DB.get('sessions')||[]).filter(s=>s.notionPageId&&!s.workoutPageId&&(s.exerciseData?.length||s.exercises));
+      for(const s of sesNeedingWorkout){
+        await pushWorkoutToNotion(s).catch(e=>syncLog(`✗ Workout ${s.date}: ${e.message}`,'error'));
+      }
+      if(sesNeedingWorkout.length) syncLog(`↑ Pushed ${sesNeedingWorkout.length} workout details`,'ok');
+    }
+
     // Push check-ins without notionPageId
     syncLog(`Check-ins DB id: ${dbs.checkins||'MISSING'}`);
     const allCIs=DB.get('checkins')||[];
@@ -4390,6 +4402,54 @@ async function pushClientToNotion(client){
       syncLog(`↑ Created client: ${client.name}`,'ok');
     }
   } catch(e){ syncLog(`✗ Client sync failed: ${e.message}`,'error'); }
+}
+
+async function pushWorkoutToNotion(session){
+  const dbs=getDbIds();
+  if(!dbs.workouts) return;
+  // Build exercises text block
+  const exs=session.exerciseData||[];
+  let exText='';
+  if(exs.length){
+    exText=exs.map(e=>{
+      const sets=(e.sets||[]).filter(s=>s.kg||s.reps);
+      const setsStr=sets.map((s,i)=>`  Set ${i+1}: ${s.kg?s.kg+'kg':''}${s.kg&&s.reps?' × ':''}${s.reps||''}${s.rpe?' @ RPE'+s.rpe:''}`).join('\n');
+      return `${e.name}${e.notes?' ('+e.notes+')':''}${setsStr?'\n'+setsStr:''}`;
+    }).join('\n\n');
+  } else if(session.exercises){
+    exText=session.exercises;
+  }
+  // Build metcon text
+  if(session.metcon){
+    const mc=session.metcon;
+    const typeLabel={amrap:'AMRAP',emom:'EMOM',intervals:'Intervals',fortime:'For Time'}[mc.type]||mc.type;
+    const cfgStr=Object.entries(mc.config||{}).map(([k,v])=>`${k}: ${v}`).join(', ');
+    const mvStr=(mc.movements||[]).map(m=>`  - ${m.reps?m.reps+' ':''}${m.movement}${m.load?' @ '+m.load:''}`).join('\n');
+    exText+=`\n\n── ${typeLabel}${cfgStr?' ('+cfgStr+')':''} ──\n${mvStr}${mc.result?'\nResult: '+mc.result:''}`;
+  }
+  const cl=DB.get('clients')||[];
+  const client=cl.find(c=>c.id===session.clientId);
+  const firstEx=session.exerciseData?.[0]?.name||'';
+  const props={
+    Name: P.title(`${session.clientName||''} – ${session.date}${firstEx?' – '+firstEx:''}`),
+    Date: P.date(session.date),
+    Exercises: P.text(exText.slice(0,2000)),
+    'Volume Notes': P.text(session.notes||''),
+  };
+  if(client?.notionPageId) props['Client']={relation:[{id:client.notionPageId}]};
+  if(session.notionPageId) props['Session']={relation:[{id:session.notionPageId}]};
+  try{
+    if(session.workoutPageId){
+      await updatePage(session.workoutPageId, props);
+    } else {
+      const page=await createPage(dbs.workouts, props);
+      // Save workoutPageId back to session
+      const ses=DB.get('sessions')||[];
+      const idx=ses.findIndex(s=>s.id===session.id);
+      if(idx>=0){ses[idx].workoutPageId=page.id;DB.set('sessions',ses);}
+      syncLog(`↑ Created workout: ${session.clientName} ${session.date}`,'ok');
+    }
+  }catch(e){syncLog(`✗ Workout sync failed: ${e.message}`,'error');}
 }
 
 async function pushSessionToNotion(session){
@@ -8871,7 +8931,9 @@ function saveSes(){
   const idx=cl.findIndex(c=>c.id===cid);cl[idx].lastSession=s.date;DB.set('clients',cl);
   if(sesRun)toggleSes();
   // Push to Notion if configured
-  if(DB.get('workerUrl')||DB.get('notionDbs')) pushSessionToNotion(s).catch(()=>{});
+  if(DB.get('workerUrl')||DB.get('notionDbs')){
+    pushSessionToNotion(s).then(()=>pushWorkoutToNotion(s)).catch(()=>{});
+  }
   clearLog();
   nav('clientDetail',cid);
 }
@@ -9577,6 +9639,7 @@ const DB_IDS_DEFAULT = {
   sessions:    '325d5b395866808ab3e6f4d76f9ac681',
   assessments: '325d5b39586680c6ad08d379891b0741',
   checkins:    '325d5b395866801d8381e1ba48f827a5',
+  workouts:    '327d5b39586680379130ea2231da9d58',
   programs:    '325d5b39586680f9ac2ef9353cd034ba',
   notes:       '325d5b395866807ea641f62a2f9f7e84',
 };
