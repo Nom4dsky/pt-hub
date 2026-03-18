@@ -4833,7 +4833,7 @@ async function pushWorkoutTemplateToNotion(w){
     Exercises: P.text((exText+(metconText?' ||| METCON: '+metconText:'')).slice(0,2000)),
     Warmup: P.text((w.warmup||'').slice(0,500)),
     'Assigned Clients': P.text(assignedNames),
-    Notes: P.text(((w.notes||'')+'__BLOCKS__:'+JSON.stringify({blocks:w.blocks||[],metcon:w.metcon||null})).slice(0,2000)),
+    Notes: P.text((w.notes||'').slice(0,500)),
   };
   try{
     if(w.notionPageId){
@@ -4843,13 +4843,24 @@ async function pushWorkoutTemplateToNotion(w){
       const existing=await findNotionPageByTitle(dbs.workoutTemplates, w.name||'Untitled Workout');
       const wks=DB.get('workouts_lib')||[];
       const idx=wks.findIndex(x=>x.id===w.id);
+      const blocksJson=JSON.stringify({blocks:w.blocks||[],metcon:w.metcon||null});
       if(existing){
         if(idx>=0){wks[idx].notionPageId=existing.id;DB.set('workouts_lib',wks);}
         await updatePage(existing.id, props);
+        // Update body with fresh JSON
+        await notionReq('PATCH','/blocks/'+existing.id+'/children',{children:[
+          {object:'block',type:'code',code:{rich_text:[{type:'text',text:{content:blocksJson.slice(0,2000)}}],language:'json'}},
+          ...(blocksJson.length>2000?[{object:'block',type:'code',code:{rich_text:[{type:'text',text:{content:blocksJson.slice(2000,4000)}}],language:'json'}}]:[]),
+        ]}).catch(()=>{});
         syncLog(`↑ Linked existing template: ${w.name}`,'ok');
       } else {
         const page=await createPage(dbs.workoutTemplates, props);
         if(idx>=0){wks[idx].notionPageId=page.id;DB.set('workouts_lib',wks);}
+        // Store full JSON in page body
+        await notionReq('PATCH','/blocks/'+page.id+'/children',{children:[
+          {object:'block',type:'code',code:{rich_text:[{type:'text',text:{content:blocksJson.slice(0,2000)}}],language:'json'}},
+          ...(blocksJson.length>2000?[{object:'block',type:'code',code:{rich_text:[{type:'text',text:{content:blocksJson.slice(2000,4000)}}],language:'json'}}]:[]),
+        ]}).catch(()=>{});
         syncLog(`↑ Created template: ${w.name}`,'ok');
       }
     }
@@ -4864,7 +4875,7 @@ async function pullWorkoutTemplatesFromNotion(localClients){
     const notionTemplates=await queryDb(dbs.workoutTemplates);
     if(!notionTemplates.length) return;
     const wks=DB.get('workouts_lib')||[];
-    notionTemplates.forEach(p=>{
+    for(const p of notionTemplates){
       const name=getTitle(p);
       if(!name) return;
       const idx=wks.findIndex(w=>w.notionPageId===p.id||w.name===name);
@@ -4879,18 +4890,19 @@ async function pullWorkoutTemplatesFromNotion(localClients){
         warmup:getText(p,'Warmup')||'',
         assignedClients,
       };
-      // Parse blocks+metcon from Notes JSON
-      const rawNotes=getText(p,'Notes')||'';
-      const splitIdx=rawNotes.indexOf('__BLOCKS__:');
-      data.notes=splitIdx>=0?rawNotes.slice(0,splitIdx).trim():rawNotes;
-      let parsedBlocks=null, parsedMetcon=null;
-      if(splitIdx>=0){
-        try{
-          const parsed=JSON.parse(rawNotes.slice(splitIdx+11));
+      data.notes=getText(p,'Notes')||'';
+      // Fetch page body to get blocks JSON
+      let parsedBlocks=null,parsedMetcon=null;
+      try{
+        const children=await notionReq('GET','/blocks/'+p.id+'/children');
+        const codeBlocks=(children.results||[]).filter(b=>b.type==='code');
+        let jsonStr=codeBlocks.map(b=>b.code?.rich_text?.[0]?.plain_text||'').join('');
+        if(jsonStr){
+          const parsed=JSON.parse(jsonStr);
           if(parsed.blocks&&parsed.blocks.length) parsedBlocks=parsed.blocks;
           if(parsed.metcon) parsedMetcon=parsed.metcon;
-        }catch(e){}
-      }
+        }
+      }catch(e){}
       if(idx>=0){
         wks[idx]={...wks[idx],...data,
           blocks:parsedBlocks||wks[idx].blocks||[],
@@ -4899,7 +4911,7 @@ async function pullWorkoutTemplatesFromNotion(localClients){
         wks.push({id:'wk_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
           blocks:parsedBlocks||[],metcon:parsedMetcon||null,...data});
       }
-    });
+    }
     // Dedup by name
     const wkMap=new Map();
     wks.forEach(w=>{
