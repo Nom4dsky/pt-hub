@@ -5164,8 +5164,7 @@ async function pushWorkoutToNotion(session){
   const props={
     Name: P.title(`${session.clientName||''} – ${session.date}${firstEx?' – '+firstEx:''}`),
     Date: P.date(session.date),
-    Exercises: P.text(exText.slice(0,2000)),
-    Notes: P.text(session.notes||''),
+    Exercises: P.text((exText+(session.notes?'\n\nNotes: '+session.notes:'')).slice(0,2000)),
   };
   if(client?.notionPageId) props['Client']={relation:[{id:client.notionPageId}]};
   if(session.notionPageId) props['Session']={relation:[{id:session.notionPageId}]};
