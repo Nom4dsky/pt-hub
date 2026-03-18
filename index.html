@@ -4870,39 +4870,39 @@ async function pushWorkoutTemplateToNotion(w){
 // ── Pull workout templates from Notion ──
 async function pullWorkoutTemplatesFromNotion(localClients){
   const dbs=getDbIds();
-  if(!dbs.workoutTemplates) return;
+  if(!dbs.workoutTemplates){syncLog('⚠ No workoutTemplates DB ID','warn');return;}
   try{
     const notionTemplates=await queryDb(dbs.workoutTemplates);
+    syncLog(`Templates in Notion: ${notionTemplates.length}`);
     if(!notionTemplates.length) return;
     const wks=DB.get('workouts_lib')||[];
     for(const p of notionTemplates){
       const name=getTitle(p);
-      if(!name) return;
+      if(!name) continue; // fixed: was return, should be continue
       const idx=wks.findIndex(w=>w.notionPageId===p.id||w.name===name);
-      // Parse assigned clients back to IDs
       const assignedNames=(getText(p,'Assigned Clients')||'').split(',').map(s=>s.trim()).filter(Boolean);
       const assignedClients=assignedNames.map(n=>localClients.find(c=>c.name===n)?.id).filter(Boolean);
       const data={
-        notionPageId:p.id,
-        name,
+        notionPageId:p.id, name,
         category:getSelect(p,'Category')||'Strength',
         difficulty:getSelect(p,'Difficulty')||'Moderate',
         warmup:getText(p,'Warmup')||'',
+        notes:getText(p,'Notes')||'',
         assignedClients,
       };
-      data.notes=getText(p,'Notes')||'';
-      // Fetch page body to get blocks JSON
+      // Fetch page body for blocks JSON
       let parsedBlocks=null,parsedMetcon=null;
       try{
         const children=await notionReq('GET','/blocks/'+p.id+'/children');
         const codeBlocks=(children.results||[]).filter(b=>b.type==='code');
         let jsonStr=codeBlocks.map(b=>b.code?.rich_text?.[0]?.plain_text||'').join('');
+        syncLog(`Template "${name}": ${codeBlocks.length} code blocks, ${jsonStr.length} chars`);
         if(jsonStr){
           const parsed=JSON.parse(jsonStr);
           if(parsed.blocks&&parsed.blocks.length) parsedBlocks=parsed.blocks;
           if(parsed.metcon) parsedMetcon=parsed.metcon;
         }
-      }catch(e){}
+      }catch(e){syncLog(`⚠ Block fetch failed for "${name}": ${e.message}`,'warn');}
       if(idx>=0){
         wks[idx]={...wks[idx],...data,
           blocks:parsedBlocks||wks[idx].blocks||[],
@@ -4911,15 +4911,15 @@ async function pullWorkoutTemplatesFromNotion(localClients){
         wks.push({id:'wk_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
           blocks:parsedBlocks||[],metcon:parsedMetcon||null,...data});
       }
+      syncLog(`Template "${name}": ${(parsedBlocks||[]).length} blocks, metcon=${!!parsedMetcon}`,'ok');
     }
-    // Dedup by name
     const wkMap=new Map();
     wks.forEach(w=>{
       const ex=wkMap.get(w.name);
       if(!ex||(!ex.notionPageId&&w.notionPageId)) wkMap.set(w.name,w);
     });
     DB.set('workouts_lib',[...wkMap.values()]);
-    syncLog(`✓ Workout templates: ${wks.length} total`,'ok');
+    syncLog(`✓ Workout templates: ${[...wkMap.values()].length} total`,'ok');
   }catch(e){syncLog(`⚠ Template pull failed: ${e.message}`,'warn');}
 }
 
