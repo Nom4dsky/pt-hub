@@ -3776,7 +3776,10 @@ function saveCI(){
   ci.sleep=ci.sleep;ci.stress=ci.stress;ci.soreness=ci.soreness;
   ci.energy=ci.energy;ci.motivation=ci.motivation;
   cis.unshift(ci);
-  DB.set('checkins',cis);closeM('addCheckin');nav('clientDetail',cid);
+  DB.set('checkins',cis);
+  // Push to Notion if configured
+  if(DB.get('workerUrl')||DB.get('notionDbs')) pushCheckinToNotion(ci).catch(()=>{});
+  closeM('addCheckin');nav('clientDetail',cid);
 }
 
 // ── NOTION ──
@@ -3789,6 +3792,7 @@ const DB_IDS_DEFAULT = {
   clients:     '325d5b395866807b879cdb6038cbf88c',
   sessions:    '325d5b395866808ab3e6f4d76f9ac681',
   assessments: '325d5b39586680c6ad08d379891b0741',
+  checkins:    '325d5b395866801d8381e1ba48f827a5',
   programs:    '325d5b39586680f9ac2ef9353cd034ba',
   notes:       '325d5b395866807ea641f62a2f9f7e84',
 };
@@ -3969,6 +3973,14 @@ async function fullSync(){
     DB.set('clients', localClients);
     syncLog(`✓ Clients: ${localClients.length} total`,'ok');
 
+    // ── STEP 2b: Fetch check-ins from Notion ──
+    let notionCheckins = [];
+    if(dbs.checkins){
+      try{ notionCheckins=await queryDb(dbs.checkins); }
+      catch(e){ syncLog('⚠ Could not fetch check-ins: '+e.message,'warn'); }
+    }
+    const notionCheckinIds=new Set(notionCheckins.map(p=>p.id));
+
     // ── STEP 3: Merge sessions ──
     let localSes = DB.get('sessions')||[];
 
@@ -4018,6 +4030,54 @@ async function fullSync(){
     DB.set('sessions', localSes);
     syncLog(`✓ Sessions: ${localSes.length} total`,'ok');
 
+    // ── STEP 3b: Merge check-ins ──
+    if(dbs.checkins && notionCheckins.length){
+      let localCIs=DB.get('checkins')||[];
+      const cl2=DB.get('clients')||[];
+      // Remove deleted
+      localCIs=localCIs.filter(ci=>{
+        if(ci.notionPageId && !notionCheckinIds.has(ci.notionPageId)){
+          syncLog(`Removed check-in — deleted in Notion`);return false;
+        }
+        return true;
+      });
+      // Merge from Notion
+      notionCheckins.forEach(p=>{
+        const idx=localCIs.findIndex(ci=>ci.notionPageId===p.id);
+        const clientName=getTitle(p).split(' – ')[0]||'';
+        const client2=cl2.find(c=>c.name===clientName);
+        const data={
+          notionPageId:p.id,
+          notionId:p.id.replace(/-/g,''),
+          clientId:client2?.id||'',
+          clientName,
+          date:getDate(p,'Date')||'',
+          weight:getNum(p,'Weight')||null,
+          bf:getNum(p,'Body Fat')||null,
+          sleep:getNum(p,'Sleep')||null,
+          energy:getNum(p,'Energy')||null,
+          stress:getNum(p,'Stress')||null,
+          soreness:getNum(p,'Soreness')||null,
+          motivation:getNum(p,'Motivation')||null,
+          appetite:getNum(p,'Appetite')||null,
+          compliance:p.properties?.Compliance?.select?.name||'',
+          notes:getText(p,'Notes')||'',
+        };
+        if(idx>=0) localCIs[idx]={...localCIs[idx],...data};
+        else localCIs.push({id:'ci_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),...data});
+      });
+      // Dedup by clientId+date
+      const ciMap=new Map();
+      localCIs.forEach(ci=>{
+        const key=(ci.clientId||ci.clientName)+'|'+ci.date;
+        const ex=ciMap.get(key);
+        if(!ex||(!ex.notionPageId&&ci.notionPageId)) ciMap.set(key,ci);
+      });
+      localCIs=[...ciMap.values()];
+      DB.set('checkins',localCIs);
+      syncLog(`✓ Check-ins: ${localCIs.length} total`,'ok');
+    }
+
     // ── STEP 4: Push local-only items to Notion ──
     syncLog('Pushing new local items to Notion...');
 
@@ -4034,6 +4094,16 @@ async function fullSync(){
       await pushSessionToNotion(s).catch(e=>syncLog(`✗ Session ${s.date}: ${e.message}`,'error'));
     }
     if(newSes.length) syncLog(`↑ Pushed ${newSes.length} new sessions`,'ok');
+
+    // Push check-ins without notionPageId
+    if(dbs.checkins){
+      const allCIs=DB.get('checkins')||[];
+      const newCIs=allCIs.filter(ci=>!ci.notionPageId);
+      for(const ci of newCIs){
+        await pushCheckinToNotion(ci).catch(e=>syncLog(`✗ Check-in ${ci.date}: ${e.message}`,'error'));
+      }
+      if(newCIs.length) syncLog(`↑ Pushed ${newCIs.length} new check-ins`,'ok');
+    }
 
     // Push programs without notionPageId
     const prgs = DB.get('programs')||[];
@@ -4108,6 +4178,41 @@ async function fullSync(){
   } finally {
     setSyncing(false);
   }
+}
+
+async function pushCheckinToNotion(ci){
+  const dbs=getDbIds();
+  if(!dbs.checkins) return;
+  const cl=DB.get('clients')||[];
+  const client=cl.find(c=>c.id===ci.clientId);
+  const props={
+    Name: P.title(`${client?.name||ci.clientId} – ${ci.date}`),
+    Date: P.date(ci.date),
+    Weight: P.num(ci.weight),
+    'Body Fat': P.num(ci.bf),
+    Sleep: P.num(ci.sleep),
+    Energy: P.num(ci.energy),
+    Stress: P.num(ci.stress),
+    Soreness: P.num(ci.soreness),
+    Motivation: P.num(ci.motivation),
+    Appetite: P.num(ci.appetite),
+    Compliance: ci.compliance?{select:{name:ci.compliance}}:{select:null},
+    Notes: P.text(ci.notes||''),
+  };
+  // Add client relation if client has notionPageId
+  if(client?.notionPageId) props['Client']={relation:[{id:client.notionPageId}]};
+  try{
+    if(ci.notionPageId){
+      await updatePage(ci.notionPageId, props);
+      syncLog(`↑ Updated check-in: ${client?.name} ${ci.date}`,'ok');
+    } else {
+      const page=await createPage(dbs.checkins, props);
+      const cis=DB.get('checkins')||[];
+      const idx=cis.findIndex(x=>x.id===ci.id);
+      if(idx>=0){cis[idx].notionPageId=page.id;cis[idx].notionId=page.id.replace(/-/g,'');DB.set('checkins',cis);}
+      syncLog(`↑ Created check-in: ${client?.name} ${ci.date}`,'ok');
+    }
+  }catch(e){syncLog(`✗ Check-in sync failed: ${e.message}`,'error');}
 }
 
 async function syncFromNotion(){ return fullSync(); }
@@ -9273,7 +9378,10 @@ function saveCI(){
   ci.sleep=ci.sleep;ci.stress=ci.stress;ci.soreness=ci.soreness;
   ci.energy=ci.energy;ci.motivation=ci.motivation;
   cis.unshift(ci);
-  DB.set('checkins',cis);closeM('addCheckin');nav('clientDetail',cid);
+  DB.set('checkins',cis);
+  // Push to Notion if configured
+  if(DB.get('workerUrl')||DB.get('notionDbs')) pushCheckinToNotion(ci).catch(()=>{});
+  closeM('addCheckin');nav('clientDetail',cid);
 }
 
 // ── NOTION ──
@@ -9286,6 +9394,7 @@ const DB_IDS_DEFAULT = {
   clients:     '325d5b395866807b879cdb6038cbf88c',
   sessions:    '325d5b395866808ab3e6f4d76f9ac681',
   assessments: '325d5b39586680c6ad08d379891b0741',
+  checkins:    '325d5b395866801d8381e1ba48f827a5',
   programs:    '325d5b39586680f9ac2ef9353cd034ba',
   notes:       '325d5b395866807ea641f62a2f9f7e84',
 };
