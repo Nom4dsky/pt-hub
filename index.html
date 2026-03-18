@@ -2043,7 +2043,7 @@ function renderStrengthChart(area, ass){
   area.appendChild(statsEl);
 
   const {ctx,w,h} = makeCanvas(area, 180);
-  drawLineChart(ctx, w, h, datasets, labels);
+  if(datasets.some(d=>d.data.some(v=>v!=null))) drawLineChart(ctx, w, h, datasets, labels);
 }
 
 function renderBodyweightChart(area, ass){
@@ -2071,16 +2071,19 @@ function renderBodyweightChart(area, ass){
 function renderWellbeingChart(area, cis){
   if(!cis.length){ area.innerHTML='<div style="color:var(--text3);font-size:12px;padding:20px 0;text-align:center">No check-ins yet — add weekly check-ins to see trends</div>'; return; }
 
-  const labels = cis.map(ci=>ci.date.slice(5));
+  // Only use check-ins that have at least one metric value
+  const metricCis = cis.filter(ci=>ci.energy!=null||ci.sleep!=null||ci.motivation!=null||ci.stress!=null);
+  if(!metricCis.length){ area.innerHTML='<div style="color:var(--text3);font-size:12px;padding:20px 0;text-align:center">No wellbeing data yet — add check-ins with metric scores</div>'; return; }
+  const labels = metricCis.map(ci=>ci.date.slice(5));
   const datasets = [
-    {label:'Energy',    color:'#22c55e', data:cis.map(ci=>ci.energy||0)},
-    {label:'Sleep',     color:'#3b82f6', data:cis.map(ci=>ci.sleep||0)},
-    {label:'Motivation',color:'#d4f54e', data:cis.map(ci=>ci.motivation||0)},
-    {label:'Stress',    color:'#ef4444', data:cis.map(ci=>ci.stress||0)},
+    {label:'Energy',    color:'#22c55e', data:metricCis.map(ci=>ci.energy!=null?ci.energy:null)},
+    {label:'Sleep',     color:'#3b82f6', data:metricCis.map(ci=>ci.sleep!=null?ci.sleep:null)},
+    {label:'Motivation',color:'#d4f54e', data:metricCis.map(ci=>ci.motivation!=null?ci.motivation:null)},
+    {label:'Stress',    color:'#ef4444', data:metricCis.map(ci=>ci.stress!=null?ci.stress:null)},
   ];
 
   // Latest averages
-  const latest = cis[cis.length-1];
+  const latest = metricCis[metricCis.length-1];
   const statsEl = document.createElement('div');
   statsEl.style.cssText='display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap';
   statsEl.innerHTML = datasets.map(ds=>`
@@ -2092,7 +2095,7 @@ function renderWellbeingChart(area, cis){
   area.appendChild(statsEl);
 
   const {ctx,w,h} = makeCanvas(area,160);
-  drawLineChart(ctx, w, h, datasets, labels);
+  if(datasets.some(d=>d.data.some(v=>v!=null))) drawLineChart(ctx, w, h, datasets, labels);
 }
 
 function buildExHistory(clientId, clientSessions, showAll=false){
@@ -7954,7 +7957,7 @@ function renderStrengthChart(area, ass){
   area.appendChild(statsEl);
 
   const {ctx,w,h} = makeCanvas(area, 180);
-  drawLineChart(ctx, w, h, datasets, labels);
+  if(datasets.some(d=>d.data.some(v=>v!=null))) drawLineChart(ctx, w, h, datasets, labels);
 }
 
 function renderBodyweightChart(area, ass){
@@ -7982,16 +7985,19 @@ function renderBodyweightChart(area, ass){
 function renderWellbeingChart(area, cis){
   if(!cis.length){ area.innerHTML='<div style="color:var(--text3);font-size:12px;padding:20px 0;text-align:center">No check-ins yet — add weekly check-ins to see trends</div>'; return; }
 
-  const labels = cis.map(ci=>ci.date.slice(5));
+  // Only use check-ins that have at least one metric value
+  const metricCis = cis.filter(ci=>ci.energy!=null||ci.sleep!=null||ci.motivation!=null||ci.stress!=null);
+  if(!metricCis.length){ area.innerHTML='<div style="color:var(--text3);font-size:12px;padding:20px 0;text-align:center">No wellbeing data yet — add check-ins with metric scores</div>'; return; }
+  const labels = metricCis.map(ci=>ci.date.slice(5));
   const datasets = [
-    {label:'Energy',    color:'#22c55e', data:cis.map(ci=>ci.energy||0)},
-    {label:'Sleep',     color:'#3b82f6', data:cis.map(ci=>ci.sleep||0)},
-    {label:'Motivation',color:'#d4f54e', data:cis.map(ci=>ci.motivation||0)},
-    {label:'Stress',    color:'#ef4444', data:cis.map(ci=>ci.stress||0)},
+    {label:'Energy',    color:'#22c55e', data:metricCis.map(ci=>ci.energy!=null?ci.energy:null)},
+    {label:'Sleep',     color:'#3b82f6', data:metricCis.map(ci=>ci.sleep!=null?ci.sleep:null)},
+    {label:'Motivation',color:'#d4f54e', data:metricCis.map(ci=>ci.motivation!=null?ci.motivation:null)},
+    {label:'Stress',    color:'#ef4444', data:metricCis.map(ci=>ci.stress!=null?ci.stress:null)},
   ];
 
   // Latest averages
-  const latest = cis[cis.length-1];
+  const latest = metricCis[metricCis.length-1];
   const statsEl = document.createElement('div');
   statsEl.style.cssText='display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap';
   statsEl.innerHTML = datasets.map(ds=>`
@@ -8003,7 +8009,7 @@ function renderWellbeingChart(area, cis){
   area.appendChild(statsEl);
 
   const {ctx,w,h} = makeCanvas(area,160);
-  drawLineChart(ctx, w, h, datasets, labels);
+  if(datasets.some(d=>d.data.some(v=>v!=null))) drawLineChart(ctx, w, h, datasets, labels);
 }
 
 function buildExHistory(clientId, clientSessions, showAll=false){
