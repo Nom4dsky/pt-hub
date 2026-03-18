@@ -4787,6 +4787,17 @@ async function updatePage(pageId, properties){
   return notionReq('PATCH', `/pages/${pageId}`, {properties});
 }
 
+// ── Find page by title (upsert helper) ──
+async function findNotionPageByTitle(dbId, title){
+  try{
+    const res=await notionReq('POST',`/databases/${dbId}/query`,{
+      filter:{property:'Name',title:{equals:title}},
+      page_size:1
+    });
+    return res?.results?.[0]||null;
+  }catch(e){ return null; }
+}
+
 // ── Property helpers ──
 const P = {
   title: v => ({title:[{text:{content:String(v||'')}}]}),
@@ -5147,11 +5158,19 @@ async function pushCheckinToNotion(ci){
       await updatePage(ci.notionPageId, props);
       syncLog(`↑ Updated check-in: ${client?.name} ${ci.date}`,'ok');
     } else {
-      const page=await createPage(dbs.checkins, props);
+      const title=`${client?.name||ci.clientId} – ${ci.date}`;
+      const existing=await findNotionPageByTitle(dbs.checkins, title);
       const cis=DB.get('checkins')||[];
       const idx=cis.findIndex(x=>x.id===ci.id);
-      if(idx>=0){cis[idx].notionPageId=page.id;cis[idx].notionId=page.id.replace(/-/g,'');DB.set('checkins',cis);}
-      syncLog(`↑ Created check-in: ${client?.name} ${ci.date}`,'ok');
+      if(existing){
+        if(idx>=0){cis[idx].notionPageId=existing.id;cis[idx].notionId=existing.id.replace(/-/g,'');DB.set('checkins',cis);}
+        await updatePage(existing.id, props);
+        syncLog(`↑ Linked existing check-in: ${client?.name} ${ci.date}`,'ok');
+      } else {
+        const page=await createPage(dbs.checkins, props);
+        if(idx>=0){cis[idx].notionPageId=page.id;cis[idx].notionId=page.id.replace(/-/g,'');DB.set('checkins',cis);}
+        syncLog(`↑ Created check-in: ${client?.name} ${ci.date}`,'ok');
+      }
     }
   }catch(e){syncLog(`✗ Check-in sync failed: ${e.message} (db:${dbs.checkins})`,'error');}
 }
@@ -5251,12 +5270,20 @@ async function pushWorkoutToNotion(session){
     if(session.workoutPageId){
       await updatePage(session.workoutPageId, props);
     } else {
-      const page=await createPage(dbs.workouts, props);
-      // Save workoutPageId back to session
+      // Check for existing before creating
+      const title=props.Name.title[0].text.content;
+      const existing=await findNotionPageByTitle(dbs.workouts, title);
       const ses=DB.get('sessions')||[];
       const idx=ses.findIndex(s=>s.id===session.id);
-      if(idx>=0){ses[idx].workoutPageId=page.id;DB.set('sessions',ses);}
-      syncLog(`↑ Created workout: ${session.clientName} ${session.date}`,'ok');
+      if(existing){
+        if(idx>=0){ses[idx].workoutPageId=existing.id;DB.set('sessions',ses);}
+        await updatePage(existing.id, props);
+        syncLog(`↑ Linked existing workout: ${session.clientName} ${session.date}`,'ok');
+      } else {
+        const page=await createPage(dbs.workouts, props);
+        if(idx>=0){ses[idx].workoutPageId=page.id;DB.set('sessions',ses);}
+        syncLog(`↑ Created workout: ${session.clientName} ${session.date}`,'ok');
+      }
     }
   }catch(e){syncLog(`✗ Workout sync failed: ${e.message}`,'error');}
 }
@@ -5276,11 +5303,19 @@ async function pushSessionToNotion(session){
       await updatePage(session.notionPageId, props);
       syncLog(`↑ Updated session: ${session.clientName} ${session.date}`,'ok');
     } else {
-      const page = await createPage(dbs.sessions, props);
-      const ses = DB.get('sessions')||[];
-      const idx = ses.findIndex(s=>s.id===session.id);
-      if(idx>=0){ ses[idx].notionPageId=page.id; ses[idx].notionId=page.id.replace(/-/g,''); DB.set('sessions',ses); }
-      syncLog(`↑ Created session: ${session.clientName} ${session.date}`,'ok');
+      const title=`${session.clientName} – ${session.date}`;
+      const existing=await findNotionPageByTitle(dbs.sessions, title);
+      const ses=DB.get('sessions')||[];
+      const idx=ses.findIndex(s=>s.id===session.id);
+      if(existing){
+        if(idx>=0){ses[idx].notionPageId=existing.id;ses[idx].notionId=existing.id.replace(/-/g,'');DB.set('sessions',ses);}
+        await updatePage(existing.id, props);
+        syncLog(`↑ Linked existing session: ${session.clientName} ${session.date}`,'ok');
+      } else {
+        const page=await createPage(dbs.sessions, props);
+        if(idx>=0){ses[idx].notionPageId=page.id;ses[idx].notionId=page.id.replace(/-/g,'');DB.set('sessions',ses);}
+        syncLog(`↑ Created session: ${session.clientName} ${session.date}`,'ok');
+      }
     }
   } catch(e){ syncLog(`✗ Session sync failed: ${e.message}`,'error'); }
 }
@@ -10530,6 +10565,17 @@ async function updatePage(pageId, properties){
   return notionReq('PATCH', `/pages/${pageId}`, {properties});
 }
 
+// ── Find page by title (upsert helper) ──
+async function findNotionPageByTitle(dbId, title){
+  try{
+    const res=await notionReq('POST',`/databases/${dbId}/query`,{
+      filter:{property:'Name',title:{equals:title}},
+      page_size:1
+    });
+    return res?.results?.[0]||null;
+  }catch(e){ return null; }
+}
+
 // ── Property helpers ──
 const P = {
   title: v => ({title:[{text:{content:String(v||'')}}]}),
@@ -10818,11 +10864,19 @@ async function pushSessionToNotion(session){
       await updatePage(session.notionPageId, props);
       syncLog(`↑ Updated session: ${session.clientName} ${session.date}`,'ok');
     } else {
-      const page = await createPage(dbs.sessions, props);
-      const ses = DB.get('sessions')||[];
-      const idx = ses.findIndex(s=>s.id===session.id);
-      if(idx>=0){ ses[idx].notionPageId=page.id; ses[idx].notionId=page.id.replace(/-/g,''); DB.set('sessions',ses); }
-      syncLog(`↑ Created session: ${session.clientName} ${session.date}`,'ok');
+      const title=`${session.clientName} – ${session.date}`;
+      const existing=await findNotionPageByTitle(dbs.sessions, title);
+      const ses=DB.get('sessions')||[];
+      const idx=ses.findIndex(s=>s.id===session.id);
+      if(existing){
+        if(idx>=0){ses[idx].notionPageId=existing.id;ses[idx].notionId=existing.id.replace(/-/g,'');DB.set('sessions',ses);}
+        await updatePage(existing.id, props);
+        syncLog(`↑ Linked existing session: ${session.clientName} ${session.date}`,'ok');
+      } else {
+        const page=await createPage(dbs.sessions, props);
+        if(idx>=0){ses[idx].notionPageId=page.id;ses[idx].notionId=page.id.replace(/-/g,'');DB.set('sessions',ses);}
+        syncLog(`↑ Created session: ${session.clientName} ${session.date}`,'ok');
+      }
     }
   } catch(e){ syncLog(`✗ Session sync failed: ${e.message}`,'error'); }
 }
