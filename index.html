@@ -4834,9 +4834,8 @@ async function pushWorkoutTemplateToNotion(w){
     Name: P.title(w.name||'Untitled Workout'),
     Category: P.select(w.category||'Strength'),
     Difficulty: P.select(w.difficulty||'Moderate'),
-    Exercises: P.text(exText.slice(0,2000)),
+    Exercises: P.text((exText+(metconText?' ||| METCON: '+metconText:'')).slice(0,2000)),
     Warmup: P.text((w.warmup||'').slice(0,500)),
-    Metcon: P.text(metconText.slice(0,500)),
     'Assigned Clients': P.text(assignedNames),
     Notes: P.text((w.notes||'').slice(0,500)),
   };
