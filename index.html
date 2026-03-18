@@ -4502,6 +4502,8 @@ function saveWorkout(){
   const wks=DB.get('workouts_lib')||[];
   const idx=wks.findIndex(x=>x.id===w.id);
   if(idx>=0) wks[idx]=w; else wks.unshift(w);
+  // Mark as dirty for sync update
+  if(idx>=0) wks[idx]._dirty=true;
   DB.set('workouts_lib',wks);
   // Update assigned clients
   cl.forEach(c=>{
@@ -4719,6 +4721,7 @@ const DB_IDS_DEFAULT = {
   assessments: '325d5b39586680c6ad08d379891b0741',
   checkins:    '325d5b395866801d8381e1ba48f827a5',
   workouts:    '327d5b39586680379130ea2231da9d58',
+  workoutTemplates: '327d5b39586680018bf5dc2b1a413ca0',
   programs:    '325d5b39586680f9ac2ef9353cd034ba',
   notes:       '325d5b395866807ea641f62a2f9f7e84',
 };
@@ -4818,6 +4821,89 @@ function getNum(page,key){ return page?.properties?.[key]?.number??''; }
 // ══════════════════════════════
 // PULL FROM NOTION → LOCAL
 // ══════════════════════════════
+// ── Push workout template to Notion ──
+async function pushWorkoutTemplateToNotion(w){
+  const dbs=getDbIds();
+  if(!dbs.workoutTemplates) return;
+  const cl=DB.get('clients')||[];
+  const assignedNames=(w.assignedClients||[]).map(id=>cl.find(c=>c.id===id)?.name||id).join(', ');
+  // Serialise exercises to text
+  const exText=(w.blocks||[]).map((b,bi)=>{const label=b.type==='triset'?'[Triset] ':b.type==='superset'?'[Superset] ':'';return (b.exercises||[]).map((e,ei)=>{const letter=label?String.fromCharCode(65+ei):String.fromCharCode(65+bi);const meta=[e.sets&&'Sets:'+e.sets,e.reps&&'Reps:'+e.reps,e.load&&'Load:'+e.load,e.tempo&&'Tempo:'+e.tempo,e.rest&&'Rest:'+e.rest,e.rpe&&'RPE:'+e.rpe].filter(Boolean).join(' | ');return letter+'. '+e.name+(meta?' - '+meta:'')+(e.notes?' ('+e.notes+')':'');}).join(' // ');}).join(' ||| ');
+    let metconText='';if(w.metcon){const mc=w.metcon;const typeLabel={amrap:'AMRAP',emom:'EMOM',intervals:'Intervals',fortime:'For Time'}[mc.type]||mc.type;const cfg=Object.entries(mc.config||{}).map(function(kv){return kv[0]+': '+kv[1];}).join(', ');const mvs=(mc.movements||[]).map(function(m){return (m.reps?m.reps+' ':'')+m.movement+(m.load?' @ '+m.load:'');}).join(' / ');metconText=typeLabel+(cfg?' ('+cfg+')':'')+' — '+mvs+(mc.result?' — Result: '+mc.result:'');}
+    const props={
+    Name: P.title(w.name||'Untitled Workout'),
+    Category: P.select(w.category||'Strength'),
+    Difficulty: P.select(w.difficulty||'Moderate'),
+    Exercises: P.text(exText.slice(0,2000)),
+    Warmup: P.text((w.warmup||'').slice(0,500)),
+    Metcon: P.text(metconText.slice(0,500)),
+    'Assigned Clients': P.text(assignedNames),
+    Notes: P.text((w.notes||'').slice(0,500)),
+  };
+  try{
+    if(w.notionPageId){
+      await updatePage(w.notionPageId, props);
+      syncLog(`↑ Updated template: ${w.name}`,'ok');
+    } else {
+      const existing=await findNotionPageByTitle(dbs.workoutTemplates, w.name||'Untitled Workout');
+      const wks=DB.get('workouts_lib')||[];
+      const idx=wks.findIndex(x=>x.id===w.id);
+      if(existing){
+        if(idx>=0){wks[idx].notionPageId=existing.id;DB.set('workouts_lib',wks);}
+        await updatePage(existing.id, props);
+        syncLog(`↑ Linked existing template: ${w.name}`,'ok');
+      } else {
+        const page=await createPage(dbs.workoutTemplates, props);
+        if(idx>=0){wks[idx].notionPageId=page.id;DB.set('workouts_lib',wks);}
+        syncLog(`↑ Created template: ${w.name}`,'ok');
+      }
+    }
+  }catch(e){syncLog(`✗ Template sync failed: ${e.message}`,'error');}
+}
+
+// ── Pull workout templates from Notion ──
+async function pullWorkoutTemplatesFromNotion(localClients){
+  const dbs=getDbIds();
+  if(!dbs.workoutTemplates) return;
+  try{
+    const notionTemplates=await queryDb(dbs.workoutTemplates);
+    if(!notionTemplates.length) return;
+    const wks=DB.get('workouts_lib')||[];
+    notionTemplates.forEach(p=>{
+      const name=getTitle(p);
+      if(!name) return;
+      const idx=wks.findIndex(w=>w.notionPageId===p.id||w.name===name);
+      // Parse assigned clients back to IDs
+      const assignedNames=(getText(p,'Assigned Clients')||'').split(',').map(s=>s.trim()).filter(Boolean);
+      const assignedClients=assignedNames.map(n=>localClients.find(c=>c.name===n)?.id).filter(Boolean);
+      const data={
+        notionPageId:p.id,
+        name,
+        category:getSelect(p,'Category')||'Strength',
+        difficulty:getSelect(p,'Difficulty')||'Moderate',
+        warmup:getText(p,'Warmup')||'',
+        notes:getText(p,'Notes')||'',
+        assignedClients,
+        // Keep local blocks/metcon if we have them — Notion text is not parseable back
+      };
+      if(idx>=0){
+        wks[idx]={...wks[idx],...data};
+      } else {
+        wks.push({id:'wk_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+          blocks:[],metcon:null,...data});
+      }
+    });
+    // Dedup by name
+    const wkMap=new Map();
+    wks.forEach(w=>{
+      const ex=wkMap.get(w.name);
+      if(!ex||(!ex.notionPageId&&w.notionPageId)) wkMap.set(w.name,w);
+    });
+    DB.set('workouts_lib',[...wkMap.values()]);
+    syncLog(`✓ Workout templates: ${wks.length} total`,'ok');
+  }catch(e){syncLog(`⚠ Template pull failed: ${e.message}`,'warn');}
+}
+
 async function fullSync(){
   if(!(DB.get('workerUrl')||DB.get('notionDbs'))){
     showSR('Configure Notion connection first','error'); nav('setup'); return;
@@ -4909,6 +4995,9 @@ async function fullSync(){
     localClients=[...clientMap.values()];
     DB.set('clients', localClients);
     syncLog(`✓ Clients: ${localClients.length} total`,'ok');
+
+    // ── Pull workout templates ──
+    await pullWorkoutTemplatesFromNotion(localClients).catch(e=>syncLog(`⚠ Templates: ${e.message}`,'warn'));
 
     // ── STEP 2b: Fetch check-ins from Notion ──
     let notionCheckins = [];
@@ -5056,6 +5145,17 @@ async function fullSync(){
       else syncLog('No new check-ins to push (all already synced)');
     } else {
       syncLog('✗ Check-ins DB ID missing — cannot push','error');
+    }
+
+    // Push workout templates
+    if(dbs.workoutTemplates){
+      const wkTemplates=DB.get('workouts_lib')||[];
+      const newTemplates=wkTemplates.filter(w=>!w.notionPageId);
+      const updatedTemplates=wkTemplates.filter(w=>w.notionPageId&&w._dirty);
+      for(const w of [...newTemplates,...updatedTemplates]){
+        await pushWorkoutTemplateToNotion(w).catch(e=>syncLog(`✗ Template ${w.name}: ${e.message}`,'error'));
+      }
+      if(newTemplates.length) syncLog(`↑ Pushed ${newTemplates.length} new templates`,'ok');
     }
 
     // Push programs without notionPageId
@@ -10497,6 +10597,7 @@ const DB_IDS_DEFAULT = {
   assessments: '325d5b39586680c6ad08d379891b0741',
   checkins:    '325d5b395866801d8381e1ba48f827a5',
   workouts:    '327d5b39586680379130ea2231da9d58',
+  workoutTemplates: '327d5b39586680018bf5dc2b1a413ca0',
   programs:    '325d5b39586680f9ac2ef9353cd034ba',
   notes:       '325d5b395866807ea641f62a2f9f7e84',
 };
