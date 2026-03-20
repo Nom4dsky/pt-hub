@@ -6166,6 +6166,24 @@ if(!localStorage.getItem('pthub_michelle_v1')){
     localStorage.setItem('pthub_michelle_v1','1');
   }catch(e){console.error('Michelle migration:',e);}
 }
+// ── Fix injuryZones — ensure all entries are strings ──
+if(!localStorage.getItem('pthub_injzones_fix_v1')){
+  try{
+    const cl=JSON.parse(localStorage.getItem('pthub_clients')||'[]');
+    cl.forEach(c=>{
+      if(Array.isArray(c.injuryZones)){
+        c.injuryZones=c.injuryZones.map(iz=>{
+          if(typeof iz==='string') return iz;
+          // Convert object format to string
+          return (iz.label||iz.zone||iz.name||JSON.stringify(iz));
+        });
+      }
+    });
+    localStorage.setItem('pthub_clients',JSON.stringify(cl));
+    localStorage.setItem('pthub_injzones_fix_v1','1');
+  }catch(e){}
+}
+
 // ── Michelle fix — ensure correct client id ──
 if(!localStorage.getItem('pthub_michelle_v2')){
   try{
