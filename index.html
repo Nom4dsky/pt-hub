@@ -6010,6 +6010,162 @@ if(!localStorage.getItem('pthub_alex_v2')){
     localStorage.setItem('pthub_alex_v2','1');
   }catch(e){console.error('Alexandra p2:',e);}
 }
+
+// ── MICHELLE — client + program migration ──
+if(!localStorage.getItem('pthub_michelle_v1')){
+  try{
+    const cl=JSON.parse(localStorage.getItem('pthub_clients')||'[]');
+    const exists=cl.find(c=>c.name==='Michelle'||c.id==='michelle');
+    if(!exists){
+      cl.push({
+        id:'michelle',
+        name:'Michelle',
+        email:'',
+        phone:'',
+        status:'Active',
+        type:'In-person',
+        goal:'Fat loss + energy',
+        goalSecondary:'Build strength foundation, gain gym confidence',
+        dob:'1981-01-01',
+        color:'#7C3AED',
+        sessions:0,
+        injuryZones:[{zone:'shoulder',label:'Shoulder',side:'monitor both — modify pressing if pain'}],
+        notes:'43yo. Night shift schedule — LISS kept easy to preserve recovery. Shoulder monitored every session. 4x/week: 2 PT strength + 2 LISS solo. Every PT session ends with 10-min metcon finisher.',
+        startDate:'2026-03-18',
+        lastSession:null,
+        assignedWorkouts:[],
+      });
+    }
+    localStorage.setItem('pthub_clients',JSON.stringify(cl));
+
+    // Add 13-week program
+    const prgs=JSON.parse(localStorage.getItem('pthub_programs')||'[]');
+    const progExists=prgs.find(p=>p.clientId==='michelle'&&p.name==='13-Week Fat Loss & Strength');
+    if(!progExists){
+      const michelle=cl.find(c=>c.id==='michelle');
+      prgs.unshift({
+        id:'prog_michelle_13wk',
+        clientId:'michelle',
+        clientName:'Michelle',
+        name:'13-Week Fat Loss & Strength',
+        phase:'Phase 1 — Machine Confidence',
+        start:'2026-03-18',
+        end:'2026-06-17',
+        status:'Active',
+        goal:'Fat loss + strength foundation. 4x/week: 2 PT + 2 LISS. Every PT session ends with 10-min metcon finisher.',
+        weeks:[
+          {name:'Weeks 1–2',days:[
+            {name:'PT Session A — Strength',exercises:[
+              {name:'Leg Press',sets:'3',reps:'15',load:'',tempo:'2-0-2',rest:'60s',notes:'Feet hip-width, full range, no knee cave'},
+              {name:'Leg Curl (seated)',sets:'3',reps:'12–15',load:'',tempo:'2-1-2',rest:'60s',notes:'Control the return — feel the hamstring'},
+              {name:'Lat Pulldown',sets:'3',reps:'12–15',load:'',tempo:'2-1-2',rest:'60s',notes:'Pull to upper chest, lean slightly back'},
+              {name:'Chest Press Machine',sets:'3',reps:'12–15',load:'',tempo:'2-1-2',rest:'60s',notes:'Elbows slightly below shoulder height'},
+              {name:'Ab Crunch Machine',sets:'3',reps:'15',load:'',tempo:'2-1-2',rest:'45s',notes:'Exhale on crunch, control return'},
+              {name:'METCON: Battle Ropes',sets:'4',reps:'30s on/30s off',load:'',tempo:'',rest:'',notes:'Alternating waves — knees soft, hips back'},
+            ]},
+            {name:'Solo Session B',exercises:[
+              {name:'Leg Press',sets:'3',reps:'15',load:'',tempo:'2-0-2',rest:'60s',notes:'Same weight as PT or slightly lighter'},
+              {name:'Leg Curl (seated)',sets:'3',reps:'12–15',load:'',tempo:'2-1-2',rest:'60s',notes:''},
+              {name:'Lat Pulldown',sets:'3',reps:'12–15',load:'',tempo:'2-1-2',rest:'60s',notes:''},
+              {name:'Chest Press Machine',sets:'3',reps:'12–15',load:'',tempo:'2-1-2',rest:'60s',notes:''},
+              {name:'Ab Crunch Machine',sets:'3',reps:'15',load:'',tempo:'2-1-2',rest:'45s',notes:''},
+              {name:'METCON: Bike Sprint',sets:'4',reps:'30s on/30s off',load:'',tempo:'',rest:'',notes:'RPE 8 on work, full recovery on rest'},
+            ]},
+            {name:'LISS x2',exercises:[
+              {name:'Treadmill/Bike/Elliptical',sets:'1',reps:'35 min',load:'',tempo:'',rest:'',notes:'RPE 5–6 — comfortable, can hold conversation'},
+            ]},
+          ]},
+          {name:'Week 3',days:[
+            {name:'PT Session A — Strength',exercises:[
+              {name:'Leg Press',sets:'3',reps:'12',load:'',tempo:'3-0-2',rest:'60s',notes:'Heavier if last 2 weeks felt easy'},
+              {name:'Leg Curl (seated)',sets:'3',reps:'12',load:'',tempo:'3-1-2',rest:'60s',notes:'Add 1 set if feeling strong'},
+              {name:'Lat Pulldown',sets:'3',reps:'12',load:'',tempo:'2-1-2',rest:'60s',notes:'Try closer grip this week'},
+              {name:'Shoulder Press Machine',sets:'3',reps:'12',load:'',tempo:'2-1-2',rest:'60s',notes:'Replaces chest press — monitor shoulder'},
+              {name:'Cable Crunch',sets:'3',reps:'15',load:'',tempo:'2-1-1',rest:'45s',notes:'Kneel, pull down — replaces ab machine'},
+              {name:'METCON: Battle Ropes',sets:'5',reps:'30s on/20s off',load:'',tempo:'',rest:'',notes:'5 rounds — shorter rest than Wk1–2'},
+            ]},
+          ]},
+          {name:'Week 4 — Deload',days:[
+            {name:'Both Sessions — Reduced Volume',exercises:[
+              {name:'Leg Press',sets:'2',reps:'12',load:'',tempo:'2-0-2',rest:'90s',notes:'Same weight as best week — reduced sets'},
+              {name:'Leg Curl (seated)',sets:'2',reps:'12',load:'',tempo:'2-1-2',rest:'90s',notes:'Controlled, no rushing'},
+              {name:'Lat Pulldown',sets:'2',reps:'12',load:'',tempo:'2-1-2',rest:'90s',notes:'Focus on technique'},
+              {name:'Chest Press Machine',sets:'2',reps:'12',load:'',tempo:'2-1-2',rest:'90s',notes:'Light — recovery week'},
+              {name:'Ab Crunch Machine',sets:'2',reps:'15',load:'',tempo:'2-1-2',rest:'60s',notes:'Keep it easy'},
+              {name:'METCON: Bike easy',sets:'3',reps:'40s on/40s off',load:'',tempo:'',rest:'',notes:'RPE 6 only — not hard work week'},
+            ]},
+          ]},
+          {name:'Weeks 5–7 — Free Weights',days:[
+            {name:'PT Session A — Strength',exercises:[
+              {name:'Goblet Squat',sets:'4',reps:'10–12',load:'',tempo:'3-1-2',rest:'75s',notes:'Chest tall, elbows inside knees, full depth'},
+              {name:'DB RDL',sets:'4',reps:'10',load:'',tempo:'3-1-1',rest:'75s',notes:'Hinge at hips, soft knees, bar close to legs'},
+              {name:'Seated Cable Row',sets:'3',reps:'10–12',load:'',tempo:'2-1-2',rest:'60s',notes:'Squeeze shoulder blades, dont rock'},
+              {name:'DB Bench Press',sets:'3',reps:'10–12',load:'',tempo:'2-1-2',rest:'60s',notes:'Monitor shoulder — full range'},
+              {name:'Dead Bug',sets:'3',reps:'8/side',load:'',tempo:'',rest:'45s',notes:'Exhale on extension, lower back flat'},
+              {name:'METCON: Sled+Ropes circuit',sets:'3',reps:'circuit',load:'',tempo:'',rest:'',notes:'Sled 20m / Battle ropes 30s / Sled 20m — 3 rounds'},
+            ]},
+            {name:'Solo Session B — Strength',exercises:[
+              {name:'Hip Thrust',sets:'4',reps:'12',load:'',tempo:'2-1-2',rest:'75s',notes:'Full glute squeeze at top, chin tucked'},
+              {name:'DB Reverse Lunge',sets:'3',reps:'10/side',load:'',tempo:'2-1-2',rest:'60s',notes:'Controlled descent, knee doesnt touch floor'},
+              {name:'Lat Pulldown',sets:'3',reps:'10–12',load:'',tempo:'2-1-2',rest:'60s',notes:'Pull to chest, control up'},
+              {name:'KB Shoulder Press',sets:'3',reps:'10/side',load:'',tempo:'2-1-2',rest:'60s',notes:'Unilateral — monitor shoulder'},
+              {name:'Pallof Press',sets:'3',reps:'10/side',load:'',tempo:'',rest:'45s',notes:'Anti-rotation — hold 2s at extension'},
+              {name:'METCON: KB Swings',sets:'4',reps:'30s on/30s off',load:'',tempo:'',rest:'',notes:'Hip hinge drive, not a squat'},
+            ]},
+          ]},
+          {name:'Weeks 8–9 — Supersets',days:[
+            {name:'PT Session A — Strength',exercises:[
+              {name:'Back Squat',sets:'4',reps:'8–10',load:'',tempo:'3-1-2',rest:'90s',notes:'First barbell exposure if confident — otherwise goblet'},
+              {name:'DB RDL',sets:'4',reps:'10',load:'',tempo:'3-1-1',rest:'75s',notes:'Increase load vs Wk5–7'},
+              {name:'Seated Cable Row',sets:'3',reps:'10',load:'',tempo:'2-1-2',rest:'',notes:'SUPERSET A1 — no rest, pair with A2'},
+              {name:'DB Bench Press',sets:'3',reps:'10',load:'',tempo:'2-1-2',rest:'75s',notes:'SUPERSET A2 — rest 75s after A1+A2'},
+              {name:'Face Pull',sets:'3',reps:'15',load:'',tempo:'2-1-2',rest:'45s',notes:'Shoulder health — high elbows'},
+              {name:'METCON: Sled+Ropes+KB',sets:'3',reps:'circuit',load:'',tempo:'',rest:'',notes:'Sled 20m / Ropes 30s / KB swings 20 reps — 3–4 rounds'},
+            ]},
+            {name:'Solo Session B — Strength',exercises:[
+              {name:'Hip Thrust',sets:'4',reps:'10',load:'',tempo:'2-1-2',rest:'90s',notes:'Add load vs Wk5–7'},
+              {name:'Bulgarian Split Squat',sets:'3',reps:'8/side',load:'',tempo:'3-1-1',rest:'90s',notes:'Rear foot elevated — control descent'},
+              {name:'Lat Pulldown',sets:'3',reps:'10',load:'',tempo:'2-1-2',rest:'',notes:'SUPERSET B1 — pair with B2'},
+              {name:'KB Shoulder Press',sets:'3',reps:'10/side',load:'',tempo:'2-1-2',rest:'75s',notes:'SUPERSET B2 — rest 75s after B1+B2'},
+              {name:'Cable Crunch',sets:'3',reps:'15',load:'',tempo:'2-1-1',rest:'45s',notes:'Weighted core — control'},
+              {name:'METCON: KB Swings',sets:'5',reps:'30s on/20s off',load:'',tempo:'',rest:'',notes:'5 rounds — increase vs Wk5–7'},
+            ]},
+          ]},
+          {name:'Weeks 10–12 — Strength Accumulation',days:[
+            {name:'PT Session A — Strength',exercises:[
+              {name:'Back Squat',sets:'4',reps:'6–8',load:'',tempo:'3-1-2',rest:'2min',notes:'Heaviest phase — near max effort'},
+              {name:'BB RDL',sets:'4',reps:'8',load:'',tempo:'3-1-1',rest:'2min',notes:'Load progression from Wk8–9'},
+              {name:'Seated Cable Row',sets:'4',reps:'10',load:'',tempo:'2-1-2',rest:'',notes:'SUPERSET A1'},
+              {name:'DB Incline Press',sets:'4',reps:'10',load:'',tempo:'2-1-2',rest:'90s',notes:'SUPERSET A2 — progress from flat press'},
+              {name:'Ab Wheel Rollout',sets:'3',reps:'8–10',load:'',tempo:'',rest:'60s',notes:'Advanced core — full range when ready'},
+              {name:'METCON: Sled+Ropes+KB heavy',sets:'4',reps:'circuit',load:'',tempo:'',rest:'',notes:'Max load sled / Power slams 20 reps / Heavy KB swings 15 reps — 4 rounds'},
+            ]},
+            {name:'Solo Session B — Strength',exercises:[
+              {name:'Hip Thrust',sets:'4',reps:'8–10',load:'',tempo:'2-1-2',rest:'2min',notes:'Max load phase'},
+              {name:'Bulgarian Split Squat',sets:'4',reps:'8/side',load:'',tempo:'3-1-1',rest:'90s',notes:'Add weight vs Wk8–9'},
+              {name:'Lat Pulldown',sets:'4',reps:'8',load:'',tempo:'2-1-2',rest:'90s',notes:'Progress toward bodyweight pull-up'},
+              {name:'KB Shoulder Press',sets:'3',reps:'8/side',load:'',tempo:'2-1-2',rest:'',notes:'SUPERSET B1'},
+              {name:'Lateral Raise',sets:'3',reps:'15',load:'',tempo:'2-0-2',rest:'60s',notes:'SUPERSET B2 — rest 60s after'},
+              {name:'METCON: KB Swings heavy',sets:'5',reps:'30s on/20s off',load:'',tempo:'',rest:'',notes:'5 rounds — max effort'},
+            ]},
+          ]},
+          {name:'Week 13 — Deload + Review',days:[
+            {name:'Both Sessions — Reduced Volume',exercises:[
+              {name:'Back Squat',sets:'3',reps:'8',load:'',tempo:'3-1-2',rest:'90s',notes:'Same weight, 1 less set — deload'},
+              {name:'BB RDL',sets:'3',reps:'8',load:'',tempo:'3-1-1',rest:'90s',notes:'Controlled, no max effort'},
+              {name:'Seated Cable Row',sets:'2',reps:'10',load:'',tempo:'2-1-2',rest:'75s',notes:'Drop 1 set across all'},
+              {name:'DB Bench Press',sets:'2',reps:'10',load:'',tempo:'2-1-2',rest:'75s',notes:'Keep weight same, reduce volume'},
+              {name:'Plank',sets:'3',reps:'30s hold',load:'',tempo:'',rest:'45s',notes:'Core — easy finish'},
+              {name:'METCON: Bike easy',sets:'3',reps:'40s on/40s off',load:'',tempo:'',rest:'',notes:'RPE 6 max — recovery only'},
+            ]},
+          ]},
+        ],
+      });
+      localStorage.setItem('pthub_programs',JSON.stringify(prgs));
+    }
+    localStorage.setItem('pthub_michelle_v1','1');
+  }catch(e){console.error('Michelle migration:',e);}
+}
 // ── Force re-push workout templates (add body JSON) ──
 if(!localStorage.getItem('pthub_wk_repush_v1')){
   try{
