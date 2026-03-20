@@ -6166,6 +6166,41 @@ if(!localStorage.getItem('pthub_michelle_v1')){
     localStorage.setItem('pthub_michelle_v1','1');
   }catch(e){console.error('Michelle migration:',e);}
 }
+// ── Michelle fix — ensure correct client id ──
+if(!localStorage.getItem('pthub_michelle_v2')){
+  try{
+    let cl=JSON.parse(localStorage.getItem('pthub_clients')||'[]');
+    // Find Michelle by name and ensure id is 'michelle'
+    const mi=cl.findIndex(c=>c.name==='Michelle'&&c.id!=='michelle');
+    if(mi>=0){
+      const oldId=cl[mi].id;
+      cl[mi].id='michelle';
+      // Fix sessions referencing old id
+      let ses=JSON.parse(localStorage.getItem('pthub_sessions')||'[]');
+      ses=ses.map(s=>s.clientId===oldId?{...s,clientId:'michelle',clientName:'Michelle'}:s);
+      localStorage.setItem('pthub_sessions',JSON.stringify(ses));
+      // Fix checkins
+      let cis=JSON.parse(localStorage.getItem('pthub_checkins')||'[]');
+      cis=cis.map(ci=>ci.clientId===oldId?{...ci,clientId:'michelle'}:ci);
+      localStorage.setItem('pthub_checkins',JSON.stringify(cis));
+      // Fix programs
+      let prgs=JSON.parse(localStorage.getItem('pthub_programs')||'[]');
+      prgs=prgs.map(p=>p.clientId===oldId?{...p,clientId:'michelle',clientName:'Michelle'}:p);
+      localStorage.setItem('pthub_programs',JSON.stringify(prgs));
+      localStorage.setItem('pthub_clients',JSON.stringify(cl));
+    }
+    // Also ensure goal and notes are set
+    const mi2=cl.findIndex(c=>c.id==='michelle');
+    if(mi2>=0){
+      if(!cl[mi2].goal) cl[mi2].goal='Fat loss + energy';
+      if(!cl[mi2].goalSecondary) cl[mi2].goalSecondary='Build strength foundation, gain gym confidence';
+      if(!cl[mi2].notes) cl[mi2].notes='43yo. Night shift schedule. Shoulder monitored every session. 4x/week: 2 PT + 2 LISS.';
+      localStorage.setItem('pthub_clients',JSON.stringify(cl));
+    }
+    localStorage.setItem('pthub_michelle_v2','1');
+  }catch(e){console.error('Michelle v2:',e);}
+}
+
 // ── Force re-push workout templates (add body JSON) ──
 if(!localStorage.getItem('pthub_wk_repush_v1')){
   try{
