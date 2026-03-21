@@ -5898,26 +5898,56 @@ if(!localStorage.getItem('pthub_maxime_v2')){
     localStorage.setItem('pthub_maxime_v2','1');
   }catch(e){console.error('Maxime migration:',e);}
 }
-// ── Maxime v3 — weight check-in 20 Mar + updated notes ──
+// ── Maxime v3 — sessions 20+21 Mar, weight check-in, updated notes ──
 if(!localStorage.getItem('pthub_maxime_v3')){
   try{
+    const cl=JSON.parse(localStorage.getItem('pthub_clients')||'[]');
+    const mi=cl.findIndex(c=>c.id==='maxime'||c.name==='Maxime L');
+    const maxId=mi>=0?cl[mi].id:'maxime';
+
+    // Add sessions 20 + 21 Mar
+    const ses=JSON.parse(localStorage.getItem('pthub_sessions')||'[]');
+    const newSes=[
+      {id:'ses_mx21',clientId:maxId,clientName:'Maxime L',date:'2026-03-20',type:'Mixed',duration:60,rpe:null,
+        exercises:'Indoor Run 45min, Assisted Pull-Ups 4x6 70kg, DB Incline Press 3x12 10kg, Pallof Press 4x12 10kg',
+        notes:'Solo morning session 06:30. Stamina good. Slight pec soreness from previous day. Weight 92.5kg. Pull-ups at 70kg assist — solid.',
+        exerciseData:[
+          {name:'Treadmill',sets:[{kg:'',reps:'45 min incline run'}]},
+          {name:'Assisted Pull-Up',sets:[{kg:'70',reps:'6'},{kg:'70',reps:'6'},{kg:'70',reps:'6'},{kg:'70',reps:'6'}]},
+          {name:'DB Incline Press',sets:[{kg:'10',reps:'12'},{kg:'10',reps:'12'},{kg:'10',reps:'12'}]},
+          {name:'Pallof Press',sets:[{kg:'10',reps:'12'},{kg:'10',reps:'12'},{kg:'10',reps:'12'},{kg:'10',reps:'12'}]},
+        ]},
+      {id:'ses_mx22',clientId:maxId,clientName:'Maxime L',date:'2026-03-21',type:'Strength',duration:75,rpe:null,
+        exercises:'Lat Pulldown 50→60kg, DB Chest Press 2x11kg 4x12, Seated Cable Row 50kg 3x12, DB Shoulder Press 11kg, Face Pull 15→17.5kg, Goblet Squat 12kg',
+        notes:'Finding new working weights. Lat PD: 2x12@50 + 1x7@60 + 1x6@55 — testing new ceiling. Shoulder press failure on set 3. Face pull easy at 15kg, moved to 17.5kg.',
+        exerciseData:[
+          {name:'Lat Pulldown',sets:[{kg:'50',reps:'12'},{kg:'50',reps:'12'},{kg:'60',reps:'7'},{kg:'55',reps:'6'}]},
+          {name:'DB Chest Press',sets:[{kg:'11',reps:'12'},{kg:'11',reps:'12'},{kg:'11',reps:'12'},{kg:'11',reps:'12'}]},
+          {name:'Seated Cable Row',sets:[{kg:'50',reps:'12'},{kg:'50',reps:'12'},{kg:'50',reps:'12'}]},
+          {name:'DB Shoulder Press',sets:[{kg:'11',reps:'12'},{kg:'11',reps:'8'},{kg:'11',reps:'7'}]},
+          {name:'Face Pull',sets:[{kg:'15',reps:'12'},{kg:'17.5',reps:'15'},{kg:'17.5',reps:'15'}]},
+          {name:'Goblet Squat',sets:[{kg:'12',reps:'15'},{kg:'12',reps:'15'},{kg:'12',reps:'15'}]},
+        ]},
+    ];
+    newSes.forEach(s=>{if(!ses.find(x=>x.id===s.id))ses.push(s);});
+    const deduped=[...new Map(ses.map(s=>[s.id,s])).values()];
+    localStorage.setItem('pthub_sessions',JSON.stringify(deduped));
+
     // Add 92.5kg weight check-in for 2026-03-20
     const cis=JSON.parse(localStorage.getItem('pthub_checkins')||'[]');
-    const ciExists=cis.find(ci=>ci.clientId==='maxime'&&ci.date==='2026-03-20');
-    if(!ciExists){
-      cis.push({id:'ci_mx_0320',clientId:'maxime',clientName:'Maxime L',
+    if(!cis.find(ci=>ci.clientId===maxId&&ci.date==='2026-03-20')){
+      cis.push({id:'ci_mx_0320',clientId:maxId,clientName:'Maxime L',
         date:'2026-03-20',weight:92.5,bf:null,
         sleep:null,energy:null,stress:null,soreness:null,motivation:null,appetite:null,
-        compliance:'Full',notes:'Post-session weight. Wee bit of pec soreness from yesterday — almost nothing. Stamina good.'
+        compliance:'Full',notes:'Post-session weight. Wee bit of pec soreness — almost nothing. Stamina good.'
       });
       localStorage.setItem('pthub_checkins',JSON.stringify(cis));
     }
+
     // Update coaching notes and last session
-    const cl=JSON.parse(localStorage.getItem('pthub_clients')||'[]');
-    const mi=cl.findIndex(c=>c.id==='maxime'||c.name==='Maxime L');
     if(mi>=0){
       cl[mi].lastSession='2026-03-21';
-      cl[mi].mainNotes='44yo male, ~92.5kg (20 Mar). Desk job → thoracic flexion, forward shoulders. Lower body > upper body. Goals: upper body strength, posture, first pull-up. 1×PT + 1×solo + 2×cardio/week. Phase 1 (Jan 14–25): KB deadlift 24→32kg, lat PD 35kg. Bridge (Jan 28–Feb 11): Trap Bar intro 32→67kg, scap pull-ups. Phase 2 (Feb 13–Mar 15): Assisted pull-ups (−70kg assist), Trap Bar 82kg, lat PD 50kg. Phase 3 (Mar 20+): Pull-up negatives, lat PD ceiling testing (60kg×7), face pull progressed to 17.5kg, shoulder press 11kg finding RIR. ✅ Consistent attendance, stamina good, minimal soreness. ⚠️ Shoulder press hitting failure on set 3 — monitor. 🎯 Next: deadlift 85–90kg, dead hang 40s, first unassisted pull-up.';
+      cl[mi].mainNotes='44yo male, ~92.5kg (20 Mar). Desk job → thoracic flexion, forward shoulders. Lower body > upper body. Goals: upper body strength, posture, first pull-up. 1×PT + 1×solo + 2×cardio/week. Phase 1 (Jan–Feb): KB deadlift 24→32kg, lat PD 35kg. Bridge: Trap Bar 32→67kg, scap pull-ups. Phase 2: Assisted pull-ups −70kg, Trap Bar 82kg, lat PD 50kg. Phase 3 (Mar 20+): lat PD ceiling testing 60kg×7, face pull 17.5kg, shoulder press 11kg. ✅ Consistent, stamina good. ⚠️ Shoulder press failure on set 3. 🎯 Next: deadlift 85–90kg, dead hang 40s, first unassisted pull-up.';
       localStorage.setItem('pthub_clients',JSON.stringify(cl));
     }
     localStorage.setItem('pthub_maxime_v3','1');
