@@ -2752,7 +2752,7 @@ const EXERCISE_DB = [
   {n:'Cat-Cow',cat:'Mobility'},{n:'Thoracic Rotation',cat:'Mobility'},
   {n:'Hip Flexor Stretch',cat:'Mobility'},{n:'Ankle Mobility',cat:'Mobility'},
   {n:'Arm Circles',cat:'Mobility'},{n:'Leg Swing',cat:'Mobility'},
-  {n:'Inchworm',cat:'Mobility'},{n:'Cossack Squat',cat:'Mobility'},
+  {n:'Inchworm',cat:'Mobility'},{n:'Cossack Squat',cat:'Mobility'},{n:'MB Cossack Pass',cat:'Mobility'},{n:'Low Ceiling Squat',cat:'Mobility'},{n:'Side Lying Rotational Press',cat:'Mobility'},{n:'Elephant Walk',cat:'Mobility'},{n:'Ring Roll Out',cat:'Mobility'},{n:'Seated MB Good Morning',cat:'Mobility'},{n:'German Hang',cat:'Mobility'},{n:'Incline Pigeon Good Morning',cat:'Mobility'},{n:'Zercher Lift',cat:'Hinge'},
   {n:'Pigeon Stretch',cat:'Mobility'},{n:'Couch Stretch',cat:'Mobility'},
   {n:'Wall Ankle Mobility',cat:'Mobility'},{n:'Hip Circle',cat:'Mobility'},
   {n:'Banded Hip Distraction',cat:'Mobility'},{n:'Scapular Wall Slide',cat:'Mobility'},
@@ -6258,6 +6258,38 @@ if(!localStorage.getItem('pthub_injzones_fix_v1')){
     localStorage.setItem('pthub_clients',JSON.stringify(cl));
     localStorage.setItem('pthub_injzones_fix_v1','1');
   }catch(e){}
+}
+
+// ── Veronika — session 20 Mar 2026 ──
+if(!localStorage.getItem('pthub_veronika_ses_0320')){
+  try{
+    const ses=JSON.parse(localStorage.getItem('pthub_sessions')||'[]');
+    if(!ses.find(s=>s.id==='ses_ver_0320')){
+      ses.push({
+        id:'ses_ver_0320',clientId:'veronika',clientName:'Veronika S.O.',
+        date:'2026-03-20',type:'Strength',duration:60,rpe:null,
+        exercises:'Zercher Lift 3x5, MB Cossack Pass 2x10 @4kg, Low Ceiling Squat BW, Side Lying Rotational Press, Elephant Walk, Ring Roll Out, Seated MB Good Morning, German Hang, Incline Pigeon Good Morning',
+        notes:'No Australian pull-ups this session. Zercher lift 3x5. MB Cossack Pass 2x10 @4kg. Low ceiling squat BW.',
+        exerciseData:[
+          {name:'Zercher Lift',sets:[{kg:'',reps:'5'},{kg:'',reps:'5'},{kg:'',reps:'5'}]},
+          {name:'MB Cossack Pass',sets:[{kg:'4',reps:'10'},{kg:'4',reps:'10'}]},
+          {name:'Low Ceiling Squat',sets:[{kg:'BW',reps:''},{kg:'BW',reps:''}]},
+          {name:'Side Lying Rotational Press',sets:[{kg:'',reps:''}]},
+          {name:'Elephant Walk',sets:[{kg:'',reps:''}]},
+          {name:'Ring Roll Out',sets:[{kg:'',reps:''}]},
+          {name:'Seated MB Good Morning',sets:[{kg:'',reps:''}]},
+          {name:'German Hang',sets:[{kg:'',reps:''}]},
+          {name:'Incline Pigeon Good Morning',sets:[{kg:'',reps:''}]},
+        ]
+      });
+      localStorage.setItem('pthub_sessions',JSON.stringify(ses));
+    }
+    // Update last session
+    const cl=JSON.parse(localStorage.getItem('pthub_clients')||'[]');
+    const vi=cl.findIndex(c=>c.id==='veronika');
+    if(vi>=0){cl[vi].lastSession='2026-03-20';localStorage.setItem('pthub_clients',JSON.stringify(cl));}
+    localStorage.setItem('pthub_veronika_ses_0320','1');
+  }catch(e){console.error('Veronika 20 Mar:',e);}
 }
 
 // ── Michelle fix — ensure correct client id ──
