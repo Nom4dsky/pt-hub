@@ -2312,7 +2312,8 @@ function renderCD(id){
                     <div class="card card-sm" style="border-left:3px solid var(--accent);margin-top:10px"><div class="card-label">Assigned workouts</div>${renderAssignedWorkouts(c.id)}</div>
       </div>
     </div>
-    ${cCIs.length?`<div class="card mb16"><div class="sec-hdr"><div class="card-label" style="margin:0">Weekly check-ins</div><button class="btn btn-ghost btn-sm" onclick="openCI('${id}')">+ Add</button></div><table class="tbl" style="font-size:12px"><thead><tr><th>Date</th><th>⚖️ kg</th><th>💤 Sleep</th><th>⚡ Energy</th><th>😰 Stress</th><th>💪 Soreness</th><th>🔥 Motivation</th><th>🍎 Appetite</th><th>Compliance</th><th>Notes</th></tr></thead><tbody>${cCIs.slice(0,8).map(ci=>`<tr><td style="white-space:nowrap">${fd(ci.date)}</td><td><span style="font-weight:700;font-family:'DM Mono',monospace;font-size:13px;color:var(--text)">${ci.weight?ci.weight+'kg':'—'}</span></td>${['sleep','energy','stress','soreness','motivation','appetite'].map(k=>`<td><span style="font-weight:700;font-family:'DM Mono',monospace;font-size:13px;color:var(--text)">${ci[k]||'—'}</span></td>`).join('')}<td><span class="badge ${ci.compliance==='Full'?'b-green':ci.compliance==='Partial'?'b-amber':'b-red'}" style="font-size:9px">${ci.compliance}</span></td><td style="color:var(--text3);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ci.notes||'—'}</td><td><button onclick="editCI('${ci.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:2px 4px;font-family:'Oswald',sans-serif">edit</button><button onclick="deleteCI('${ci.id}','${id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px 4px">×</button></td></tr>`).join('')}</tbody></table></div>`:`<div class="card mb16" style="display:flex;justify-content:space-between;align-items:center"><div><div class="card-label" style="margin-bottom:2px">Weekly check-ins</div><div style="font-size:13px;color:var(--text3)">No check-ins yet</div></div><button class="btn btn-ghost btn-sm" onclick="openCI('${id}')">+ Add first</button></div>`}
+    ${cCIs.length?`<div class="card mb16"><div class="sec-hdr mb12"><div class="card-label" style="margin:0">Weekly check-ins</div><button class="btn btn-ghost btn-sm" onclick="openCI('${id}')">+ Add</button></div><div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px"><table class="tbl" style="font-size:12px;min-width:600px"><thead><tr><th style="white-space:nowrap">DATE</th><th>⚖️ KG</th><th>💤</th><th>⚡</th><th>😰</th><th>💪</th><th>🔥</th><th>🍎</th><th>COMPLIANCE</th><th>NOTES</th></tr></thead><tbody>${cCIs.slice(0,8).map(ci=>`<tr><td style="white-space:nowrap;font-weight:600">${fd(ci.date)}</td><td><span style="font-weight:700;font-family:'DM Mono',monospace;font-size:13px">${ci.weight?ci.weight+'kg':'—'}</span></td>${['sleep','energy','stress','soreness','motivation','appetite'].map(k=>`<td style="text-align:center"><span style="font-weight:700;font-family:'DM Mono',monospace;font-size:13px">${ci[k]||'—'}</span></td>`).join('')}<td><span class="badge ${ci.compliance==='Full'?'b-green':ci.compliance==='Partial'?'b-amber':'b-red'}" style="font-size:9px">${ci.compliance||'—'}</span></td><td style="color:var(--text3);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ci.notes||'—'}</td><td style="white-space:nowrap"><button onclick="editCI('${ci.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:2px 4px;font-family:'Oswald',sans-serif">edit</button><button onclick="deleteCI('${ci.id}','${id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px 4px">×</button></td></tr>`).join('')}</tbody></table></div></div>`:`<div class="card mb16" style="display:flex;justify-content:space-between;align-items:center"><div><div class="card-label" style="margin-bottom:2px">Weekly check-ins</div><div style="font-size:13px;color:var(--text3)">No check-ins yet</div></div><button class="btn btn-ghost btn-sm" onclick="openCI('${id}')">+ Add first</button></div>`}
+    ${cSes.length?buildCalendar(id,cSes):''}
     <div class="card mb16"><div class="sec-hdr"><div class="card-label" style="margin:0">Recent sessions</div><button class="btn btn-accent btn-sm" onclick="nav('log','${id}')">+ Log</button></div>${cSes.length?`<table class="tbl" style="font-size:12px"><thead><tr><th>Date</th><th>Type</th><th>Duration</th><th>RPE</th><th>Notes</th><th></th></tr></thead><tbody>${cSes.slice(0,8).map(s=>`<tr onclick="openSessionDetail('${s.id}')" style="cursor:pointer"><td style="font-weight:500">${fd(s.date)}</td><td><span class="badge b-gray" style="font-size:9px">${s.type||'—'}</span></td><td style="font-family:'DM Mono',monospace">${s.duration?s.duration+'m':'—'}</td><td>${s.rpe?`<span style="font-weight:700;font-family:'DM Mono',monospace;color:var(--text)">${s.rpe}</span>`:'—'}</td><td style="color:var(--text2);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.notes||'—'}</td><td><button onclick="event.stopPropagation();editSession('${s.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:2px 4px">edit</button><button onclick="event.stopPropagation();deleteSession('${s.id}','${id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px 4px">×</button></td></tr>`).join('')}</tbody></table>`:'<div style="color:var(--text3);font-size:13px;padding:8px 0">No sessions yet</div>'}</div>
     ${cAss.length?`<div class="card mb16"><div class="sec-hdr"><div class="card-label" style="margin:0">Assessments</div><button class="btn btn-ghost btn-sm" onclick="openM('addAssessment')">+ Add</button></div><table class="tbl" style="font-size:12px"><thead><tr><th>Date</th><th>Weight</th><th>Squat 1RM</th><th>Deadlift 1RM</th><th>Bench 1RM</th><th>Waist</th><th>Notes</th></tr></thead><tbody>${cAss.map(a=>`<tr><td>${fd(a.date)}</td><td>${a.weight?a.weight+'kg':'—'}</td><td>${a.squat?`<strong>${a.squat}kg</strong>`:'—'}</td><td>${a.deadlift?`<strong>${a.deadlift}kg</strong>`:'—'}</td><td>${a.bench?`<strong>${a.bench}kg</strong>`:'—'}</td><td>${a.waist?a.waist+'cm':'—'}</td><td style="color:var(--text2)">${a.notes||'—'}</td></tr>`).join('')}</tbody></table></div>`:''}
     <div class="card mb16"><div class="sec-hdr"><div class="card-label" style="margin:0">Coach notes</div><button class="btn btn-ghost btn-sm" onclick="openNote('${id}')">+ Add</button></div>${cNts.length?cNts.map(n=>`<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start"><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span class="badge ${ncC[n.category]||'b-gray'}" style="font-size:9px">${n.category}</span><span style="font-size:11px;color:var(--text3)">${fd(n.date)}</span></div><div style="font-size:13px;line-height:1.55">${n.text}</div></div><button onclick="delNote('${n.id}','${id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;flex-shrink:0;padding:0 2px">×</button></div>`).join('')+'<div></div>':'<div style="color:var(--text3);font-size:13px">No notes yet</div>'}</div>
@@ -4047,6 +4048,140 @@ function nextFact(){
     el.style.opacity='1';
     el.style.transform='translateY(0)';
   },200);
+}
+
+// ── CLIENT CALENDAR ──
+// ═══════════════════════════════════════
+// CLIENT CALENDAR
+// ═══════════════════════════════════════
+
+function buildCalendar(clientId, sessions){
+  const TYPE_COLOR={
+    'Strength':'#EB5E28',
+    'Hypertrophy':'#f97316',
+    'Power':'#dc2626',
+    'Cardio':'#3b82f6',
+    'Conditioning':'#06b6d4',
+    'Mixed':'#8b5cf6',
+    'Mobility':'#22c55e',
+    'Rehab':'#84cc16',
+  };
+  const TYPE_SHORT={
+    'Strength':'STR','Hypertrophy':'HYP','Power':'PWR',
+    'Cardio':'CAR','Conditioning':'CON','Mixed':'MIX',
+    'Mobility':'MOB','Rehab':'REH',
+  };
+
+  // Build session map: date → session
+  const sesMap={};
+  sessions.forEach(s=>{ sesMap[s.date]=s; });
+
+  // Calculate streak
+  let streak=0;
+  const today=new Date();
+  const todayStr=today.toISOString().split('T')[0];
+  for(let i=0;i<365;i++){
+    const d=new Date(today); d.setDate(d.getDate()-i);
+    const ds=d.toISOString().split('T')[0];
+    if(sesMap[ds]) streak++;
+    else if(i>0) break; // gap breaks streak (allow today to be empty)
+  }
+  // Count weeks with at least 1 session (last 12 weeks)
+  let activeWeeks=0;
+  for(let w=0;w<12;w++){
+    const wStart=new Date(today); wStart.setDate(wStart.getDate()-w*7-6);
+    const wEnd=new Date(today); wEnd.setDate(wEnd.getDate()-w*7);
+    for(let d=new Date(wStart);d<=wEnd;d.setDate(d.getDate()+1)){
+      if(sesMap[d.toISOString().split('T')[0]]){activeWeeks++;break;}
+    }
+  }
+
+  // Build 3 months: 2 months ago, last month, current
+  const months=[];
+  for(let m=2;m>=0;m--){
+    const d=new Date(today.getFullYear(),today.getMonth()-m,1);
+    months.push({year:d.getFullYear(),month:d.getMonth()});
+  }
+
+  const DAYS=['M','T','W','T','F','S','S'];
+  const MONTH_NAMES=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  const monthsHtml=months.map(({year,month})=>{
+    const firstDay=new Date(year,month,1);
+    const lastDay=new Date(year,month+1,0);
+    // Monday-first: 0=Mon..6=Sun
+    let startDow=(firstDay.getDay()+6)%7;
+    const cells=[];
+    // Empty cells before first
+    for(let i=0;i<startDow;i++) cells.push('<div></div>');
+    // Day cells
+    for(let d=1;d<=lastDay.getDate();d++){
+      const ds=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const s=sesMap[ds];
+      const isToday=ds===todayStr;
+      const isFuture=ds>todayStr;
+      if(s){
+        const col=TYPE_COLOR[s.type]||TYPE_COLOR['Mixed'];
+        const short=TYPE_SHORT[s.type]||'•';
+        cells.push(`<div onclick="openSessionDetail('${s.id}')" title="${s.type||'Session'}: ${s.exercises?s.exercises.slice(0,60)+'...':''}"
+          style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;
+                 background:${col};font-size:8px;font-weight:700;font-family:'Oswald',sans-serif;
+                 color:#fff;letter-spacing:.04em;transition:transform .1s;border-radius:2px;"
+          onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
+          ${short}
+        </div>`);
+      } else {
+        cells.push(`<div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+          font-size:11px;font-family:'DM Mono',monospace;color:${isToday?'var(--accent)':isFuture?'var(--border2)':'var(--text3)'};
+          font-weight:${isToday?'700':'400'};${isToday?'border:1px solid var(--accent);border-radius:2px;':''}">
+          ${d}
+        </div>`);
+      }
+    }
+
+    return`<div style="flex:0 0 auto;min-width:220px">
+      <div style="font-size:10px;font-weight:700;font-family:'Oswald',sans-serif;text-transform:uppercase;
+                  letter-spacing:.16em;color:var(--text3);margin-bottom:10px">
+        ${MONTH_NAMES[month]} ${year}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,28px);gap:2px;margin-bottom:4px">
+        ${DAYS.map(d=>`<div style="width:28px;text-align:center;font-size:8px;font-weight:700;
+          color:var(--text3);font-family:'Oswald',sans-serif;letter-spacing:.1em">${d}</div>`).join('')}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,28px);gap:2px">
+        ${cells.join('')}
+      </div>
+    </div>`;
+  }).join('<div style="width:1px;background:var(--border);flex-shrink:0;margin:0 16px"></div>');
+
+  // Legend
+  const legendTypes=['Strength','Cardio','Mixed','Mobility','Power'];
+  const legend=legendTypes.map(t=>`
+    <div style="display:flex;align-items:center;gap:4px">
+      <div style="width:10px;height:10px;background:${TYPE_COLOR[t]};border-radius:1px;flex-shrink:0"></div>
+      <span style="font-size:9px;color:var(--text3);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.1em">${TYPE_SHORT[t]}</span>
+    </div>`).join('');
+
+  return`<div class="card mb16" style="overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.22em;color:var(--text3);font-family:'Oswald',sans-serif">Training Calendar</div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        ${streak>1?`<div style="display:flex;align-items:center;gap:5px">
+          <span style="font-size:14px">🔥</span>
+          <span style="font-family:'Oswald',sans-serif;font-size:13px;font-weight:700">${streak}</span>
+          <span style="font-size:10px;color:var(--text3);font-family:var(--font-body)">day streak</span>
+        </div>`:''}
+        <div style="display:flex;align-items:center;gap:5px">
+          <span style="font-family:'Oswald',sans-serif;font-size:13px;font-weight:700">${activeWeeks}</span>
+          <span style="font-size:10px;color:var(--text3);font-family:var(--font-body)">active weeks (12wk)</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${legend}</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px">
+      ${monthsHtml}
+    </div>
+  </div>`;
 }
 
 // ── WORKOUT LIBRARY ──
