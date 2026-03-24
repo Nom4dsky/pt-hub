@@ -3293,8 +3293,10 @@ function saveSes(){
   if(DB.get('workerUrl')||DB.get('notionDbs')){
     pushSessionToNotion(s).then(()=>pushWorkoutToNotion(s)).catch(()=>{});
   }
+  // Store cid for post-summary navigation
+  window._lastSesCid = cid;
   clearLog();
-  nav('clientDetail',cid);
+  showSessionSummary(s, client.name);
 }
 
 function clearLog(){
@@ -4128,6 +4130,129 @@ function nextFact(){
     el.style.opacity='1';
     el.style.transform='translateY(0)';
   },200);
+}
+
+// ── SESSION SUMMARY ──
+const WEIGHT_COMPS = [
+  {kg:0.3,   emoji:'🦔', name:'hedgehog'},
+  {kg:1.2,   emoji:'🦦', name:'otter'},
+  {kg:3.5,   emoji:'🦡', name:'badger'},
+  {kg:6,     emoji:'🦘', name:'baby kangaroo (joey)'},
+  {kg:11,    emoji:'🦫', name:'beaver'},
+  {kg:18,    emoji:'🐓', name:'cassowary (the bird that can kill you)'},
+  {kg:28,    emoji:'🦜', name:'capybara'},
+  {kg:45,    emoji:'🦙', name:'alpaca'},
+  {kg:68,    emoji:'🐆', name:'snow leopard'},
+  {kg:90,    emoji:'🦏', name:'juvenile white rhino'},
+  {kg:130,   emoji:'🦈', name:'great white shark (just the head)'},
+  {kg:200,   emoji:'🐊', name:'saltwater crocodile'},
+  {kg:320,   emoji:'🦬', name:'American bison'},
+  {kg:500,   emoji:'🦛', name:'pygmy hippo'},
+  {kg:900,   emoji:'🐘', name:'baby elephant'},
+  {kg:1800,  emoji:'🦏', name:'white rhino'},
+  {kg:3500,  emoji:'🦣', name:'woolly mammoth (estimated)'},
+  {kg:7000,  emoji:'🐋', name:'orca'},
+  {kg:12000, emoji:'🦕', name:'Brachiosaurus neck (just the neck)'},
+  {kg:25000, emoji:'🐳', name:'sperm whale'},
+  {kg:60000, emoji:'🦴', name:'blue whale skeleton'},
+  {kg:180000,emoji:'🌋', name:'eruption of lava per second (Kilauea)'},
+];
+
+function getWeightComp(kg){
+  if(kg<=0) return null;
+  // Find the best comparison — closest ratio to a whole number
+  let best = WEIGHT_COMPS[0];
+  let bestScore = Infinity;
+  for(const c of WEIGHT_COMPS){
+    const ratio = kg / c.kg;
+    const rounded = Math.round(ratio);
+    if(rounded < 1) continue;
+    const score = Math.abs(ratio - rounded) / rounded;
+    if(score < bestScore && rounded <= 50){
+      bestScore = score;
+      best = {...c, count: rounded};
+    }
+  }
+  const ratio = kg / best.kg;
+  const count = Math.round(ratio);
+  if(count < 1) return null;
+  return {emoji: best.emoji, name: best.name, count};
+}
+
+function showSessionSummary(session, clientName){
+  // Calculate total volume (kg × reps)
+  let totalKg = 0, totalSets = 0, totalReps = 0;
+  const exercises = session.exerciseData || [];
+  const exNames = [];
+  exercises.forEach(ex => {
+    if(!ex.name) return;
+    exNames.push(ex.name);
+    (ex.sets||[]).forEach(s => {
+      const kg = parseFloat(s.kg) || 0;
+      const reps = parseFloat(s.reps) || 0;
+      if(kg > 0 && reps > 0){
+        totalKg += kg * reps;
+        totalReps += reps;
+        totalSets++;
+      }
+    });
+  });
+
+  const comp = getWeightComp(totalKg);
+  const dur = session.duration || 0;
+
+  // Pick a fun message
+  const msgs = [
+    `Not bad. Not bad at all.`,
+    `The bar has been raised. Literally.`,
+    `Someone's getting stronger.`,
+    `That's how it's done.`,
+    `Coach approved. ✅`,
+    `The gym felt it.`,
+    `Another one in the books.`,
+    `Consistency is the cheat code.`,
+    `Progress doesn't lie.`,
+    `One session closer.`,
+  ];
+  const msg = msgs[Math.floor(Math.random() * msgs.length)];
+
+  const compHtml = comp && totalKg > 0 ? `
+    <div style="background:var(--bg);padding:20px;margin:20px 0;border-left:3px solid var(--accent)">
+      <div style="font-size:48px;margin-bottom:8px">${comp.emoji.repeat(Math.min(comp.count,8))}${comp.count>8?'...':''}</div>
+      <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;color:var(--text)">
+        That's ${comp.count} ${comp.name}${comp.count>1?'s':''}
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px">${Math.round(totalKg).toLocaleString()} kg total volume</div>
+    </div>` : '';
+
+  const statsHtml = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:20px 0">
+      <div>
+        <div style="font-family:'Oswald',sans-serif;font-size:28px;font-weight:800;color:var(--accent)">${exercises.length}</div>
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;font-family:'Oswald',sans-serif">Exercises</div>
+      </div>
+      <div>
+        <div style="font-family:'Oswald',sans-serif;font-size:28px;font-weight:800;color:var(--accent)">${totalSets}</div>
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;font-family:'Oswald',sans-serif">Sets</div>
+      </div>
+      <div>
+        <div style="font-family:'Oswald',sans-serif;font-size:28px;font-weight:800;color:var(--accent)">${dur}m</div>
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;font-family:'Oswald',sans-serif">Duration</div>
+      </div>
+    </div>`;
+
+  document.getElementById('sesSummaryContent').innerHTML = `
+    <div style="font-size:13px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.2em;font-family:'Oswald',sans-serif;margin-bottom:8px">Session complete</div>
+    <div style="font-family:'Oswald',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px">${clientName}</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:4px">${msg}</div>
+    ${statsHtml}
+    ${compHtml}
+    <div style="font-size:11px;color:var(--text3);margin-bottom:20px;line-height:1.5">${exNames.slice(0,6).join(' · ')}${exNames.length>6?' +'+( exNames.length-6)+' more':''}</div>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <button class="btn btn-accent" onclick="closeM('sesSummary');nav('clientDetail',window._lastSesCid||'')">Done 💪</button>
+    </div>`;
+
+  openM('sesSummary');
 }
 
 // ── CLIENT CALENDAR ──
@@ -6659,5 +6784,9 @@ if(!localStorage.getItem('pthub_programs_cleared')){
 renderDash();renderLeftPanel();checkSetup();setTimeout(drawAllAvatars,100);
 
 </script>
+  <!-- SESSION SUMMARY MODAL -->
+  <div class="modal-overlay" id="modal-sesSummary" style="align-items:center;justify-content:center">
+    <div class="modal" style="max-width:480px;text-align:center;padding:40px 32px" id="sesSummaryContent"></div>
+  </div>
 </body>
 </html>
