@@ -2958,11 +2958,17 @@ function addEx(){
       </div>
       <button onclick="document.getElementById('${id}').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;padding:0 4px;flex-shrink:0">×</button>
     </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:4px">
+      <button class="ex-mode-btn" data-eid="${id}" onclick="toggleExMode('${id}')"
+        style="background:none;border:1px solid var(--border2);color:var(--text3);cursor:pointer;font-size:9px;padding:3px 8px;font-family:'Oswald',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;transition:all .15s"
+        onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+        onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">🏃 Cardio</button>
+    </div>
     <table class="sets-tbl">
       <thead><tr><th>Set</th><th>Target</th><th>kg done</th><th>Reps done</th><th>RPE</th></tr></thead>
       <tbody id="${id}_sets">${mkSetRow(id,1,'','')}</tbody>
     </table>
-    <button class="add-set-btn" onclick="addSet('${id}')">+ add set</button>`;
+    <button class="add-set-btn" onclick="document.getElementById('${id}').dataset.mode==='cardio'?addCardioSet('${id}'):addSet('${id}')">+ add set</button>`;
   document.getElementById('exBlocks').appendChild(div);
   // Focus the new input
   setTimeout(()=>div.querySelector('.ex-inp')?.focus(), 50);
@@ -2997,11 +3003,17 @@ function addExToGroup(groupId){
       </div>
       <button onclick="document.getElementById('${id}').remove()" style="background:none;border:none;color:rgba(255,255,255,.6);cursor:pointer;font-size:20px;padding:0 4px;flex-shrink:0">×</button>
     </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:4px">
+      <button class="ex-mode-btn" data-eid="${id}" onclick="toggleExMode('${id}')"
+        style="background:none;border:1px solid var(--border2);color:var(--text3);cursor:pointer;font-size:9px;padding:3px 8px;font-family:'Oswald',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;transition:all .15s"
+        onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+        onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">🏃 Cardio</button>
+    </div>
     <table class="sets-tbl">
       <thead><tr><th>Set</th><th>Target</th><th>kg done</th><th>Reps done</th><th>RPE</th><th></th></tr></thead>
       <tbody id="${id}_sets">${mkSetRow(id,1,'','')}</tbody>
     </table>
-    <button class="add-set-btn" onclick="addSet('${id}')">+ add set</button>`;
+    <button class="add-set-btn" onclick="document.getElementById('${id}').dataset.mode==='cardio'?addCardioSet('${id}'):addSet('${id}')">+ add set</button>`;
   document.getElementById(groupId+'_inner').appendChild(div);
   setTimeout(()=>div.querySelector('.ex-inp')?.focus(),50);
 }
@@ -3035,6 +3047,62 @@ function mkSetRow(eid,n,target,targetReps){
     <td><input class="set-inp" type="number" placeholder="RPE" min="1" max="10"/></td>
     <td><button onclick="deleteSet(this)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 4px;line-height:1;transition:color .13s" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">×</button></td>
   </tr>`;
+}
+
+function mkCardioRow(n){
+  return`<tr>
+    <td><div class="set-num-c">${n}</div></td>
+    <td><input class="set-inp cardio-time" type="text" placeholder="min:sec" style="text-align:center"/></td>
+    <td><input class="set-inp cardio-dist" type="text" placeholder="km/m" style="text-align:center"/></td>
+    <td><input class="set-inp cardio-speed" type="text" placeholder="km/h" style="text-align:center"/></td>
+    <td><input class="set-inp cardio-incline" type="text" placeholder="%" style="text-align:center"/></td>
+    <td><input class="set-inp cardio-cal" type="number" placeholder="kcal" min="0" style="text-align:center"/></td>
+    <td><button onclick="deleteSet(this)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 4px;line-height:1;transition:color .13s" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">×</button></td>
+  </tr>`;
+}
+
+function toggleExMode(eid){
+  const block=document.getElementById(eid);
+  if(!block) return;
+  const isCardio=block.dataset.mode==='cardio';
+  const newMode=isCardio?'strength':'cardio';
+  block.dataset.mode=newMode;
+  const btn=block.querySelector('.ex-mode-btn');
+  if(btn) btn.textContent=newMode==='cardio'?'💪 Strength':'🏃 Cardio';
+  // Rebuild table
+  const tbl=block.querySelector('.sets-tbl');
+  if(!tbl) return;
+  const rowCount=tbl.querySelector('tbody').rows.length||1;
+  if(newMode==='cardio'){
+    tbl.querySelector('thead tr').innerHTML='<th>Set</th><th>Time</th><th>Dist</th><th>Speed</th><th>Incline</th><th>Kcal</th><th></th>';
+    let rows='';
+    for(let i=1;i<=rowCount;i++) rows+=mkCardioRow(i);
+    tbl.querySelector('tbody').innerHTML=rows;
+    // Hide add-set button label
+    const addBtn=block.querySelector('.add-set-btn');
+    if(addBtn) addBtn.dataset.mode='cardio';
+  } else {
+    tbl.querySelector('thead tr').innerHTML='<th>Set</th><th>Target</th><th>kg done</th><th>Reps done</th><th>RPE</th><th></th>';
+    let rows='';
+    for(let i=1;i<=rowCount;i++) rows+=mkSetRow(eid,i,'','');
+    tbl.querySelector('tbody').innerHTML=rows;
+    const addBtn=block.querySelector('.add-set-btn');
+    if(addBtn) delete addBtn.dataset.mode;
+  }
+}
+
+function addCardioSet(eid){
+  const tb=document.getElementById(eid+'_sets');
+  const n=tb.rows.length+1;
+  tb.insertAdjacentHTML('beforeend',mkCardioRow(n));
+  // Copy prev row values
+  const prev=tb.rows[tb.rows.length-2];
+  const cur=tb.rows[tb.rows.length-1];
+  if(prev){
+    [...prev.querySelectorAll('input')].forEach((inp,i)=>{
+      if(cur.querySelectorAll('input')[i]) cur.querySelectorAll('input')[i].value=inp.value;
+    });
+  }
 }
 
 function deleteSet(btn){
@@ -3104,10 +3172,22 @@ function collectEx(){
     const name=b.querySelector('.ex-inp')?.value?.trim();if(!name)return a;
     // Auto-save new exercise names to custom DB if not in built-in list
     if(name && !EXERCISE_DB.find(e=>e.n.toLowerCase()===name.toLowerCase())) addCustomExercise(name);
+    const isCardio=b.dataset.mode==='cardio';
     const sets=[...b.querySelectorAll('tbody tr')].reduce((s,r)=>{
       const i=r.querySelectorAll('input');
-      // columns: kg done (0), reps done (1), RPE (2)
-      if(i[0]?.value||i[1]?.value)s.push({kg:i[0]?.value||'—',reps:i[1]?.value||'—',rpe:i[2]?.value||''});
+      if(isCardio){
+        const time=r.querySelector('.cardio-time')?.value||'';
+        const dist=r.querySelector('.cardio-dist')?.value||'';
+        const speed=r.querySelector('.cardio-speed')?.value||'';
+        const incline=r.querySelector('.cardio-incline')?.value||'';
+        const cal=r.querySelector('.cardio-cal')?.value||'';
+        if(time||dist||speed||incline||cal){
+          s.push({kg:'',reps:[time,dist,speed?speed+'km/h':'',incline?incline+'%':'',cal?cal+'kcal':''].filter(Boolean).join(' · ')});
+        }
+      } else {
+        const i=r.querySelectorAll('input');
+        if(i[0]?.value||i[1]?.value)s.push({kg:i[0]?.value||'—',reps:i[1]?.value||'—',rpe:i[2]?.value||''});
+      }
       return s;
     },[]);
     a.push({name,sets});return a;
