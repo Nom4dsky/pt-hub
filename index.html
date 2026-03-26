@@ -143,7 +143,7 @@ html,body{height:100%;height:100dvh;background:var(--bg);color:var(--text);font-
 .kpi-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.22em;margin-bottom:10px;font-weight:700;font-family:var(--font-display);}
 .kpi-value{font-family:var(--font-display);font-size:36px;font-weight:800;letter-spacing:-1px;line-height:1;color:var(--text);}
 .kpi-sub{font-size:11px;color:var(--text3);margin-top:6px;font-family:var(--font-body);}
-@media(max-width:900px){.kpi-row{grid-template-columns:1fr 1fr;}.kpi-value{font-size:28px;}}
+@media(max-width:900px){.kpi-row{grid-template-columns:1fr 1fr;}.kpi-value{font-size:28px;}.g2,.g2-1,.g3{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
 @media(max-width:500px){.kpi-row{grid-template-columns:1fr 1fr;}.kpi{padding:16px 16px 14px;}.kpi-value{font-size:26px;}}
 
 /* ── DASHBOARD KPIs (bigger) ── */
@@ -152,6 +152,8 @@ html,body{height:100%;height:100dvh;background:var(--bg);color:var(--text);font-
 
 /* ── GRID ── */
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.cd-main-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:900px){.cd-main-grid{grid-template-columns:1fr;}}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
 .g2-1{display:grid;grid-template-columns:2fr 1fr;gap:12px;}
 .mb8{margin-bottom:8px;}.mb12{margin-bottom:12px;}.mb14{margin-bottom:14px;}
@@ -159,7 +161,7 @@ html,body{height:100%;height:100dvh;background:var(--bg);color:var(--text);font-
 .sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
 .pg-title{font-family:var(--font-display);font-size:24px;font-weight:800;letter-spacing:-.5px;margin-bottom:3px;text-transform:uppercase;line-height:1;}
 .pg-sub{font-size:12px;color:var(--text2);font-family:var(--font-body);}
-@media(max-width:700px){.g2,.g2-1,.g3{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
+@media(max-width:700px){.g2,.g2-1,.g3,.cd-main-grid{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
 
 /* ── TABLE ── */
 .tbl{width:100%;border-collapse:collapse;table-layout:fixed;}
@@ -2291,7 +2293,7 @@ function renderCD(id){
       <div id="chartArea_${id}"></div>
     </div>
 
-    <div class="g2 mb16">
+    <div class="cd-main-grid mb16">
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
           <div class="card-label" style="margin:0">Body map — awareness zones</div>
