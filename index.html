@@ -903,6 +903,17 @@ function toggleDark(){
       : '<circle cx="9" cy="9" r="4"/><path d="M9 2v1.5M9 14.5V16M2 9h1.5M14.5 9H16M4.2 4.2l1 1M12.8 12.8l1 1M4.2 13.8l1-1M12.8 5.2l1-1"/>';
   }
 }
+// ── Emergency data recovery ──
+function resetMigrationFlags(){
+  if(!confirm('Reset migration flags? This will re-run all data migrations on next reload.')) return;
+  const keys=Object.keys(localStorage).filter(k=>k.startsWith('pthub_'));
+  const dataKeys=['pthub_clients','pthub_sessions','pthub_checkins','pthub_programs',
+    'pthub_notes','pthub_assessments','pthub_reminders','pthub_workouts_lib'];
+  keys.forEach(k=>{ if(!dataKeys.includes(k)) localStorage.removeItem(k); });
+  alert('Migration flags cleared. Reloading...');
+  location.reload();
+}
+
 function initTheme(){
   const saved=localStorage.getItem('pthub_theme');
   if(saved==='dark'){
@@ -6519,9 +6530,16 @@ if(!localStorage.getItem('pthub_notion_import_v1')){
     });
     // Dedup by id
     const deduped=[...new Map(ses.map(function(s){return [s.id,s];})).values()];
-    localStorage.setItem('pthub_sessions',JSON.stringify(deduped));
+    // Verify the array is valid before saving
+    const testJson=JSON.stringify(deduped);
+    JSON.parse(testJson); // will throw if invalid
+    localStorage.setItem('pthub_sessions',testJson);
     localStorage.setItem('pthub_notion_import_v1','1');
-  }catch(e){console.error('Notion import:',e);}
+    console.log('Notion import: added/updated sessions, total='+deduped.length);
+  }catch(e){
+    console.error('Notion import failed:',e);
+    // Don't set the flag so it retries on next load
+  }
 }
 
 initTheme();initData();
