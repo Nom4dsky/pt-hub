@@ -57,13 +57,13 @@ html,body{height:100%;height:100dvh;background:var(--bg);color:var(--text);font-
 #left-panel{width:var(--panel-left);background:var(--white-pure);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;}
 #right-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
 #right-topbar{height:var(--topbar);background:var(--white-pure);border-bottom:2px solid var(--border);display:flex;align-items:center;padding:0 28px;gap:12px;flex-shrink:0;}
-#right-content{flex:1;overflow-y:auto;overflow-x:clip;-webkit-overflow-scrolling:touch;padding:28px;padding-bottom:calc(28px + env(safe-area-inset-bottom));}
+#right-content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:28px;padding-bottom:calc(28px + env(safe-area-inset-bottom));}
 @media(max-width:1100px){
   #left-panel{position:fixed;top:0;left:60px;bottom:0;z-index:15;transform:translateX(-100%);transition:transform .2s cubic-bezier(.4,0,.2,1);box-shadow:var(--shadow-lg);}
   #left-panel.open{transform:translateX(0);}
   #overlay{display:none;position:fixed;inset:0;background:rgba(26,25,23,.55);z-index:14;}
   #overlay.show{display:block;}
-  #right-content{padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom));overflow-x:clip;}
+  #right-content{padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom));}
 }
 @media(max-width:700px){
   #right-content{padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom));}
@@ -143,7 +143,7 @@ html,body{height:100%;height:100dvh;background:var(--bg);color:var(--text);font-
 .kpi-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.22em;margin-bottom:10px;font-weight:700;font-family:var(--font-display);}
 .kpi-value{font-family:var(--font-display);font-size:36px;font-weight:800;letter-spacing:-1px;line-height:1;color:var(--text);}
 .kpi-sub{font-size:11px;color:var(--text3);margin-top:6px;font-family:var(--font-body);}
-@media(max-width:900px){.kpi-row{grid-template-columns:1fr 1fr;}.kpi-value{font-size:28px;}.g2,.g2-1,.g3{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
+@media(max-width:900px){.kpi-row{grid-template-columns:1fr 1fr;}.kpi-value{font-size:28px;}}
 @media(max-width:500px){.kpi-row{grid-template-columns:1fr 1fr;}.kpi{padding:16px 16px 14px;}.kpi-value{font-size:26px;}}
 
 /* ── DASHBOARD KPIs (bigger) ── */
@@ -152,8 +152,6 @@ html,body{height:100%;height:100dvh;background:var(--bg);color:var(--text);font-
 
 /* ── GRID ── */
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.cd-main-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-@media(max-width:900px){.cd-main-grid{grid-template-columns:1fr;}}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
 .g2-1{display:grid;grid-template-columns:2fr 1fr;gap:12px;}
 .mb8{margin-bottom:8px;}.mb12{margin-bottom:12px;}.mb14{margin-bottom:14px;}
@@ -161,7 +159,7 @@ html,body{height:100%;height:100dvh;background:var(--bg);color:var(--text);font-
 .sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
 .pg-title{font-family:var(--font-display);font-size:24px;font-weight:800;letter-spacing:-.5px;margin-bottom:3px;text-transform:uppercase;line-height:1;}
 .pg-sub{font-size:12px;color:var(--text2);font-family:var(--font-body);}
-@media(max-width:700px){.g2,.g2-1,.g3,.cd-main-grid{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
+@media(max-width:700px){.g2,.g2-1,.g3{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
 
 /* ── TABLE ── */
 .tbl{width:100%;border-collapse:collapse;table-layout:fixed;}
@@ -778,6 +776,7 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;height:4p
     <div id="sdContent"></div>
     <div style="display:flex;gap:8px;margin-top:18px">
       <button class="btn btn-ghost btn-sm" id="sdEditBtn">Edit</button>
+      <button class="btn btn-accent btn-sm" id="sdRepeatBtn">↩ Repeat session</button>
       <button class="modal-close btn btn-ghost btn-sm" onclick="closeM('sessionDetail')" style="margin-left:auto">Close</button>
     </div>
   </div>
@@ -2293,7 +2292,7 @@ function renderCD(id){
       <div id="chartArea_${id}"></div>
     </div>
 
-    <div class="cd-main-grid mb16">
+    <div class="g2 mb16">
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
           <div class="card-label" style="margin:0">Body map — awareness zones</div>
@@ -2960,17 +2959,11 @@ function addEx(){
       </div>
       <button onclick="document.getElementById('${id}').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;padding:0 4px;flex-shrink:0">×</button>
     </div>
-    <div style="display:flex;justify-content:flex-end;margin-bottom:4px">
-      <button class="ex-mode-btn" data-eid="${id}" onclick="toggleExMode('${id}')"
-        style="background:none;border:1px solid var(--border2);color:var(--text3);cursor:pointer;font-size:9px;padding:3px 8px;font-family:'Oswald',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;transition:all .15s"
-        onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
-        onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">🏃 Cardio</button>
-    </div>
     <table class="sets-tbl">
       <thead><tr><th>Set</th><th>Target</th><th>kg done</th><th>Reps done</th><th>RPE</th></tr></thead>
       <tbody id="${id}_sets">${mkSetRow(id,1,'','')}</tbody>
     </table>
-    <button class="add-set-btn" onclick="document.getElementById('${id}').dataset.mode==='cardio'?addCardioSet('${id}'):addSet('${id}')">+ add set</button>`;
+    <button class="add-set-btn" onclick="addSet('${id}')">+ add set</button>`;
   document.getElementById('exBlocks').appendChild(div);
   // Focus the new input
   setTimeout(()=>div.querySelector('.ex-inp')?.focus(), 50);
@@ -3005,17 +2998,11 @@ function addExToGroup(groupId){
       </div>
       <button onclick="document.getElementById('${id}').remove()" style="background:none;border:none;color:rgba(255,255,255,.6);cursor:pointer;font-size:20px;padding:0 4px;flex-shrink:0">×</button>
     </div>
-    <div style="display:flex;justify-content:flex-end;margin-bottom:4px">
-      <button class="ex-mode-btn" data-eid="${id}" onclick="toggleExMode('${id}')"
-        style="background:none;border:1px solid var(--border2);color:var(--text3);cursor:pointer;font-size:9px;padding:3px 8px;font-family:'Oswald',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;transition:all .15s"
-        onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
-        onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">🏃 Cardio</button>
-    </div>
     <table class="sets-tbl">
       <thead><tr><th>Set</th><th>Target</th><th>kg done</th><th>Reps done</th><th>RPE</th><th></th></tr></thead>
       <tbody id="${id}_sets">${mkSetRow(id,1,'','')}</tbody>
     </table>
-    <button class="add-set-btn" onclick="document.getElementById('${id}').dataset.mode==='cardio'?addCardioSet('${id}'):addSet('${id}')">+ add set</button>`;
+    <button class="add-set-btn" onclick="addSet('${id}')">+ add set</button>`;
   document.getElementById(groupId+'_inner').appendChild(div);
   setTimeout(()=>div.querySelector('.ex-inp')?.focus(),50);
 }
@@ -3049,62 +3036,6 @@ function mkSetRow(eid,n,target,targetReps){
     <td><input class="set-inp" type="number" placeholder="RPE" min="1" max="10"/></td>
     <td><button onclick="deleteSet(this)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 4px;line-height:1;transition:color .13s" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">×</button></td>
   </tr>`;
-}
-
-function mkCardioRow(n){
-  return`<tr>
-    <td><div class="set-num-c">${n}</div></td>
-    <td><input class="set-inp cardio-time" type="text" placeholder="min:sec" style="text-align:center"/></td>
-    <td><input class="set-inp cardio-dist" type="text" placeholder="km/m" style="text-align:center"/></td>
-    <td><input class="set-inp cardio-speed" type="text" placeholder="km/h" style="text-align:center"/></td>
-    <td><input class="set-inp cardio-incline" type="text" placeholder="%" style="text-align:center"/></td>
-    <td><input class="set-inp cardio-cal" type="number" placeholder="kcal" min="0" style="text-align:center"/></td>
-    <td><button onclick="deleteSet(this)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 4px;line-height:1;transition:color .13s" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">×</button></td>
-  </tr>`;
-}
-
-function toggleExMode(eid){
-  const block=document.getElementById(eid);
-  if(!block) return;
-  const isCardio=block.dataset.mode==='cardio';
-  const newMode=isCardio?'strength':'cardio';
-  block.dataset.mode=newMode;
-  const btn=block.querySelector('.ex-mode-btn');
-  if(btn) btn.textContent=newMode==='cardio'?'💪 Strength':'🏃 Cardio';
-  // Rebuild table
-  const tbl=block.querySelector('.sets-tbl');
-  if(!tbl) return;
-  const rowCount=tbl.querySelector('tbody').rows.length||1;
-  if(newMode==='cardio'){
-    tbl.querySelector('thead tr').innerHTML='<th>Set</th><th>Time</th><th>Dist</th><th>Speed</th><th>Incline</th><th>Kcal</th><th></th>';
-    let rows='';
-    for(let i=1;i<=rowCount;i++) rows+=mkCardioRow(i);
-    tbl.querySelector('tbody').innerHTML=rows;
-    // Hide add-set button label
-    const addBtn=block.querySelector('.add-set-btn');
-    if(addBtn) addBtn.dataset.mode='cardio';
-  } else {
-    tbl.querySelector('thead tr').innerHTML='<th>Set</th><th>Target</th><th>kg done</th><th>Reps done</th><th>RPE</th><th></th>';
-    let rows='';
-    for(let i=1;i<=rowCount;i++) rows+=mkSetRow(eid,i,'','');
-    tbl.querySelector('tbody').innerHTML=rows;
-    const addBtn=block.querySelector('.add-set-btn');
-    if(addBtn) delete addBtn.dataset.mode;
-  }
-}
-
-function addCardioSet(eid){
-  const tb=document.getElementById(eid+'_sets');
-  const n=tb.rows.length+1;
-  tb.insertAdjacentHTML('beforeend',mkCardioRow(n));
-  // Copy prev row values
-  const prev=tb.rows[tb.rows.length-2];
-  const cur=tb.rows[tb.rows.length-1];
-  if(prev){
-    [...prev.querySelectorAll('input')].forEach((inp,i)=>{
-      if(cur.querySelectorAll('input')[i]) cur.querySelectorAll('input')[i].value=inp.value;
-    });
-  }
 }
 
 function deleteSet(btn){
@@ -3174,22 +3105,10 @@ function collectEx(){
     const name=b.querySelector('.ex-inp')?.value?.trim();if(!name)return a;
     // Auto-save new exercise names to custom DB if not in built-in list
     if(name && !EXERCISE_DB.find(e=>e.n.toLowerCase()===name.toLowerCase())) addCustomExercise(name);
-    const isCardio=b.dataset.mode==='cardio';
     const sets=[...b.querySelectorAll('tbody tr')].reduce((s,r)=>{
       const i=r.querySelectorAll('input');
-      if(isCardio){
-        const time=r.querySelector('.cardio-time')?.value||'';
-        const dist=r.querySelector('.cardio-dist')?.value||'';
-        const speed=r.querySelector('.cardio-speed')?.value||'';
-        const incline=r.querySelector('.cardio-incline')?.value||'';
-        const cal=r.querySelector('.cardio-cal')?.value||'';
-        if(time||dist||speed||incline||cal){
-          s.push({kg:'',reps:[time,dist,speed?speed+'km/h':'',incline?incline+'%':'',cal?cal+'kcal':''].filter(Boolean).join(' · ')});
-        }
-      } else {
-        const i=r.querySelectorAll('input');
-        if(i[0]?.value||i[1]?.value)s.push({kg:i[0]?.value||'—',reps:i[1]?.value||'—',rpe:i[2]?.value||''});
-      }
+      // columns: kg done (0), reps done (1), RPE (2)
+      if(i[0]?.value||i[1]?.value)s.push({kg:i[0]?.value||'—',reps:i[1]?.value||'—',rpe:i[2]?.value||''});
       return s;
     },[]);
     a.push({name,sets});return a;
@@ -3295,10 +3214,8 @@ function saveSes(){
   if(DB.get('workerUrl')||DB.get('notionDbs')){
     pushSessionToNotion(s).then(()=>pushWorkoutToNotion(s)).catch(()=>{});
   }
-  // Store cid for post-summary navigation
-  window._lastSesCid = cid;
   clearLog();
-  showSessionSummary(s, client.name);
+  nav('clientDetail',cid);
 }
 
 function clearLog(){
@@ -4134,137 +4051,6 @@ function nextFact(){
   },200);
 }
 
-// ── SESSION SUMMARY ──
-const WEIGHT_COMPS = [
-  {kg:0.3,    emoji:'🦔', name:'hedgehog'},
-  {kg:0.9,    emoji:'🐇', name:'wild rabbit'},
-  {kg:1.2,    emoji:'🦦', name:'otter'},
-  {kg:2.4,    emoji:'🦝', name:'raccoon'},
-  {kg:3.5,    emoji:'🦡', name:'badger'},
-  {kg:6,      emoji:'🦘', name:'joey (baby kangaroo)'},
-  {kg:9,      emoji:'🦫', name:'beaver'},
-  {kg:13,     emoji:'🦃', name:'wild turkey'},
-  {kg:18,     emoji:'🐓', name:'cassowary — the bird that can kill you'},
-  {kg:28,     emoji:'🦜', name:'capybara'},
-  {kg:38,     emoji:'🦘', name:'red kangaroo'},
-  {kg:55,     emoji:'🦙', name:'alpaca'},
-  {kg:68,     emoji:'🐆', name:'snow leopard'},
-  {kg:95,     emoji:'🦌', name:'elk'},
-  {kg:130,    emoji:'🐺', name:'dire wolf (yes, it was real)'},
-  {kg:200,    emoji:'🐊', name:'saltwater crocodile'},
-  {kg:250,    emoji:'🦬', name:'American bison'},
-  {kg:320,    emoji:'🦈', name:'great white shark'},
-  {kg:450,    emoji:'🐻‍❄️', name:'polar bear'},
-  {kg:520,    emoji:'🦛', name:'pygmy hippo'},
-  {kg:800,    emoji:'🦏', name:'black rhino'},
-  {kg:1200,   emoji:'🦣', name:'steppe mammoth (smaller cousin of woolly)'},
-  {kg:1800,   emoji:'🦏', name:'white rhino'},
-  {kg:3000,   emoji:'🐘', name:'African forest elephant'},
-  {kg:5000,   emoji:'🦒', name:'giraffe — yes, they are this heavy'},
-  {kg:7000,   emoji:'🐘', name:'African bush elephant'},
-  {kg:10000,  emoji:'🦕', name:'Triceratops'},
-  {kg:14000,  emoji:'🦖', name:'T-Rex'},
-  {kg:40000,  emoji:'🐋', name:'sperm whale'},
-  {kg:150000, emoji:'🐳', name:'blue whale'},
-];
-
-function getWeightComp(kg){
-  if(kg<=0) return null;
-  // Find the best comparison — closest ratio to a whole number
-  let best = WEIGHT_COMPS[0];
-  let bestScore = Infinity;
-  for(const c of WEIGHT_COMPS){
-    const ratio = kg / c.kg;
-    const rounded = Math.round(ratio);
-    if(rounded < 1) continue;
-    const score = Math.abs(ratio - rounded) / rounded;
-    if(score < bestScore && rounded <= 50){
-      bestScore = score;
-      best = {...c, count: rounded};
-    }
-  }
-  const ratio = kg / best.kg;
-  const count = Math.round(ratio);
-  if(count < 1) return null;
-  return {emoji: best.emoji, name: best.name, count};
-}
-
-function showSessionSummary(session, clientName){
-  // Calculate total volume (kg × reps)
-  let totalKg = 0, totalSets = 0, totalReps = 0;
-  const exercises = session.exerciseData || [];
-  const exNames = [];
-  exercises.forEach(ex => {
-    if(!ex.name) return;
-    exNames.push(ex.name);
-    (ex.sets||[]).forEach(s => {
-      const kg = parseFloat(s.kg) || 0;
-      const reps = parseFloat(s.reps) || 0;
-      if(kg > 0 && reps > 0){
-        totalKg += kg * reps;
-        totalReps += reps;
-        totalSets++;
-      }
-    });
-  });
-
-  const comp = getWeightComp(totalKg);
-  const dur = session.duration || 0;
-
-  // Pick a fun message
-  const msgs = [
-    `Not bad. Not bad at all.`,
-    `The bar has been raised. Literally.`,
-    `Someone's getting stronger.`,
-    `That's how it's done.`,
-    `Coach approved. ✅`,
-    `The gym felt it.`,
-    `Another one in the books.`,
-    `Consistency is the cheat code.`,
-    `Progress doesn't lie.`,
-    `One session closer.`,
-  ];
-  const msg = msgs[Math.floor(Math.random() * msgs.length)];
-
-  const compHtml = comp && totalKg > 0 ? `
-    <div style="background:var(--bg);padding:20px;margin:20px 0;border-left:3px solid var(--accent)">
-      <div style="font-size:48px;margin-bottom:8px">${comp.emoji.repeat(Math.min(comp.count,8))}${comp.count>8?'...':''}</div>
-      <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;color:var(--text)">
-        That's ${comp.count} ${comp.name}${comp.count>1?'s':''}
-      </div>
-      <div style="font-size:12px;color:var(--text3);margin-top:4px">${Math.round(totalKg).toLocaleString()} kg total volume</div>
-    </div>` : '';
-
-  const statsHtml = `
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:20px 0">
-      <div>
-        <div style="font-family:'Oswald',sans-serif;font-size:28px;font-weight:800;color:var(--accent)">${exercises.length}</div>
-        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;font-family:'Oswald',sans-serif">Exercises</div>
-      </div>
-      <div>
-        <div style="font-family:'Oswald',sans-serif;font-size:28px;font-weight:800;color:var(--accent)">${totalSets}</div>
-        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;font-family:'Oswald',sans-serif">Sets</div>
-      </div>
-      <div>
-        <div style="font-family:'Oswald',sans-serif;font-size:28px;font-weight:800;color:var(--accent)">${dur}m</div>
-        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;font-family:'Oswald',sans-serif">Duration</div>
-      </div>
-    </div>`;
-
-  document.getElementById('sesSummaryContent').innerHTML = `
-    <div style="font-size:13px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.2em;font-family:'Oswald',sans-serif;margin-bottom:8px">Session complete</div>
-    <div style="font-family:'Oswald',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px">${clientName}</div>
-    <div style="font-size:13px;color:var(--text2);margin-bottom:4px">${msg}</div>
-    ${statsHtml}
-    ${compHtml}
-    <div style="font-size:11px;color:var(--text3);margin-bottom:20px;line-height:1.5">${exNames.slice(0,6).join(' · ')}${exNames.length>6?' +'+( exNames.length-6)+' more':''}</div>
-    <div style="display:flex;gap:8px;justify-content:center">
-      <button class="btn btn-accent" onclick="closeM('sesSummary');nav('clientDetail',window._lastSesCid||'')">Done 💪</button>
-    </div>`;
-
-  openM('sesSummary');
-}
-
 // ── CLIENT CALENDAR ──
 // ═══════════════════════════════════════
 // CLIENT CALENDAR
@@ -4354,7 +4140,7 @@ function buildCalendar(clientId, sessions){
       }
     }
 
-    return`<div style="flex:0 0 auto;min-width:220px;scroll-snap-align:start">
+    return`<div style="flex:0 0 auto;min-width:220px">
       <div style="font-size:10px;font-weight:700;font-family:'Oswald',sans-serif;text-transform:uppercase;
                   letter-spacing:.16em;color:var(--text3);margin-bottom:10px">
         ${MONTH_NAMES[month]} ${year}
@@ -4393,7 +4179,7 @@ function buildCalendar(clientId, sessions){
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${legend}</div>
       </div>
     </div>
-    <div style="display:flex;gap:0;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;padding-bottom:8px;scroll-snap-type:x proximity;">
+    <div style="display:flex;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px">
       ${monthsHtml}
     </div>
   </div>`;
@@ -5937,6 +5723,8 @@ function openSessionDetail(id){
     [s.type,s.duration?s.duration+'min':null,s.rpe?'RPE '+s.rpe:null].filter(Boolean).join(' · ');
   const editBtn=document.getElementById('sdEditBtn');
   if(editBtn)editBtn.onclick=()=>{closeM('sessionDetail');editSession(id);};
+  const repeatBtn=document.getElementById('sdRepeatBtn');
+  if(repeatBtn)repeatBtn.onclick=()=>{closeM('sessionDetail');repeatSession(id);};
 
   const exs=s.exerciseData||[];
   let html='';
@@ -5989,6 +5777,91 @@ function openSessionDetail(id){
 
   document.getElementById('sdContent').innerHTML=html;
   openM('sessionDetail');
+}
+
+function repeatSession(id){
+  const ses=DB.get('sessions')||[];
+  const s=ses.find(x=>x.id===id);
+  if(!s) return;
+  nav('log');
+  setTimeout(()=>{
+    // Pre-select client
+    const clientEl=document.getElementById('logClient');
+    if(clientEl&&s.clientId) clientEl.value=s.clientId;
+    // Fire client change to show info
+    clientEl?.dispatchEvent(new Event('change'));
+
+    // Set session type
+    const typeEl=document.getElementById('logType');
+    if(typeEl&&s.type) typeEl.value=s.type;
+
+    // Clear existing blocks
+    document.getElementById('exBlocks').innerHTML='';
+    exCnt=0;
+
+    // Load each exercise with exact weights and reps
+    (s.exerciseData||[]).forEach(ex=>{
+      if(!ex.name) return;
+      exCnt++;
+      const id='ex'+exCnt;
+      const div=document.createElement('div');
+      div.className='ex-block';div.id=id;
+
+      const sets=ex.sets||[];
+      const setRows=sets.length
+        ? sets.map((st,i)=>{
+            const n=i+1;
+            const kg=st.kg&&st.kg!=='—'?st.kg:'';
+            const reps=st.reps&&st.reps!=='—'?st.reps:'';
+            const rpe=st.rpe||'';
+            return`<tr>
+              <td><div class="set-num-c">${n}</div></td>
+              <td><div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;text-align:center;padding:6px 4px">${kg?reps+'@'+kg:'—'}</div></td>
+              <td><input class="set-inp" type="number" placeholder="kg" min="0" step="0.5" value="${kg}"/></td>
+              <td><input class="set-inp" type="number" placeholder="reps" min="0" value="${reps}"/></td>
+              <td><input class="set-inp" type="number" placeholder="RPE" min="1" max="10" value="${rpe}"/></td>
+              <td><button onclick="deleteSet(this)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 4px;line-height:1;transition:color .13s" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">×</button></td>
+            </tr>`;
+          }).join('')
+        : mkSetRow(id,1,'','');
+
+      div.innerHTML=`
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+          <div class="ex-inp-wrap" style="flex:1;position:relative">
+            <input type="text" class="ex-inp" value="${(ex.name||'').replace(/"/g,'&quot;')}" placeholder="Exercise name" autocomplete="off"
+              oninput="showAutocomplete(this,'${id}')"
+              onblur="hideAutocomplete('${id}')"
+              onkeydown="acKeyNav(event,'${id}',this)"/>
+          </div>
+          <button onclick="document.getElementById('${id}').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;padding:0 4px;flex-shrink:0">×</button>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:4px">
+          <button class="ex-mode-btn" data-eid="${id}" onclick="toggleExMode('${id}')"
+            style="background:none;border:1px solid var(--border2);color:var(--text3);cursor:pointer;font-size:9px;padding:3px 8px;font-family:'Oswald',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;transition:all .15s"
+            onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+            onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">🏃 Cardio</button>
+        </div>
+        <table class="sets-tbl">
+          <thead><tr><th>Set</th><th>Target</th><th>kg done</th><th>Reps done</th><th>RPE</th></tr></thead>
+          <tbody id="${id}_sets">${setRows}</tbody>
+        </table>
+        <button class="add-set-btn" onclick="document.getElementById('${id}').dataset.mode==='cardio'?addCardioSet('${id}'):addSet('${id}')">+ add set</button>`;
+      document.getElementById('exBlocks').appendChild(div);
+      setTimeout(()=>showExHistoryBar(id,ex.name),80);
+    });
+
+    // Load warmup
+    if(s.warmup){
+      const wuEl=document.getElementById('warmupNotes');
+      if(wuEl) wuEl.value=s.warmup;
+    }
+
+    // Scroll to top
+    setTimeout(()=>document.getElementById('exBlocks')?.scrollIntoView({behavior:'smooth',block:'start'}),200);
+
+    // Show toast
+    showSR('Session loaded — adjust and go 💪','ok');
+  },150);
 }
 
 function editSession(id){
@@ -6794,9 +6667,5 @@ if(!localStorage.getItem('pthub_programs_cleared')){
 renderDash();renderLeftPanel();checkSetup();setTimeout(drawAllAvatars,100);
 
 </script>
-  <!-- SESSION SUMMARY MODAL -->
-  <div class="modal-overlay" id="modal-sesSummary" style="align-items:center;justify-content:center">
-    <div class="modal" style="max-width:480px;text-align:center;padding:40px 32px" id="sesSummaryContent"></div>
-  </div>
 </body>
 </html>
