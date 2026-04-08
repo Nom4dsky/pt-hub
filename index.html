@@ -1973,7 +1973,7 @@ function drawLineChart(ctx, w, h, datasets, labels, opts={}){
   }
 }
 
-function drawBarChart(ctx, w, h, data, labels, color='#d4f54e'){
+function drawBarChart(ctx, w, h, data, labels, color='#EB5E28'){
   const pad = {top:16, right:16, bottom:36, left:40};
   const cw = w - pad.left - pad.right;
   const ch = h - pad.top - pad.bottom;
@@ -1992,7 +1992,7 @@ function drawBarChart(ctx, w, h, data, labels, color='#d4f54e'){
     const barH = (v/maxV)*ch;
     const y = pad.top + ch - barH;
     // Bar
-    ctx.fillStyle = v>0 ? hexToRgba(color.startsWith('#')?color:'#d4f54e', 0.9) : hexToRgba('#000',0.05);
+    const _c=color.startsWith('var(')?getComputedStyle(document.documentElement).getPropertyValue(color.slice(4,-1)).trim()||'#EB5E28':color; ctx.fillStyle = v>0 ? hexToRgba(_c.startsWith('#')?_c:'#EB5E28', 0.9) : hexToRgba('#000',0.05);
     roundRect(ctx, x, y, barW, barH, 3);
     ctx.fill();
     // Value label on top if fits
@@ -2079,7 +2079,7 @@ function renderSessionsChart(area, ses){
     <div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:600">Last 4 weeks</div><div style="font-size:20px;font-weight:700;font-family:'Syne',sans-serif">${last4}</div></div>`;
   area.insertBefore(statsEl, area.firstChild);
 
-  drawBarChart(ctx, w, h, data, labels, '#d4f54e');
+  drawBarChart(ctx, w, h, data, labels, '#EB5E28');
 }
 
 function renderStrengthChart(area, ass){
