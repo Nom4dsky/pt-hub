@@ -776,7 +776,6 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;height:4p
     <div id="sdContent"></div>
     <div style="display:flex;gap:8px;margin-top:18px">
       <button class="btn btn-ghost btn-sm" id="sdEditBtn">Edit</button>
-      <button class="btn btn-accent btn-sm" id="sdRepeatBtn">↩ Repeat session</button>
       <button class="modal-close btn btn-ghost btn-sm" onclick="closeM('sessionDetail')" style="margin-left:auto">Close</button>
     </div>
   </div>
@@ -2291,6 +2290,7 @@ function renderCD(id){
       </div>
       <div id="chartArea_${id}"></div>
     </div>
+    ${cSes.length?buildClientStats(id,cSes,cCIs):''}
 
     <div class="g2 mb16">
       <div class="card">
@@ -4051,6 +4051,136 @@ function nextFact(){
   },200);
 }
 
+// ── SESSION VOLUME ──
+function buildSessionVolumeSummary(s){
+  const exs=s.exerciseData||[];
+  let totalVol=0,totalSets=0,totalReps=0;
+  const exVols=[];
+  exs.forEach(ex=>{
+    let exVol=0;
+    (ex.sets||[]).forEach(st=>{
+      const kg=parseFloat(st.kg)||0;
+      const reps=parseFloat(st.reps)||0;
+      if(kg>0&&reps>0){totalVol+=kg*reps;exVol+=kg*reps;totalReps+=reps;totalSets++;}
+    });
+    if(exVol>0) exVols.push({name:ex.name,vol:exVol});
+  });
+  if(totalVol===0) return '';
+  exVols.sort((a,b)=>b.vol-a.vol);
+  const topEx=exVols[0];
+  const fmt=v=>v>=1000?(v/1000).toFixed(1)+'t':Math.round(v)+'kg';
+  return`<div style="margin-top:16px;padding:14px 16px;background:var(--sidebar);border-left:3px solid var(--accent)">
+    <div style="font-size:9px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.2em;font-family:'Oswald',sans-serif;margin-bottom:12px">Volume Summary</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px">
+      <div><div style="font-family:'Oswald',sans-serif;font-size:24px;font-weight:800;color:#fff;letter-spacing:-1px">${fmt(totalVol)}</div><div style="font-size:9px;color:rgba(255,252,242,.4);text-transform:uppercase;letter-spacing:.16em;font-family:'Oswald',sans-serif">Total volume</div></div>
+      <div><div style="font-family:'Oswald',sans-serif;font-size:24px;font-weight:800;color:#fff">${totalSets}</div><div style="font-size:9px;color:rgba(255,252,242,.4);text-transform:uppercase;letter-spacing:.16em;font-family:'Oswald',sans-serif">Sets</div></div>
+      <div><div style="font-family:'Oswald',sans-serif;font-size:24px;font-weight:800;color:#fff">${totalReps}</div><div style="font-size:9px;color:rgba(255,252,242,.4);text-transform:uppercase;letter-spacing:.16em;font-family:'Oswald',sans-serif">Reps</div></div>
+    </div>
+    ${exVols.length>0?`<div style="border-top:1px solid rgba(255,252,242,.08);padding-top:10px">
+      <div style="font-size:9px;color:rgba(255,252,242,.3);text-transform:uppercase;letter-spacing:.14em;font-family:'Oswald',sans-serif;margin-bottom:6px">By exercise</div>
+      ${exVols.slice(0,5).map((e,i)=>{
+        const pct=Math.round((e.vol/totalVol)*100);
+        return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <div style="font-size:11px;color:rgba(255,252,242,.6);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.04em;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.name}</div>
+          <div style="flex:2;height:4px;background:rgba(255,255,255,.1);overflow:hidden"><div style="height:100%;background:var(--accent);width:${pct}%;transition:width .6s ease"></div></div>
+          <div style="font-size:11px;font-family:'DM Mono',monospace;color:rgba(255,252,242,.5);min-width:48px;text-align:right">${fmt(e.vol)}</div>
+        </div>`;
+      }).join('')}
+    </div>`:''}
+  </div>`;
+}
+
+// ── CLIENT STATS (on profile) ──
+function buildClientStats(clientId, sessions, checkins){
+  const now=new Date();
+  const today=now.toISOString().split('T')[0];
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];
+  const lastMonthStart=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().split('T')[0];
+  const lastMonthEnd=new Date(now.getFullYear(),now.getMonth(),0).toISOString().split('T')[0];
+  const weekAgo=new Date(Date.now()-7*86400000).toISOString().split('T')[0];
+
+  // Volume calculations
+  function calcVol(ses){
+    return ses.reduce((total,s)=>{
+      return total+(s.exerciseData||[]).reduce((sv,ex)=>{
+        return sv+(ex.sets||[]).reduce((ev,st)=>{
+          const kg=parseFloat(st.kg)||0,reps=parseFloat(st.reps)||0;
+          return ev+(kg>0&&reps>0?kg*reps:0);
+        },0);
+      },0);
+    },0);
+  }
+
+  const allVol=calcVol(sessions);
+  const thisMonthSes=sessions.filter(s=>s.date>=monthStart);
+  const lastMonthSes=sessions.filter(s=>s.date>=lastMonthStart&&s.date<=lastMonthEnd);
+  const thisMonthVol=calcVol(thisMonthSes);
+  const lastMonthVol=calcVol(lastMonthSes);
+  const thisWeekSes=sessions.filter(s=>s.date>=weekAgo);
+
+  const volDiff=lastMonthVol>0?Math.round(((thisMonthVol-lastMonthVol)/lastMonthVol)*100):null;
+  const fmt=v=>v>=1000?(v/1000).toFixed(1)+'t':Math.round(v).toLocaleString()+'kg';
+
+  // Muscle group frequency (last 4 weeks)
+  const MUSCLE_MAP={
+    'squat':['squat','leg press','lunge','split squat','step up','hack squat'],
+    'hinge':['deadlift','rdl','hip thrust','good morning','kettlebell swing','kb swing'],
+    'push':['press','push','bench','dip','fly','chest'],
+    'pull':['row','pulldown','pull-up','pullup','chin','face pull'],
+    'carry':['carry','walk','farmer','suitcase'],
+    'core':['plank','crunch','rollout','pallof','dead bug','ab'],
+    'mobility':['stretch','mobility','pigeon','halo','windmill'],
+  };
+  const muscleCount={};
+  const recentSes=sessions.filter(s=>s.date>=new Date(Date.now()-28*86400000).toISOString().split('T')[0]);
+  recentSes.forEach(s=>(s.exerciseData||[]).forEach(ex=>{
+    const n=(ex.name||'').toLowerCase();
+    Object.entries(MUSCLE_MAP).forEach(([muscle,keys])=>{
+      if(keys.some(k=>n.includes(k))) muscleCount[muscle]=(muscleCount[muscle]||0)+1;
+    });
+  }));
+  const topMuscles=Object.entries(muscleCount).sort((a,b)=>b[1]-a[1]).slice(0,4);
+
+  // volTrend removed (inline in template below);
+
+  return`<div class="card mb16">
+    <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.22em;color:var(--text3);font-family:'Oswald',sans-serif;margin-bottom:14px">Training Stats</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px">
+      <div style="background:var(--bg);padding:14px 16px;border-left:3px solid var(--accent)">
+        <div style="font-family:'Oswald',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;color:var(--text)">${fmt(allVol)}</div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.16em;font-family:'Oswald',sans-serif;margin-top:3px">Total volume</div>
+      </div>
+      <div style="background:var(--bg);padding:14px 16px;border-left:3px solid var(--border2)">
+        <div style="font-family:'Oswald',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;color:var(--text)">${fmt(thisMonthVol)}</div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.16em;font-family:'Oswald',sans-serif;margin-top:3px">This month</div>
+        ${lastMonthVol>0?`<div style="font-size:10px;margin-top:4px;color:${volDiff>=0?'var(--green)':'var(--red)'};font-weight:700;font-family:'DM Mono',monospace">${volDiff>=0?'↑':'↓'}${Math.abs(volDiff)}% vs last month</div>`:''}
+      </div>
+      <div style="background:var(--bg);padding:14px 16px;border-left:3px solid var(--border2)">
+        <div style="font-family:'Oswald',sans-serif;font-size:28px;font-weight:800;color:var(--text)">${thisMonthSes.length}</div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.16em;font-family:'Oswald',sans-serif;margin-top:3px">Sessions this month</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px">${thisWeekSes.length} this week</div>
+      </div>
+      <div style="background:var(--bg);padding:14px 16px;border-left:3px solid var(--border2)">
+        <div style="font-family:'Oswald',sans-serif;font-size:28px;font-weight:800;color:var(--text)">${sessions.length}</div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.16em;font-family:'Oswald',sans-serif;margin-top:3px">Total sessions</div>
+      </div>
+    </div>
+    ${topMuscles.length?`<div>
+      <div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.18em;font-family:'Oswald',sans-serif;margin-bottom:10px">Muscle groups — last 4 weeks</div>
+      ${topMuscles.map(([m,n])=>{
+        const max=topMuscles[0][1];
+        const pct=Math.round((n/max)*100);
+        const labels={squat:'🦵 Squat / Legs',hinge:'🏋️ Hinge',push:'💪 Push',pull:'🔙 Pull',carry:'🧳 Carry',core:'🎯 Core',mobility:'🤸 Mobility'};
+        return`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="font-size:11px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);min-width:110px">${labels[m]||m}</div>
+          <div style="flex:1;height:6px;background:var(--border);overflow:hidden"><div style="height:100%;background:var(--accent);width:${pct}%;transition:width .6s ease"></div></div>
+          <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);min-width:24px;text-align:right">${n}</div>
+        </div>`;
+      }).join('')}
+    </div>`:''}
+  </div>`;
+}
+
 // ── CLIENT CALENDAR ──
 // ═══════════════════════════════════════
 // CLIENT CALENDAR
@@ -5723,8 +5853,6 @@ function openSessionDetail(id){
     [s.type,s.duration?s.duration+'min':null,s.rpe?'RPE '+s.rpe:null].filter(Boolean).join(' · ');
   const editBtn=document.getElementById('sdEditBtn');
   if(editBtn)editBtn.onclick=()=>{closeM('sessionDetail');editSession(id);};
-  const repeatBtn=document.getElementById('sdRepeatBtn');
-  if(repeatBtn)repeatBtn.onclick=()=>{closeM('sessionDetail');repeatSession(id);};
 
   const exs=s.exerciseData||[];
   let html='';
@@ -5775,93 +5903,11 @@ function openSessionDetail(id){
 
   if(s.warmup) html+=`<div style="margin-top:10px;padding:10px 14px;background:var(--bg);border-left:2px solid var(--orange)"><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;font-family:'Oswald',sans-serif">Warm-up</div><div style="font-size:12px;color:var(--text2)">${s.warmup}</div></div>`;
 
+  // Volume summary
+  html += buildSessionVolumeSummary(s);
+
   document.getElementById('sdContent').innerHTML=html;
   openM('sessionDetail');
-}
-
-function repeatSession(id){
-  const ses=DB.get('sessions')||[];
-  const s=ses.find(x=>x.id===id);
-  if(!s) return;
-  nav('log');
-  setTimeout(()=>{
-    // Pre-select client
-    const clientEl=document.getElementById('logClient');
-    if(clientEl&&s.clientId) clientEl.value=s.clientId;
-    // Fire client change to show info
-    clientEl?.dispatchEvent(new Event('change'));
-
-    // Set session type
-    const typeEl=document.getElementById('logType');
-    if(typeEl&&s.type) typeEl.value=s.type;
-
-    // Clear existing blocks
-    document.getElementById('exBlocks').innerHTML='';
-    exCnt=0;
-
-    // Load each exercise with exact weights and reps
-    (s.exerciseData||[]).forEach(ex=>{
-      if(!ex.name) return;
-      exCnt++;
-      const id='ex'+exCnt;
-      const div=document.createElement('div');
-      div.className='ex-block';div.id=id;
-
-      const sets=ex.sets||[];
-      const setRows=sets.length
-        ? sets.map((st,i)=>{
-            const n=i+1;
-            const kg=st.kg&&st.kg!=='—'?st.kg:'';
-            const reps=st.reps&&st.reps!=='—'?st.reps:'';
-            const rpe=st.rpe||'';
-            return`<tr>
-              <td><div class="set-num-c">${n}</div></td>
-              <td><div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;text-align:center;padding:6px 4px">${kg?reps+'@'+kg:'—'}</div></td>
-              <td><input class="set-inp" type="number" placeholder="kg" min="0" step="0.5" value="${kg}"/></td>
-              <td><input class="set-inp" type="number" placeholder="reps" min="0" value="${reps}"/></td>
-              <td><input class="set-inp" type="number" placeholder="RPE" min="1" max="10" value="${rpe}"/></td>
-              <td><button onclick="deleteSet(this)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 4px;line-height:1;transition:color .13s" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">×</button></td>
-            </tr>`;
-          }).join('')
-        : mkSetRow(id,1,'','');
-
-      div.innerHTML=`
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
-          <div class="ex-inp-wrap" style="flex:1;position:relative">
-            <input type="text" class="ex-inp" value="${(ex.name||'').replace(/"/g,'&quot;')}" placeholder="Exercise name" autocomplete="off"
-              oninput="showAutocomplete(this,'${id}')"
-              onblur="hideAutocomplete('${id}')"
-              onkeydown="acKeyNav(event,'${id}',this)"/>
-          </div>
-          <button onclick="document.getElementById('${id}').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;padding:0 4px;flex-shrink:0">×</button>
-        </div>
-        <div style="display:flex;justify-content:flex-end;margin-bottom:4px">
-          <button class="ex-mode-btn" data-eid="${id}" onclick="toggleExMode('${id}')"
-            style="background:none;border:1px solid var(--border2);color:var(--text3);cursor:pointer;font-size:9px;padding:3px 8px;font-family:'Oswald',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;transition:all .15s"
-            onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
-            onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">🏃 Cardio</button>
-        </div>
-        <table class="sets-tbl">
-          <thead><tr><th>Set</th><th>Target</th><th>kg done</th><th>Reps done</th><th>RPE</th></tr></thead>
-          <tbody id="${id}_sets">${setRows}</tbody>
-        </table>
-        <button class="add-set-btn" onclick="document.getElementById('${id}').dataset.mode==='cardio'?addCardioSet('${id}'):addSet('${id}')">+ add set</button>`;
-      document.getElementById('exBlocks').appendChild(div);
-      setTimeout(()=>showExHistoryBar(id,ex.name),80);
-    });
-
-    // Load warmup
-    if(s.warmup){
-      const wuEl=document.getElementById('warmupNotes');
-      if(wuEl) wuEl.value=s.warmup;
-    }
-
-    // Scroll to top
-    setTimeout(()=>document.getElementById('exBlocks')?.scrollIntoView({behavior:'smooth',block:'start'}),200);
-
-    // Show toast
-    showSR('Session loaded — adjust and go 💪','ok');
-  },150);
 }
 
 function editSession(id){
