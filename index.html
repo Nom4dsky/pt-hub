@@ -5355,18 +5355,30 @@ async function fullSync(){
       if(idx>=0) localSes[idx]={...localSes[idx],...data};
       else localSes.push({id:'ses_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),...data});
     });
-    // Deduplicate: if same clientId+date exists, keep the one with notionPageId
+    // Deduplicate: if same clientId+date exists, merge — always keep local data, just sync notionPageId
     const sesMap = new Map();
     localSes.forEach(s=>{
       const key = (s.clientId||s.clientName)+'|'+s.date;
       const existing = sesMap.get(key);
       if(!existing) { sesMap.set(key,s); return; }
-      // Keep whichever has notionPageId, or the one with more data
-      if(s.notionPageId && !existing.notionPageId) sesMap.set(key,s);
-      else if(s.notionPageId && existing.notionPageId){
-        // Both have notionPageId — merge, keep exerciseData from local
-        sesMap.set(key,{...s, exerciseData: existing.exerciseData||s.exerciseData||[]});
-      }
+      // Merge: prefer whichever has more data (exerciseData, notes), always keep notionPageId if either has it
+      const merged = {
+        ...existing,
+        ...s,
+        // Keep local exerciseData if it has more sets than Notion version
+        exerciseData: (existing.exerciseData||[]).length >= (s.exerciseData||[]).length
+          ? existing.exerciseData
+          : s.exerciseData,
+        // Keep local notes/duration/rpe if set
+        notes: existing.notes || s.notes || '',
+        duration: existing.duration || s.duration,
+        rpe: existing.rpe || s.rpe,
+        // Always take notionPageId if either has it
+        notionPageId: existing.notionPageId || s.notionPageId,
+        // Keep local id (not Notion-generated one)
+        id: existing.id || s.id,
+      };
+      sesMap.set(key, merged);
     });
     localSes=[...sesMap.values()];
     DB.set('sessions', localSes);
