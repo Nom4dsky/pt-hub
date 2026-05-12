@@ -2286,8 +2286,7 @@ function renderCD(id){
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div class="card-label" style="margin:0">Progress</div>
         <div class="chart-tabs" style="margin:0">
-          <button class="chart-tab active" onclick="switchChart('${id}','sessions',this)">Sessions</button>
-          <button class="chart-tab" onclick="switchChart('${id}','strength',this)">Strength</button>
+          <button class="chart-tab active" onclick="switchChart('${id}','strength',this)">Strength</button>
           <button class="chart-tab" onclick="switchChart('${id}','bodyweight',this)">Bodyweight</button>
           <button class="chart-tab" onclick="switchChart('${id}','wellbeing',this)">Wellbeing</button>
         </div>
@@ -2326,7 +2325,7 @@ function renderCD(id){
   `;
   // Init charts + draw avatar after DOM is set
   setTimeout(()=>{
-    switchChart(id,'sessions',document.querySelector('#page-clientDetail .chart-tab.active'));
+    switchChart(id,'strength',document.querySelector('#page-clientDetail .chart-tab.active'));
     const avEl=document.getElementById('av_'+id);
     if(avEl) generateAvatar(id,avEl);
   },50);
