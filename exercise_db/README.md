@@ -1,10 +1,12 @@
 # Exercise Database
 
 SQLAlchemy models + Alembic migrations for the exercise database:
-Phase 1 (`phase1_schema.sql`) — exercises + lookups — and Phase 2
+Phase 1 (`phase1_schema.sql`) — exercises + lookups; Phase 2
 (`phase2_schema.sql`) — the workout builder (workouts, blocks, block
-exercises, prescribed sets). Includes a seed dataset (exercises + example
-workouts) and example filter/query functions.
+exercises, prescribed sets); Phase 3 (`phase3_schema.sql`) — the program
+builder (reusable program templates, cloned into independently-editable
+client assignments, with lightweight actuals tracking). Includes a seed
+dataset and example filter/query functions for all three phases.
 
 SQLite for now; the models avoid anything that would block a later move
 to Postgres (see the `EXERCISE_DB_URL` note below), except the
@@ -15,13 +17,14 @@ syntax on purpose — that matches the source schema exactly.
 
 ```
 app/
-  models.py     # SQLAlchemy models — 1:1 with phase1_schema.sql + phase2_schema.sql
+  models.py     # SQLAlchemy models — 1:1 with phase1/2/3_schema.sql
   database.py   # engine/session setup
 alembic/
   versions/0001_initial_schema.py    # Phase 1: exercises + lookups
   versions/0002_workout_builder.py   # Phase 2: workouts/blocks/block_exercises/prescribed_sets
-seed.py             # wipes + inserts exercises and example workouts
-query_examples.py   # example filter queries + workout JSON/reverse-lookup helpers
+  versions/0003_program_builder.py   # Phase 3: programs/assignments/session_logs/logged_sets
+seed.py             # wipes + inserts exercises, example workouts, and one program + assignment
+query_examples.py   # example filter queries + workout/program JSON + reverse-lookup helpers
 ```
 
 ## Setup
@@ -35,10 +38,10 @@ pip install -r requirements.txt
 ## Usage
 
 ```bash
-# create exercises.sqlite3 with the full schema (Phase 1 + Phase 2)
+# create exercises.sqlite3 with the full schema (Phase 1 + 2 + 3)
 alembic upgrade head
 
-# wipe + insert exercises and example workouts (safe to re-run)
+# wipe + insert exercises, example workouts, and the program/assignment (safe to re-run)
 python seed.py
 
 # run the example queries
@@ -75,45 +78,106 @@ every `block_type` except `triset` / `for_time`:
   exercises
 - **AMRAP Finisher** — one `amrap` block, 8-minute cap, 3-exercise round
 
+**Programs** — one template, **12-Week HYROX Prep** (`duration_weeks=12`),
+with 5 representative weeks seeded (not all 12 — see the comment on
+`PROGRAMS` in `seed.py`):
+- week 1: `accumulation`, 4 training days
+- week 2: `phase_label=NULL` (not every week needs one), 3 days
+- week 3: `accumulation`, 5 days
+- week 4: `intensification`, 3 days
+- week 5: `deload`, 2 days
+
+Each day links to one of the 5 seeded Phase 2 workouts via
+`program_day_workouts`. One **assignment** clones this template for a mock
+client ("Alex Rivera") via `clone_program_to_assignment` (see below), then
+has week 4 / day 3's workout swapped from AMRAP Finisher to Full Body
+Circuit *on the clone only* — proving the clone is independently editable.
+One **session log** (week 1 / day 1, the Squat Strength Day) has 4
+`logged_sets` against its 4 prescribed sets: two hit as planned, one
+pushed slightly past prescription, and one where a rep was missed on the
+final top set.
+
 ## Query examples (`query_examples.py`)
 
+**Phase 1:**
 - `beginner_hinge_with_dumbbells`, `bodyweight_only_by_pattern`,
-  `exercises_targeting_muscle_as_primary`, `variants_of` — Phase 1 filters.
+  `exercises_targeting_muscle_as_primary`, `variants_of` — basic filters.
 - `get_compound_exercises_by_pattern(session, pattern)` — the guardrail
   query for "find a main-lift substitute": pairs `movement_pattern` with
   `compound_or_isolation == 'compound'` so isolation accessories (e.g.
   Machine Leg Extension under `squat`, Machine Leg Curl under `hinge`)
   never surface as substitutes for the lift itself. `main()` prints a
   side-by-side count showing exactly what that filter excludes.
+
+**Phase 2:**
 - `build_workout_dict` / `build_workout_json(session, workout_id)` — the
   full nested object: workout → blocks (by `order_index`) → block
   exercises (by `order_index`) → prescribed sets (by `set_number`).
 - `workouts_using_exercise(session, exercise_id)` — reverse lookup: every
   workout that uses a given exercise in any block.
 
-Note: the Phase 2 handoff prompt referred to a `test_queries.py` runner
-that doesn't exist in this repo — Phase 1 already put both the reusable
-query functions and their `main()` demo in `query_examples.py`, so Phase 2
-extends that same file rather than starting a second, parallel one. Say
-so if you actually want a separate `test_queries.py`.
+**Phase 3:**
+- `clone_program_to_assignment(session, program_id, client_name, start_date, notes=None)`
+  — clones a `programs` template's full week → day → workout structure
+  into new `assigned_*` rows. After this call the assignment is physically
+  separate data; editing it never touches the template or any other
+  assignment. Computes each assigned day's `scheduled_date` as consecutive
+  calendar days from `start_date` (a modeling choice — the schema doesn't
+  specify a cadence; see the function's docstring).
+- `build_assignment_dict` / `build_assignment_json(session, program_assignment_id)`
+  — the full nested view: assignment → weeks (by `week_number`) → days (by
+  `day_number`) → workouts (by `order_index`).
+- `compare_prescribed_vs_actual(session, session_log_id)` — planned vs.
+  actual for one completed session, joining `logged_sets` back to
+  `prescribed_sets` via `(workout_block_exercise_id, set_number)` (the
+  natural key `prescribed_sets` is uniquely constrained on) rather than
+  via `logged_sets.prescribed_set_id`, per the brief — see the function's
+  docstring for why that's more robust.
+
+`main()` runs and prints all of the above against the seeded data,
+including cloning a *second*, throwaway assignment on the fly (guarded so
+re-running the script doesn't pile up duplicates) to prove the clone
+function works standalone and doesn't mutate the template.
+
+Note: the Phase 2 and Phase 3 handoff prompts both referred to a
+`test_queries.py` runner that doesn't exist in this repo — Phase 1 already
+put both the reusable query functions and their `main()` demo in
+`query_examples.py`, so Phase 2 and 3 both extended that same file rather
+than starting a second, parallel one. Say so if you actually want a
+separate `test_queries.py`.
+
+## Known follow-up (flagged, not built)
+
+`program_assignments.client_name` is a plain `TEXT` column, not a foreign
+key — there's no `clients` table yet. Per the brief, this phase
+deliberately does not build one; `client_name` is a placeholder that
+should become a `client_id` FK once that table exists. `seed.py` and
+`query_examples.py` both use free-text client names for the same reason
+(marked `TODO(clients table)` in `app/models.py`).
 
 ## Notes / assumptions
 
-- `seed.py` **wipes** all exercise and workout tables before inserting, so
-  it's idempotent to re-run during development — don't point it at a
-  database with real client-facing data you want to keep. Workout tables
-  are wiped before exercise tables since `workout_block_exercises.exercise_id`
-  has no `ON DELETE` clause.
+- `seed.py` **wipes** all exercise, workout, and program tables before
+  inserting, so it's idempotent to re-run during development — don't
+  point it at a database with real client-facing data you want to keep.
+  Program tables are wiped before workout tables, which are wiped before
+  exercise tables, since none of `program_day_workouts.workout_id`,
+  `assigned_day_workouts.workout_id`, `logged_sets.workout_block_exercise_id`,
+  or `workout_block_exercises.exercise_id` have an `ON DELETE` clause.
 - `contraindications` is free text as specified in the schema (comma
   separated tags like `lower_back_injury, herniated_disc`), not a
   controlled vocabulary — treat it as a starting point, not medical advice.
 - `PRAGMA foreign_keys=ON` is set per-connection via a SQLAlchemy
   `connect` event in `app/database.py`, since SQLite doesn't enforce FKs
   by default and the schema relies on `ON DELETE CASCADE`/`SET NULL`.
-- `prescribed_sets.load_value` uses SQLAlchemy's `REAL` type to match the
-  schema's `REAL` column exactly (rather than the equivalent but
-  differently-rendered generic `Float`).
+- `prescribed_sets.load_value` and `logged_sets.actual_load_value` use
+  SQLAlchemy's `REAL` type to match the schema's `REAL` columns exactly
+  (rather than the equivalent but differently-rendered generic `Float`).
 - In the EMOM/circuit/AMRAP seed data, `set_number` tracks "how many times
   has this exercise appeared" (round 1, 2, 3...) per the schema comment
   ("set_number doubles as round number... depending on block_type"), not
   a shared absolute clock across exercises in the same block.
+- The `phase_label` and `actual_load_type` CHECK constraints repeat
+  `OR <column> IS NULL` even though that's redundant in standard SQL (a
+  CHECK already passes on NULL) — kept verbatim to match
+  `phase3_schema.sql` exactly rather than "simplifying" the source schema.

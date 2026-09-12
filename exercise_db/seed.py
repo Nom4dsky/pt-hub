@@ -18,18 +18,29 @@ Usage:
 
 from app.database import engine, get_session
 from app.models import (
+    AssignedDayWorkout,
+    AssignedProgramDay,
+    AssignedProgramWeek,
     Base,
     Equipment,
     Exercise,
     ExerciseEquipment,
     ExerciseMuscle,
+    LoggedSet,
     Muscle,
     MovementPattern,
     PrescribedSet,
+    Program,
+    ProgramAssignment,
+    ProgramDay,
+    ProgramDayWorkout,
+    ProgramWeek,
+    SessionLog,
     Workout,
     WorkoutBlock,
     WorkoutBlockExercise,
 )
+from query_examples import clone_program_to_assignment
 
 MUSCLES = [
     "Chest", "Upper Back", "Lats", "Traps", "Rear Delts", "Front Delts",
@@ -777,7 +788,22 @@ WORKOUTS = [
 
 
 def wipe_all(session) -> None:
-    # Workout tables first: workout_block_exercises.exercise_id has no
+    # Program tables first: program_day_workouts.workout_id,
+    # assigned_day_workouts.workout_id, and logged_sets.workout_block_exercise_id
+    # all have no ON DELETE clause, so workouts/blocks can't be wiped while
+    # program data still references them.
+    session.query(LoggedSet).delete()
+    session.query(SessionLog).delete()
+    session.query(AssignedDayWorkout).delete()
+    session.query(AssignedProgramDay).delete()
+    session.query(AssignedProgramWeek).delete()
+    session.query(ProgramAssignment).delete()
+    session.query(ProgramDayWorkout).delete()
+    session.query(ProgramDay).delete()
+    session.query(ProgramWeek).delete()
+    session.query(Program).delete()
+
+    # Workout tables next: workout_block_exercises.exercise_id has no
     # ON DELETE clause, so exercises can't be wiped while blocks still
     # reference them.
     session.query(PrescribedSet).delete()
@@ -849,16 +875,30 @@ def seed(session) -> int:
 
     session.commit()
 
-    seed_workouts(session, by_name)
+    workouts_by_name, block_exercises_index = seed_workouts(session, by_name)
+    seed_programs(session, workouts_by_name, block_exercises_index)
 
     return len(EXERCISES)
 
 
-def seed_workouts(session, exercises_by_name: dict[str, Exercise]) -> int:
+def seed_workouts(
+    session, exercises_by_name: dict[str, Exercise]
+) -> tuple[dict[str, Workout], dict[tuple[str, str], WorkoutBlockExercise]]:
+    """
+    Returns (workouts_by_name, block_exercises_by_workout_and_exercise) so
+    Phase 3 seeding can link program days to these workouts and log
+    actuals against a specific block exercise without re-querying.
+    Assumes each exercise appears at most once per workout, which holds
+    for this seed set.
+    """
+    workouts_by_name: dict[str, Workout] = {}
+    block_exercises_index: dict[tuple[str, str], WorkoutBlockExercise] = {}
+
     for workout_row in WORKOUTS:
         workout = Workout(name=workout_row["name"], notes=workout_row["notes"])
         session.add(workout)
         session.flush()  # need workout.id for the blocks below
+        workouts_by_name[workout.name] = workout
 
         for block_index, block_row in enumerate(workout_row["blocks"]):
             block = WorkoutBlock(
@@ -881,6 +921,7 @@ def seed_workouts(session, exercises_by_name: dict[str, Exercise]) -> int:
                 )
                 session.add(block_exercise)
                 session.flush()  # need block_exercise.id for the prescribed sets below
+                block_exercises_index[(workout.name, ex_row["exercise_name"])] = block_exercise
 
                 for set_index, set_row in enumerate(ex_row["sets"], start=1):
                     session.add(
@@ -899,7 +940,204 @@ def seed_workouts(session, exercises_by_name: dict[str, Exercise]) -> int:
                     )
 
     session.commit()
-    return len(WORKOUTS)
+    return workouts_by_name, block_exercises_index
+
+
+# ------------------------------------------------------------
+# PROGRAMS (Phase 3)
+# ------------------------------------------------------------
+# One reusable template. Weeks vary in day count on purpose (a deload week
+# doesn't need as many training days as an accumulation week), and not
+# every week carries a phase_label — both are schema-allowed, not
+# oversights. Day workouts are given as a list to support more than one
+# workout per day, even though every day here only uses one.
+
+PROGRAMS = [
+    dict(
+        name="12-Week HYROX Prep",
+        description="Base strength + conditioning block building toward a HYROX race. "
+                     "Only the first 5 weeks are seeded here as a representative sample "
+                     "of the periodization pattern (accumulation -> intensification -> "
+                     "deload); duration_weeks reflects the full planned program.",
+        duration_weeks=12,
+        weeks=[
+            dict(
+                week_number=1, phase_label="accumulation",
+                notes="Base building — establish baselines across all qualities.",
+                days=[
+                    dict(day_number=1, label="Lower Body Strength", workouts=["Squat Strength Day"]),
+                    dict(day_number=2, label="Upper Body Push-Pull", workouts=["Upper Body Push-Pull Superset"]),
+                    dict(day_number=3, label="Conditioning Circuit", workouts=["Full Body Circuit"]),
+                    dict(day_number=4, label="EMOM Finisher", workouts=["EMOM Conditioning"]),
+                ],
+            ),
+            dict(
+                week_number=2, phase_label=None,
+                notes="Still finding baseline loads — no phase label yet.",
+                days=[
+                    dict(day_number=1, label="Lower Body Strength", workouts=["Squat Strength Day"]),
+                    dict(day_number=2, label="Upper Body Push-Pull", workouts=["Upper Body Push-Pull Superset"]),
+                    dict(day_number=3, label="Conditioning Circuit", workouts=["Full Body Circuit"]),
+                ],
+            ),
+            dict(
+                week_number=3, phase_label="accumulation",
+                notes="Volume peak for this block.",
+                days=[
+                    dict(day_number=1, label="Lower Body Strength", workouts=["Squat Strength Day"]),
+                    dict(day_number=2, label="Upper Body Push-Pull", workouts=["Upper Body Push-Pull Superset"]),
+                    dict(day_number=3, label="Conditioning Circuit", workouts=["Full Body Circuit"]),
+                    dict(day_number=4, label="EMOM Conditioning", workouts=["EMOM Conditioning"]),
+                    dict(day_number=5, label="AMRAP Finisher", workouts=["AMRAP Finisher"]),
+                ],
+            ),
+            dict(
+                week_number=4, phase_label="intensification",
+                notes="Volume down, intensity up — fewer days, harder work.",
+                days=[
+                    dict(day_number=1, label="Lower Body Strength", workouts=["Squat Strength Day"]),
+                    dict(day_number=2, label="Upper Body Push-Pull", workouts=["Upper Body Push-Pull Superset"]),
+                    dict(day_number=3, label="AMRAP Finisher", workouts=["AMRAP Finisher"]),
+                ],
+            ),
+            dict(
+                week_number=5, phase_label="deload",
+                notes="Cut volume hard, keep movement quality — reassess before the next block.",
+                days=[
+                    dict(day_number=1, label="Light Full Body", workouts=["Full Body Circuit"]),
+                    dict(day_number=2, label="Easy EMOM", workouts=["EMOM Conditioning"]),
+                ],
+            ),
+        ],
+    ),
+]
+
+# The one program_assignments example: clone the template above for a mock
+# client, then apply edits that prove the clone is independently editable.
+ASSIGNMENT = dict(
+    program_name="12-Week HYROX Prep",
+    client_name="Alex Rivera",  # mock client — no clients table yet, see README
+    start_date="2026-01-05",
+    notes="Signed up after a 2-week trial. Slight left knee history — watch loading on squat days.",
+    # (week_number, day_number) -> replacement workout name, applied to the
+    # ASSIGNED clone only, after cloning. The template is untouched.
+    day_overrides={(4, 3): "Full Body Circuit"},  # coach swapped the AMRAP for something knee-friendlier
+)
+
+# One completed session to log: week 1, day 1 of the assignment above
+# ("Lower Body Strength" -> Squat Strength Day), logging actuals for its
+# Barbell Back Squat block against what was prescribed.
+SESSION_LOG = dict(
+    week_number=1,
+    day_number=1,
+    completed_at="2026-01-05 09:15:00",
+    session_notes="Squats felt heavy today — missed the last rep on the top set, "
+                   "otherwise on plan. Client mentioned poor sleep this week.",
+    workout_name="Squat Strength Day",
+    exercise_name="Barbell Back Squat",
+    # actual_reps, actual_load_value, actual_load_type, actual_rir — one row per prescribed set, in order
+    actuals=[
+        dict(actual_reps=5, actual_load_value=60, actual_load_type="percent_1rm", actual_rir=5),
+        dict(actual_reps=5, actual_load_value=70, actual_load_type="percent_1rm", actual_rir=4),
+        dict(actual_reps=3, actual_load_value=82.5, actual_load_type="percent_1rm", actual_rir=2),
+        dict(actual_reps=2, actual_load_value=85, actual_load_type="percent_1rm", actual_rir=1),  # missed a rep
+    ],
+)
+
+
+def seed_programs(
+    session,
+    workouts_by_name: dict[str, Workout],
+    block_exercises_index: dict[tuple[str, str], WorkoutBlockExercise],
+) -> None:
+    # --- template layer ---
+    for program_row in PROGRAMS:
+        program = Program(
+            name=program_row["name"],
+            description=program_row["description"],
+            duration_weeks=program_row["duration_weeks"],
+        )
+        session.add(program)
+        session.flush()  # need program.id for the weeks below
+
+        for week_row in program_row["weeks"]:
+            week = ProgramWeek(
+                program_id=program.id,
+                week_number=week_row["week_number"],
+                phase_label=week_row["phase_label"],
+                notes=week_row["notes"],
+            )
+            session.add(week)
+            session.flush()  # need week.id for the days below
+
+            for day_row in week_row["days"]:
+                day = ProgramDay(
+                    program_week_id=week.id,
+                    day_number=day_row["day_number"],
+                    label=day_row["label"],
+                )
+                session.add(day)
+                session.flush()  # need day.id for the day workouts below
+
+                for order_index, workout_name in enumerate(day_row["workouts"]):
+                    session.add(
+                        ProgramDayWorkout(
+                            program_day_id=day.id,
+                            workout_id=workouts_by_name[workout_name].id,
+                            order_index=order_index,
+                        )
+                    )
+
+    session.commit()
+
+    # --- assignment layer: clone the template, then edit the clone ---
+    program = session.query(Program).filter_by(name=ASSIGNMENT["program_name"]).one()
+    assignment = clone_program_to_assignment(
+        session,
+        program_id=program.id,
+        client_name=ASSIGNMENT["client_name"],
+        start_date=ASSIGNMENT["start_date"],
+        notes=ASSIGNMENT["notes"],
+    )
+
+    for (week_number, day_number), new_workout_name in ASSIGNMENT["day_overrides"].items():
+        assigned_week = next(w for w in assignment.assigned_weeks if w.week_number == week_number)
+        assigned_day = next(d for d in assigned_week.days if d.day_number == day_number)
+        for dw in assigned_day.day_workouts:
+            dw.workout_id = workouts_by_name[new_workout_name].id
+    session.commit()
+
+    # --- actuals layer: one completed session against the assignment above ---
+    log_row = SESSION_LOG
+    assigned_week = next(w for w in assignment.assigned_weeks if w.week_number == log_row["week_number"])
+    assigned_day = next(d for d in assigned_week.days if d.day_number == log_row["day_number"])
+
+    session_log = SessionLog(
+        assigned_program_day_id=assigned_day.id,
+        completed_at=log_row["completed_at"],
+        session_notes=log_row["session_notes"],
+    )
+    session.add(session_log)
+    session.flush()  # need session_log.id for the logged sets below
+
+    block_exercise = block_exercises_index[(log_row["workout_name"], log_row["exercise_name"])]
+    prescribed_sets = block_exercise.prescribed_sets  # relationship is already ordered by set_number
+
+    for prescribed, actual_row in zip(prescribed_sets, log_row["actuals"]):
+        session.add(
+            LoggedSet(
+                session_log_id=session_log.id,
+                prescribed_set_id=prescribed.id,
+                workout_block_exercise_id=block_exercise.id,
+                set_number=prescribed.set_number,
+                actual_reps=actual_row["actual_reps"],
+                actual_load_value=actual_row["actual_load_value"],
+                actual_load_type=actual_row["actual_load_type"],
+                actual_rir=actual_row["actual_rir"],
+            )
+        )
+
+    session.commit()
 
 
 def main() -> None:
@@ -911,6 +1149,10 @@ def main() -> None:
               f"{len(EQUIPMENT)} equipment types, {len(MOVEMENT_PATTERNS)} movement patterns.")
         print(f"Seeded {len(WORKOUTS)} workouts "
               f"({sum(len(w['blocks']) for w in WORKOUTS)} blocks).")
+        print(f"Seeded {len(PROGRAMS)} program template(s) "
+              f"({sum(len(p['weeks']) for p in PROGRAMS)} weeks), "
+              f"1 assignment clone for '{ASSIGNMENT['client_name']}', "
+              f"1 session log with {len(SESSION_LOG['actuals'])} logged sets.")
     finally:
         session.close()
 
