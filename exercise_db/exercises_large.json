@@ -1,0 +1,3338 @@
+[
+  {
+    "name": "Box Squat",
+    "movement_pattern": "squat",
+    "exercise_type": "strength",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Sit back to the box, pause without relaxing, drive up through the floor.",
+    "variant_of": "Barbell Back Squat",
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ],
+      [
+        "Hamstrings",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Barbell",
+        true
+      ],
+      [
+        "Box",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Belt Squat",
+    "movement_pattern": "squat",
+    "exercise_type": "strength",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Loads through the hips, not the spine \u2014 primary substitute for barbell squat with lumbar or 90-degree knee flexion limits.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Belt Squat Machine",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Front Squat",
+    "movement_pattern": "squat",
+    "exercise_type": "strength",
+    "difficulty": 5,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "wrist_mobility_limitation",
+    "cue_notes": "Elbows high, torso stays upright, bar rests on front delts.",
+    "variant_of": "Barbell Back Squat",
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "secondary"
+      ],
+      [
+        "Core",
+        "stabilizer"
+      ]
+    ],
+    "equipment": [
+      [
+        "Barbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Zercher Squat",
+    "movement_pattern": "squat",
+    "exercise_type": "strength",
+    "difficulty": 5,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "elbow_pain",
+    "cue_notes": "Bar cradled in elbow crease, keeps torso upright without wrist demand of front squat.",
+    "variant_of": "Barbell Back Squat",
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ],
+      [
+        "Core",
+        "stabilizer"
+      ]
+    ],
+    "equipment": [
+      [
+        "Barbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Overhead Squat",
+    "movement_pattern": "squat",
+    "exercise_type": "strength",
+    "difficulty": 6,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "shoulder_impingement, thoracic_mobility_limitation",
+    "cue_notes": "Highest technical demand squat variant \u2014 bar locked overhead throughout descent.",
+    "variant_of": "Barbell Back Squat",
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ],
+      [
+        "Shoulders",
+        "stabilizer"
+      ],
+      [
+        "Core",
+        "stabilizer"
+      ]
+    ],
+    "equipment": [
+      [
+        "Barbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Landmine Squat",
+    "movement_pattern": "squat",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Hold bar at chest, sits into a more upright, knee-friendly squat pattern.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Landmine",
+        true
+      ],
+      [
+        "Barbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Dumbbell Goblet Squat",
+    "movement_pattern": "squat",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Elbows inside knees at bottom, drive floor apart with feet.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Dumbbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Kettlebell Front Rack Squat",
+    "movement_pattern": "squat",
+    "exercise_type": "strength",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "One or two kettlebells racked at shoulders, elbows tucked.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ],
+      [
+        "Core",
+        "stabilizer"
+      ]
+    ],
+    "equipment": [
+      [
+        "Kettlebell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Bodyweight Squat",
+    "movement_pattern": "squat",
+    "exercise_type": "strength",
+    "difficulty": 1,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_only",
+    "contraindications": "acute_knee_pain",
+    "cue_notes": "Sit back and down, knees track over toes, chest stays tall.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Bulgarian Split Squat",
+    "movement_pattern": "squat",
+    "exercise_type": "strength",
+    "difficulty": 5,
+    "unilateral": true,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "acute_knee_pain",
+    "cue_notes": "Rear foot elevated, front shin stays vertical, control the descent.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Dumbbell",
+        true
+      ],
+      [
+        "Bench",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Walking Lunge",
+    "movement_pattern": "squat",
+    "exercise_type": "strength",
+    "difficulty": 3,
+    "unilateral": true,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_only",
+    "contraindications": "acute_knee_pain",
+    "cue_notes": "Step through, drop rear knee toward the floor, drive through front heel.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Dumbbell Walking Lunge",
+    "movement_pattern": "squat",
+    "exercise_type": "strength",
+    "difficulty": 3,
+    "unilateral": true,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "acute_knee_pain",
+    "cue_notes": "Same pattern as bodyweight walking lunge, dumbbells held at sides.",
+    "variant_of": "Walking Lunge",
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Dumbbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Sandbag Lunge",
+    "movement_pattern": "squat",
+    "exercise_type": "strength",
+    "difficulty": 3,
+    "unilateral": true,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Hyrox-specific carry-adjacent lunge variant, bag held front-rack or shouldered.",
+    "variant_of": "Walking Lunge",
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ],
+      [
+        "Core",
+        "stabilizer"
+      ]
+    ],
+    "equipment": [
+      [
+        "Sandbag",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Step-Up",
+    "movement_pattern": "squat",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": true,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Drive through the lead foot, avoid pushing off the trailing leg.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Box",
+        true
+      ],
+      [
+        "Dumbbell",
+        false
+      ]
+    ]
+  },
+  {
+    "name": "Wall Ball",
+    "movement_pattern": "squat",
+    "exercise_type": "conditioning",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_time",
+    "contraindications": "",
+    "cue_notes": "Hyrox station movement \u2014 squat depth then extend through the throw, catch and re-load.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ],
+      [
+        "Shoulders",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Medicine Ball",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Machine Leg Press",
+    "movement_pattern": "squat",
+    "exercise_type": "strength",
+    "difficulty": 1,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Fully supported squat pattern, good entry point or fatigue-management substitute.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Machine",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Machine Leg Extension",
+    "movement_pattern": "squat",
+    "exercise_type": "strength",
+    "difficulty": 1,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_weight",
+    "contraindications": "acute_knee_pain",
+    "cue_notes": "Knee-extension isolation, useful accessory but not a squat substitute for main lift work.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Machine",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Pistol Squat",
+    "movement_pattern": "squat",
+    "exercise_type": "strength",
+    "difficulty": 6,
+    "unilateral": true,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_only",
+    "contraindications": "acute_knee_pain, ankle_mobility_limitation",
+    "cue_notes": "Highest coordination-demand squat variant \u2014 full single-leg depth with the free leg extended.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ],
+      [
+        "Core",
+        "stabilizer"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Cossack Squat",
+    "movement_pattern": "squat",
+    "exercise_type": "mobility",
+    "difficulty": 3,
+    "unilateral": true,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_only",
+    "contraindications": "",
+    "cue_notes": "Lateral squat, builds adductor length and ankle mobility under load.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Adductors",
+        "primary"
+      ],
+      [
+        "Quadriceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Deep Squat Hold",
+    "movement_pattern": "squat",
+    "exercise_type": "mobility",
+    "difficulty": 1,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "time",
+    "contraindications": "",
+    "cue_notes": "Sit in the bottom position, rock gently, opens hips and ankles.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Quadriceps",
+        "secondary"
+      ],
+      [
+        "Adductors",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Barbell Romanian Deadlift",
+    "movement_pattern": "hinge",
+    "exercise_type": "strength",
+    "difficulty": 4,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Push hips back, bar stays close to the legs, feel the hamstring stretch.",
+    "variant_of": "Barbell Deadlift",
+    "muscles": [
+      [
+        "Hamstrings",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Barbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Barbell Deadlift",
+    "movement_pattern": "hinge",
+    "exercise_type": "strength",
+    "difficulty": 5,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "lower_back_injury, herniated_disc",
+    "cue_notes": "Brace before pulling the slack out of the bar, drive the floor away.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Hamstrings",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ],
+      [
+        "Erectors",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Barbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Trap Bar Deadlift",
+    "movement_pattern": "hinge",
+    "exercise_type": "strength",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "More upright torso than a straight bar deadlift, easier entry point for beginners.",
+    "variant_of": "Barbell Deadlift",
+    "muscles": [
+      [
+        "Hamstrings",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ],
+      [
+        "Quadriceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Trap Bar",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Hip Thrust",
+    "movement_pattern": "hinge",
+    "exercise_type": "strength",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Primary RDL substitute in competition-proximal running phases \u2014 glute-dominant, low spinal shear.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Glutes",
+        "primary"
+      ],
+      [
+        "Hamstrings",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Barbell",
+        true
+      ],
+      [
+        "Bench",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Single-Leg Hip Thrust",
+    "movement_pattern": "hinge",
+    "exercise_type": "strength",
+    "difficulty": 4,
+    "unilateral": true,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Same as hip thrust, one foot planted \u2014 higher glute demand per side.",
+    "variant_of": "Hip Thrust",
+    "muscles": [
+      [
+        "Glutes",
+        "primary"
+      ],
+      [
+        "Hamstrings",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bench",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Dumbbell Romanian Deadlift",
+    "movement_pattern": "hinge",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Same hinge pattern as barbell RDL, dumbbells travel along the outside of the legs.",
+    "variant_of": "Barbell Romanian Deadlift",
+    "muscles": [
+      [
+        "Hamstrings",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Dumbbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Dumbbell Single-Leg Deadlift",
+    "movement_pattern": "hinge",
+    "exercise_type": "strength",
+    "difficulty": 4,
+    "unilateral": true,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Hinge at the hip while the free leg extends back, hips stay square.",
+    "variant_of": "Dumbbell Romanian Deadlift",
+    "muscles": [
+      [
+        "Hamstrings",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Dumbbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Kettlebell Swing",
+    "movement_pattern": "hinge",
+    "exercise_type": "conditioning",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_time",
+    "contraindications": "",
+    "cue_notes": "Hip-hinge power movement \u2014 snap the hips, arms are just along for the ride.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Glutes",
+        "primary"
+      ],
+      [
+        "Hamstrings",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Kettlebell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Kettlebell Single-Arm Swing",
+    "movement_pattern": "hinge",
+    "exercise_type": "conditioning",
+    "difficulty": 3,
+    "unilateral": true,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_time",
+    "contraindications": "",
+    "cue_notes": "Same swing pattern, added anti-rotation demand through the core.",
+    "variant_of": "Kettlebell Swing",
+    "muscles": [
+      [
+        "Glutes",
+        "primary"
+      ],
+      [
+        "Hamstrings",
+        "primary"
+      ],
+      [
+        "Core",
+        "stabilizer"
+      ]
+    ],
+    "equipment": [
+      [
+        "Kettlebell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Good Morning",
+    "movement_pattern": "hinge",
+    "exercise_type": "strength",
+    "difficulty": 4,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "lower_back_injury",
+    "cue_notes": "Bar on back, hinge forward keeping a soft knee bend, hamstrings load progressively.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Hamstrings",
+        "primary"
+      ],
+      [
+        "Erectors",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Barbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Machine Leg Curl",
+    "movement_pattern": "hinge",
+    "exercise_type": "strength",
+    "difficulty": 1,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Isolated hamstring accessory, useful for lengthened-position hamstring strain prevention work.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Hamstrings",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Machine",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Nordic Hamstring Curl",
+    "movement_pattern": "hinge",
+    "exercise_type": "strength",
+    "difficulty": 5,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_only",
+    "contraindications": "acute_hamstring_strain",
+    "cue_notes": "Eccentric-focused, high-value for runners \u2014 control the lowering, push back up if able.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Hamstrings",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Glute Bridge",
+    "movement_pattern": "hinge",
+    "exercise_type": "strength",
+    "difficulty": 1,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_only",
+    "contraindications": "",
+    "cue_notes": "Entry-level hip extension pattern, good regression from hip thrust.",
+    "variant_of": "Hip Thrust",
+    "muscles": [
+      [
+        "Glutes",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Kettlebell Sumo Deadlift",
+    "movement_pattern": "hinge",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Wide stance, kettlebell between the feet, good beginner hinge pattern.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Glutes",
+        "primary"
+      ],
+      [
+        "Hamstrings",
+        "primary"
+      ],
+      [
+        "Adductors",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Kettlebell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Bodyweight Hip Hinge Drill",
+    "movement_pattern": "hinge",
+    "exercise_type": "mobility",
+    "difficulty": 1,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_only",
+    "contraindications": "",
+    "cue_notes": "Dowel along the spine, teach the hip hinge pattern before loading it.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Hamstrings",
+        "secondary"
+      ],
+      [
+        "Glutes",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Barbell Bench Press",
+    "movement_pattern": "push_horizontal",
+    "exercise_type": "strength",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "shoulder_impingement",
+    "cue_notes": "Shoulder blades pinched, feet planted, bar path stays consistent.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Chest",
+        "primary"
+      ],
+      [
+        "Triceps",
+        "secondary"
+      ],
+      [
+        "Shoulders",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Barbell",
+        true
+      ],
+      [
+        "Bench",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Dumbbell Bench Press",
+    "movement_pattern": "push_horizontal",
+    "exercise_type": "strength",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Greater range of motion than barbell, independent arm control.",
+    "variant_of": "Barbell Bench Press",
+    "muscles": [
+      [
+        "Chest",
+        "primary"
+      ],
+      [
+        "Triceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Dumbbell",
+        true
+      ],
+      [
+        "Bench",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Incline Dumbbell Press",
+    "movement_pattern": "push_horizontal",
+    "exercise_type": "strength",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Bench at 30-45 degrees, shifts emphasis to upper chest.",
+    "variant_of": "Dumbbell Bench Press",
+    "muscles": [
+      [
+        "Chest",
+        "primary"
+      ],
+      [
+        "Shoulders",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Dumbbell",
+        true
+      ],
+      [
+        "Bench",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Push-Up",
+    "movement_pattern": "push_horizontal",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_only",
+    "contraindications": "wrist_pain",
+    "cue_notes": "Body stays rigid, elbows track at roughly 45 degrees from the torso.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Chest",
+        "primary"
+      ],
+      [
+        "Triceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Incline Push-Up",
+    "movement_pattern": "push_horizontal",
+    "exercise_type": "strength",
+    "difficulty": 1,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_only",
+    "contraindications": "",
+    "cue_notes": "Hands elevated on a box or bench, regression from standard push-up.",
+    "variant_of": "Push-Up",
+    "muscles": [
+      [
+        "Chest",
+        "primary"
+      ],
+      [
+        "Triceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Box",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Deficit Push-Up",
+    "movement_pattern": "push_horizontal",
+    "exercise_type": "strength",
+    "difficulty": 4,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_only",
+    "contraindications": "shoulder_impingement",
+    "cue_notes": "Hands on blocks or plates, extra range of motion increases demand.",
+    "variant_of": "Push-Up",
+    "muscles": [
+      [
+        "Chest",
+        "primary"
+      ],
+      [
+        "Triceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Cable Chest Press",
+    "movement_pattern": "push_horizontal",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Constant tension through the range, easier on the shoulder than free weight pressing.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Chest",
+        "primary"
+      ],
+      [
+        "Triceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Cable Machine",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Machine Chest Press",
+    "movement_pattern": "push_horizontal",
+    "exercise_type": "strength",
+    "difficulty": 1,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Fully supported pressing pattern, good entry point.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Chest",
+        "primary"
+      ],
+      [
+        "Triceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Machine",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Cable Fly",
+    "movement_pattern": "push_horizontal",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_weight",
+    "contraindications": "shoulder_impingement",
+    "cue_notes": "Slight elbow bend maintained, focus on the chest squeeze at the midline.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Chest",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Cable Machine",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Dumbbell Fly",
+    "movement_pattern": "push_horizontal",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_weight",
+    "contraindications": "shoulder_impingement",
+    "cue_notes": "Wide arc, don't let the shoulders roll forward at the bottom.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Chest",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Dumbbell",
+        true
+      ],
+      [
+        "Bench",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Landmine Chest Press",
+    "movement_pattern": "push_horizontal",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Arcing press path, shoulder-friendly alternative to flat bench.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Chest",
+        "primary"
+      ],
+      [
+        "Triceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Landmine",
+        true
+      ],
+      [
+        "Barbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Barbell Overhead Press",
+    "movement_pattern": "push_vertical",
+    "exercise_type": "strength",
+    "difficulty": 4,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "shoulder_impingement, cervical_spine_involvement",
+    "cue_notes": "Brace hard, bar path stays close to the face, lock out overhead.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Shoulders",
+        "primary"
+      ],
+      [
+        "Triceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Barbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Landmine Press",
+    "movement_pattern": "push_vertical",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": true,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Primary overhead press substitute when cervical spine is involved \u2014 arcing path avoids end-range overhead lockout.",
+    "variant_of": "Barbell Overhead Press",
+    "muscles": [
+      [
+        "Shoulders",
+        "primary"
+      ],
+      [
+        "Triceps",
+        "secondary"
+      ],
+      [
+        "Core",
+        "stabilizer"
+      ]
+    ],
+    "equipment": [
+      [
+        "Landmine",
+        true
+      ],
+      [
+        "Barbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Dumbbell Shoulder Press",
+    "movement_pattern": "push_vertical",
+    "exercise_type": "strength",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "shoulder_impingement",
+    "cue_notes": "Independent arm path, slightly more shoulder-friendly than a barbell.",
+    "variant_of": "Barbell Overhead Press",
+    "muscles": [
+      [
+        "Shoulders",
+        "primary"
+      ],
+      [
+        "Triceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Dumbbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Seated Dumbbell Shoulder Press",
+    "movement_pattern": "push_vertical",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Back supported, removes lower-body drive, isolates the shoulder press.",
+    "variant_of": "Dumbbell Shoulder Press",
+    "muscles": [
+      [
+        "Shoulders",
+        "primary"
+      ],
+      [
+        "Triceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Dumbbell",
+        true
+      ],
+      [
+        "Bench",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Push Press",
+    "movement_pattern": "push_vertical",
+    "exercise_type": "strength",
+    "difficulty": 5,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "shoulder_impingement",
+    "cue_notes": "Dip and drive from the legs, higher power output than a strict press.",
+    "variant_of": "Barbell Overhead Press",
+    "muscles": [
+      [
+        "Shoulders",
+        "primary"
+      ],
+      [
+        "Triceps",
+        "secondary"
+      ],
+      [
+        "Quadriceps",
+        "stabilizer"
+      ]
+    ],
+    "equipment": [
+      [
+        "Barbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Machine Shoulder Press",
+    "movement_pattern": "push_vertical",
+    "exercise_type": "strength",
+    "difficulty": 1,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Fully supported vertical press, good entry point or fatigue-management substitute.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Shoulders",
+        "primary"
+      ],
+      [
+        "Triceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Machine",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Pike Push-Up",
+    "movement_pattern": "push_vertical",
+    "exercise_type": "strength",
+    "difficulty": 4,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_only",
+    "contraindications": "shoulder_impingement, wrist_pain",
+    "cue_notes": "Hips high, bodyweight vertical press pattern, precursor to handstand push-up.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Shoulders",
+        "primary"
+      ],
+      [
+        "Triceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Dumbbell Lateral Raise",
+    "movement_pattern": "push_vertical",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_weight",
+    "contraindications": "shoulder_impingement",
+    "cue_notes": "Lead with the elbows, raise to shoulder height, control the descent.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Shoulders",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Dumbbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Cable Lateral Raise",
+    "movement_pattern": "push_vertical",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": true,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Constant tension version of the lateral raise, cable behind the body.",
+    "variant_of": "Dumbbell Lateral Raise",
+    "muscles": [
+      [
+        "Shoulders",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Cable Machine",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Barbell Bent-Over Row",
+    "movement_pattern": "pull_horizontal",
+    "exercise_type": "strength",
+    "difficulty": 4,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "lower_back_injury",
+    "cue_notes": "Hinge forward, row to the lower ribs, avoid using momentum.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Lats",
+        "primary"
+      ],
+      [
+        "Upper Back",
+        "primary"
+      ],
+      [
+        "Biceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Barbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Dumbbell Bent-Over Row",
+    "movement_pattern": "pull_horizontal",
+    "exercise_type": "strength",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Same hinge position as barbell row, dumbbells allow independent arm paths.",
+    "variant_of": "Barbell Bent-Over Row",
+    "muscles": [
+      [
+        "Lats",
+        "primary"
+      ],
+      [
+        "Upper Back",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Dumbbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Single-Arm Dumbbell Row",
+    "movement_pattern": "pull_horizontal",
+    "exercise_type": "strength",
+    "difficulty": 3,
+    "unilateral": true,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Supporting hand and knee on a bench, row straight up to the hip.",
+    "variant_of": "Dumbbell Bent-Over Row",
+    "muscles": [
+      [
+        "Lats",
+        "primary"
+      ],
+      [
+        "Upper Back",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Dumbbell",
+        true
+      ],
+      [
+        "Bench",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Cable Seated Row",
+    "movement_pattern": "pull_horizontal",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Chest up throughout, row to the sternum, squeeze the shoulder blades.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Lats",
+        "primary"
+      ],
+      [
+        "Upper Back",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Cable Machine",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "TRX Row",
+    "movement_pattern": "pull_horizontal",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_only",
+    "contraindications": "",
+    "cue_notes": "Bodyweight row, adjust difficulty by changing body angle.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Lats",
+        "primary"
+      ],
+      [
+        "Upper Back",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "TRX",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Inverted Row",
+    "movement_pattern": "pull_horizontal",
+    "exercise_type": "strength",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_only",
+    "contraindications": "",
+    "cue_notes": "Body under a bar, pull chest to bar, adjust height for difficulty.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Lats",
+        "primary"
+      ],
+      [
+        "Upper Back",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Barbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Chest-Supported Row",
+    "movement_pattern": "pull_horizontal",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Chest braced against the pad, removes lower back demand entirely.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Lats",
+        "primary"
+      ],
+      [
+        "Upper Back",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Dumbbell",
+        true
+      ],
+      [
+        "Bench",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Band Pull-Apart",
+    "movement_pattern": "pull_horizontal",
+    "exercise_type": "stability",
+    "difficulty": 1,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_only",
+    "contraindications": "",
+    "cue_notes": "Shoulder health accessory, pull the band apart at chest height, squeeze shoulder blades.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Upper Back",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Band",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Face Pull",
+    "movement_pattern": "pull_horizontal",
+    "exercise_type": "stability",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Pull to the face, external rotation at the top, key shoulder health accessory.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Upper Back",
+        "primary"
+      ],
+      [
+        "Shoulders",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Cable Machine",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Pull-Up",
+    "movement_pattern": "pull_vertical",
+    "exercise_type": "strength",
+    "difficulty": 5,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_only",
+    "contraindications": "shoulder_impingement",
+    "cue_notes": "Full hang to chin over the bar, avoid excessive kipping unless training for it specifically.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Lats",
+        "primary"
+      ],
+      [
+        "Biceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Pull-Up Bar",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Chin-Up",
+    "movement_pattern": "pull_vertical",
+    "exercise_type": "strength",
+    "difficulty": 4,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_only",
+    "contraindications": "",
+    "cue_notes": "Underhand grip, slightly more biceps involvement than a pull-up.",
+    "variant_of": "Pull-Up",
+    "muscles": [
+      [
+        "Lats",
+        "primary"
+      ],
+      [
+        "Biceps",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Pull-Up Bar",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Banded Pull-Up",
+    "movement_pattern": "pull_vertical",
+    "exercise_type": "strength",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_only",
+    "contraindications": "",
+    "cue_notes": "Band assists at the bottom of the rep, standard regression toward a strict pull-up.",
+    "variant_of": "Pull-Up",
+    "muscles": [
+      [
+        "Lats",
+        "primary"
+      ],
+      [
+        "Biceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Pull-Up Bar",
+        true
+      ],
+      [
+        "Band",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Lat Pulldown",
+    "movement_pattern": "pull_vertical",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Pull to the upper chest, avoid leaning back excessively.",
+    "variant_of": "Pull-Up",
+    "muscles": [
+      [
+        "Lats",
+        "primary"
+      ],
+      [
+        "Biceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Cable Machine",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Single-Arm Lat Pulldown",
+    "movement_pattern": "pull_vertical",
+    "exercise_type": "strength",
+    "difficulty": 3,
+    "unilateral": true,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Same pattern as lat pulldown, isolates one side at a time.",
+    "variant_of": "Lat Pulldown",
+    "muscles": [
+      [
+        "Lats",
+        "primary"
+      ],
+      [
+        "Biceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Cable Machine",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Straight-Arm Pulldown",
+    "movement_pattern": "pull_vertical",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Arms stay straight, isolates the lats without elbow flexion.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Lats",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Cable Machine",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Farmer's Carry",
+    "movement_pattern": "carry",
+    "exercise_type": "conditioning",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "time_distance",
+    "contraindications": "",
+    "cue_notes": "Hyrox station movement \u2014 braced core, tall posture, controlled steps.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Forearms",
+        "primary"
+      ],
+      [
+        "Core",
+        "stabilizer"
+      ],
+      [
+        "Traps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Kettlebell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Farmer's Carry Dumbbell",
+    "movement_pattern": "carry",
+    "exercise_type": "conditioning",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "time_distance",
+    "contraindications": "",
+    "cue_notes": "Same pattern as kettlebell farmer's carry, using dumbbells.",
+    "variant_of": "Farmer's Carry",
+    "muscles": [
+      [
+        "Forearms",
+        "primary"
+      ],
+      [
+        "Core",
+        "stabilizer"
+      ]
+    ],
+    "equipment": [
+      [
+        "Dumbbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Suitcase Carry",
+    "movement_pattern": "carry",
+    "exercise_type": "stability",
+    "difficulty": 3,
+    "unilateral": true,
+    "compound_or_isolation": "compound",
+    "tracking_type": "time_distance",
+    "contraindications": "",
+    "cue_notes": "Single-side load, resist the lateral lean \u2014 direct anti-lateral-flexion core work.",
+    "variant_of": "Farmer's Carry",
+    "muscles": [
+      [
+        "Core",
+        "primary"
+      ],
+      [
+        "Forearms",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Kettlebell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Front Rack Carry",
+    "movement_pattern": "carry",
+    "exercise_type": "conditioning",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "time_distance",
+    "contraindications": "",
+    "cue_notes": "Load held at the shoulders, higher core and upper back demand than a farmer's carry.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Core",
+        "primary"
+      ],
+      [
+        "Upper Back",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Kettlebell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Overhead Carry",
+    "movement_pattern": "carry",
+    "exercise_type": "stability",
+    "difficulty": 4,
+    "unilateral": true,
+    "compound_or_isolation": "compound",
+    "tracking_type": "time_distance",
+    "contraindications": "shoulder_impingement",
+    "cue_notes": "Load locked out overhead, walk with control \u2014 high shoulder stability demand.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Shoulders",
+        "stabilizer"
+      ],
+      [
+        "Core",
+        "stabilizer"
+      ]
+    ],
+    "equipment": [
+      [
+        "Kettlebell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Sandbag Carry",
+    "movement_pattern": "carry",
+    "exercise_type": "conditioning",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "time_distance",
+    "contraindications": "",
+    "cue_notes": "Awkward, shifting load \u2014 builds carry capacity beyond symmetric implements.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Core",
+        "stabilizer"
+      ],
+      [
+        "Forearms",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Sandbag",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Sled Push",
+    "movement_pattern": "carry",
+    "exercise_type": "conditioning",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "time_distance",
+    "contraindications": "",
+    "cue_notes": "Hyrox station movement \u2014 low shin angle, drive through full foot contact, short powerful steps.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Sled",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Sled Pull",
+    "movement_pattern": "carry",
+    "exercise_type": "conditioning",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "time_distance",
+    "contraindications": "",
+    "cue_notes": "Hyrox station movement \u2014 walk backward or use a rope, controlled hand-over-hand pull.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Hamstrings",
+        "primary"
+      ],
+      [
+        "Upper Back",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Sled",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Cable Woodchopper",
+    "movement_pattern": "rotation",
+    "exercise_type": "strength",
+    "difficulty": 3,
+    "unilateral": true,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "lower_back_injury",
+    "cue_notes": "Rotate through the torso and hips together, pull diagonally across the body.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Obliques",
+        "primary"
+      ],
+      [
+        "Core",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Cable Machine",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Medicine Ball Rotational Throw",
+    "movement_pattern": "rotation",
+    "exercise_type": "plyometric",
+    "difficulty": 4,
+    "unilateral": true,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_only",
+    "contraindications": "lower_back_injury",
+    "cue_notes": "Explosive rotation, throw against a wall, load and release quickly.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Obliques",
+        "primary"
+      ],
+      [
+        "Core",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Medicine Ball",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Russian Twist",
+    "movement_pattern": "rotation",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_only",
+    "contraindications": "lower_back_injury",
+    "cue_notes": "Seated, feet elevated optionally, rotate the torso side to side under control.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Obliques",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Landmine Rotation",
+    "movement_pattern": "rotation",
+    "exercise_type": "strength",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_only",
+    "contraindications": "",
+    "cue_notes": "Arms extended holding the bar end, rotate side to side driven from the hips.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Obliques",
+        "primary"
+      ],
+      [
+        "Core",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Landmine",
+        true
+      ],
+      [
+        "Barbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Pallof Press",
+    "movement_pattern": "anti_rotation",
+    "exercise_type": "stability",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_only",
+    "contraindications": "",
+    "cue_notes": "Resist the cable's pull to rotate you, press straight out and back with control.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Obliques",
+        "primary"
+      ],
+      [
+        "Core",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Cable Machine",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Band Pallof Press",
+    "movement_pattern": "anti_rotation",
+    "exercise_type": "stability",
+    "difficulty": 1,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_only",
+    "contraindications": "",
+    "cue_notes": "Same as cable Pallof press, using a band anchored to a rack.",
+    "variant_of": "Pallof Press",
+    "muscles": [
+      [
+        "Obliques",
+        "primary"
+      ],
+      [
+        "Core",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Band",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Single-Arm Farmer's Carry",
+    "movement_pattern": "anti_rotation",
+    "exercise_type": "stability",
+    "difficulty": 3,
+    "unilateral": true,
+    "compound_or_isolation": "compound",
+    "tracking_type": "time_distance",
+    "contraindications": "",
+    "cue_notes": "Same as suitcase carry \u2014 resist lateral flexion and rotation from the offset load.",
+    "variant_of": "Suitcase Carry",
+    "muscles": [
+      [
+        "Core",
+        "primary"
+      ],
+      [
+        "Obliques",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Kettlebell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Half-Kneeling Cable Press",
+    "movement_pattern": "anti_rotation",
+    "exercise_type": "stability",
+    "difficulty": 3,
+    "unilateral": true,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_only",
+    "contraindications": "",
+    "cue_notes": "Half-kneeling position removes hip compensation, resist rotation while pressing.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Core",
+        "primary"
+      ],
+      [
+        "Shoulders",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Cable Machine",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Plank",
+    "movement_pattern": "anti_extension",
+    "exercise_type": "stability",
+    "difficulty": 1,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "time",
+    "contraindications": "",
+    "cue_notes": "Ribs down, glutes engaged, avoid letting the hips sag or pike.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Core",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Ab Wheel Rollout",
+    "movement_pattern": "anti_extension",
+    "exercise_type": "strength",
+    "difficulty": 4,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_only",
+    "contraindications": "lower_back_injury",
+    "cue_notes": "Roll out only as far as you can maintain a braced, flat spine.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Core",
+        "primary"
+      ],
+      [
+        "Lats",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Ab Wheel",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Stability Ball Rollout",
+    "movement_pattern": "anti_extension",
+    "exercise_type": "strength",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_only",
+    "contraindications": "",
+    "cue_notes": "Regression from the ab wheel \u2014 same movement pattern, more stable surface.",
+    "variant_of": "Ab Wheel Rollout",
+    "muscles": [
+      [
+        "Core",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Stability Ball",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Dead Bug",
+    "movement_pattern": "anti_extension",
+    "exercise_type": "stability",
+    "difficulty": 1,
+    "unilateral": true,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_only",
+    "contraindications": "",
+    "cue_notes": "Lower back stays pressed into the floor throughout, opposite arm and leg extend together.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Core",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Hollow Body Hold",
+    "movement_pattern": "anti_extension",
+    "exercise_type": "stability",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "time",
+    "contraindications": "lower_back_injury",
+    "cue_notes": "Lower back pressed flat, shoulders and legs lifted, maintain the position.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Core",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Barbell Rollout",
+    "movement_pattern": "anti_extension",
+    "exercise_type": "strength",
+    "difficulty": 5,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_only",
+    "contraindications": "lower_back_injury",
+    "cue_notes": "Same pattern as ab wheel, using a loaded barbell for more control over resistance.",
+    "variant_of": "Ab Wheel Rollout",
+    "muscles": [
+      [
+        "Core",
+        "primary"
+      ],
+      [
+        "Lats",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Barbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Bear Crawl",
+    "movement_pattern": "gait",
+    "exercise_type": "stability",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "time_distance",
+    "contraindications": "wrist_pain",
+    "cue_notes": "Knees hover just off the floor, move opposite arm and leg together, hips stay level.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Core",
+        "stabilizer"
+      ],
+      [
+        "Shoulders",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Burpee",
+    "movement_pattern": "gait",
+    "exercise_type": "conditioning",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_time",
+    "contraindications": "wrist_pain",
+    "cue_notes": "Full-body conditioning movement \u2014 chest to floor, explosive stand and jump.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Quadriceps",
+        "secondary"
+      ],
+      [
+        "Chest",
+        "secondary"
+      ],
+      [
+        "Core",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Burpee Broad Jump",
+    "movement_pattern": "gait",
+    "exercise_type": "conditioning",
+    "difficulty": 4,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "distance",
+    "contraindications": "acute_knee_pain",
+    "cue_notes": "Hyrox station movement \u2014 burpee immediately followed by a maximal broad jump forward.",
+    "variant_of": "Burpee",
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Farmer's Carry Walk",
+    "movement_pattern": "gait",
+    "exercise_type": "conditioning",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "time_distance",
+    "contraindications": "",
+    "cue_notes": "Loaded walking, distinct from the carry-strength focus \u2014 used as a conditioning gait drill.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Forearms",
+        "secondary"
+      ],
+      [
+        "Core",
+        "stabilizer"
+      ]
+    ],
+    "equipment": [
+      [
+        "Kettlebell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Skater Jump",
+    "movement_pattern": "gait",
+    "exercise_type": "plyometric",
+    "difficulty": 3,
+    "unilateral": true,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_only",
+    "contraindications": "acute_knee_pain",
+    "cue_notes": "Lateral bound side to side, land softly and control before the next jump.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Glutes",
+        "primary"
+      ],
+      [
+        "Quadriceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Box Jump",
+    "movement_pattern": "gait",
+    "exercise_type": "plyometric",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_only",
+    "contraindications": "acute_knee_pain",
+    "cue_notes": "Full extension at takeoff, land softly with knees tracking over toes.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Box",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Broad Jump",
+    "movement_pattern": "gait",
+    "exercise_type": "plyometric",
+    "difficulty": 3,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "distance",
+    "contraindications": "acute_knee_pain",
+    "cue_notes": "Horizontal power expression, land under control absorbing through the hips.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Quadriceps",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Sprint (Track/Treadmill)",
+    "movement_pattern": "gait",
+    "exercise_type": "conditioning",
+    "difficulty": 4,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "time_distance",
+    "contraindications": "acute_hamstring_strain",
+    "cue_notes": "Top of the concurrent-training hierarchy for runners \u2014 maximal or near-maximal effort.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Hamstrings",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ],
+      [
+        "Quadriceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Ski Erg",
+    "movement_pattern": "gait",
+    "exercise_type": "conditioning",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "time_distance",
+    "contraindications": "",
+    "cue_notes": "Hyrox station movement \u2014 preferred conditioning substitution on upper-body pull days over rowing.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Lats",
+        "primary"
+      ],
+      [
+        "Core",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Ski Erg",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Rowing Erg",
+    "movement_pattern": "gait",
+    "exercise_type": "conditioning",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "compound",
+    "tracking_type": "time_distance",
+    "contraindications": "",
+    "cue_notes": "Hyrox station movement \u2014 legs drive first, then hips, then arms; avoid stacking directly after heavy pulling work.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Lats",
+        "primary"
+      ],
+      [
+        "Hamstrings",
+        "secondary"
+      ],
+      [
+        "Glutes",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Rowing Machine",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "90/90 Hip Switch",
+    "movement_pattern": "rotation",
+    "exercise_type": "mobility",
+    "difficulty": 1,
+    "unilateral": true,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_only",
+    "contraindications": "",
+    "cue_notes": "Rotate through the hips from one 90/90 position to the other, keep the torso tall.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Glutes",
+        "secondary"
+      ],
+      [
+        "Adductors",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Thoracic Rotation (Quadruped)",
+    "movement_pattern": "rotation",
+    "exercise_type": "mobility",
+    "difficulty": 1,
+    "unilateral": true,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_only",
+    "contraindications": "",
+    "cue_notes": "On all fours, thread one arm under the body and rotate open, follow with the eyes.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Upper Back",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "World's Greatest Stretch",
+    "movement_pattern": "gait",
+    "exercise_type": "mobility",
+    "difficulty": 2,
+    "unilateral": true,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_only",
+    "contraindications": "",
+    "cue_notes": "Lunge with a rotation and reach, covers hip flexor, thoracic spine, and hamstring in one drill.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Hamstrings",
+        "secondary"
+      ],
+      [
+        "Adductors",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Couch Stretch",
+    "movement_pattern": "hinge",
+    "exercise_type": "mobility",
+    "difficulty": 1,
+    "unilateral": true,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "time",
+    "contraindications": "acute_knee_pain",
+    "cue_notes": "Rear knee bent against a wall or bench, target the hip flexor.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Hip Flexors",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Ankle Dorsiflexion Mobilization",
+    "movement_pattern": "squat",
+    "exercise_type": "mobility",
+    "difficulty": 1,
+    "unilateral": true,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_only",
+    "contraindications": "",
+    "cue_notes": "Knee drives over the toes without the heel lifting, builds ankle range for squat depth.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Calves",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Foam Roller Quad Smash",
+    "movement_pattern": "squat",
+    "exercise_type": "mobility",
+    "difficulty": 1,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "time",
+    "contraindications": "",
+    "cue_notes": "Slow rolling pressure through the quads, pause on tender spots.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Quadriceps",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Foam Roller",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Shoulder Dislocate (Band/Dowel)",
+    "movement_pattern": "push_vertical",
+    "exercise_type": "mobility",
+    "difficulty": 1,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_only",
+    "contraindications": "shoulder_impingement",
+    "cue_notes": "Wide grip, pass the band or dowel overhead and behind without bending the elbows.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Shoulders",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Band",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Cat-Cow",
+    "movement_pattern": "anti_extension",
+    "exercise_type": "mobility",
+    "difficulty": 1,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_only",
+    "contraindications": "",
+    "cue_notes": "Alternate between spinal flexion and extension slowly, on all fours.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Erectors",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Barbell Bicep Curl",
+    "movement_pattern": "pull_vertical",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Elbows pinned to the sides, curl without swinging the torso.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Biceps",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Barbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Dumbbell Hammer Curl",
+    "movement_pattern": "pull_vertical",
+    "exercise_type": "strength",
+    "difficulty": 1,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Neutral grip throughout, targets brachialis and forearms alongside biceps.",
+    "variant_of": "Barbell Bicep Curl",
+    "muscles": [
+      [
+        "Biceps",
+        "primary"
+      ],
+      [
+        "Forearms",
+        "secondary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Dumbbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Cable Tricep Pushdown",
+    "movement_pattern": "push_vertical",
+    "exercise_type": "strength",
+    "difficulty": 1,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Elbows pinned at the sides, extend fully without flaring.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Triceps",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Cable Machine",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Overhead Tricep Extension",
+    "movement_pattern": "push_vertical",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_weight",
+    "contraindications": "shoulder_impingement",
+    "cue_notes": "Elbows stay close to the head, lower behind the head under control.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Triceps",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Dumbbell",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Bodyweight Calf Raise",
+    "movement_pattern": "gait",
+    "exercise_type": "strength",
+    "difficulty": 1,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_only",
+    "contraindications": "",
+    "cue_notes": "Full range, pause at the top \u2014 priority accessory for runners' calf/soleus loading.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Calves",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Bodyweight",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Seated Calf Raise",
+    "movement_pattern": "gait",
+    "exercise_type": "strength",
+    "difficulty": 2,
+    "unilateral": false,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Seated position biases the soleus more than a standing calf raise.",
+    "variant_of": "Bodyweight Calf Raise",
+    "muscles": [
+      [
+        "Calves",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Machine",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Cable Glute Kickback",
+    "movement_pattern": "hinge",
+    "exercise_type": "strength",
+    "difficulty": 1,
+    "unilateral": true,
+    "compound_or_isolation": "isolation",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Isolated hip extension, avoid arching the lower back to gain range.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Glutes",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Cable Machine",
+        true
+      ]
+    ]
+  },
+  {
+    "name": "Dumbbell Lateral Lunge",
+    "movement_pattern": "squat",
+    "exercise_type": "strength",
+    "difficulty": 3,
+    "unilateral": true,
+    "compound_or_isolation": "compound",
+    "tracking_type": "reps_weight",
+    "contraindications": "",
+    "cue_notes": "Step wide to one side, sit back into that hip, opposite leg stays straight.",
+    "variant_of": null,
+    "muscles": [
+      [
+        "Adductors",
+        "primary"
+      ],
+      [
+        "Glutes",
+        "primary"
+      ]
+    ],
+    "equipment": [
+      [
+        "Dumbbell",
+        true
+      ]
+    ]
+  }
+]

@@ -31,8 +31,10 @@ alembic/
   versions/0001_initial_schema.py    # Phase 1: exercises + lookups
   versions/0002_workout_builder.py   # Phase 2: workouts/blocks/block_exercises/prescribed_sets
   versions/0003_program_builder.py   # Phase 3: programs/assignments/session_logs/logged_sets
-seed.py             # wipes + inserts exercises, example workouts, and one program + assignment
-query_examples.py   # example filter queries + workout/program JSON + reverse-lookup helpers
+seed.py                    # wipes + inserts exercises, example workouts, and one program + assignment
+import_large_dataset.py    # additive, re-runnable: merges exercises_large.json on top of the seed
+exercises_large.json       # supplementary 118-exercise dataset consumed by the script above
+query_examples.py          # example filter queries + workout/program JSON + reverse-lookup helpers
 ```
 
 ## Setup
@@ -174,6 +176,62 @@ One **session log** (week 1 / day 1, the Squat Strength Day) has 4
 `logged_sets` against its 4 prescribed sets: two hit as planned, one
 pushed slightly past prescription, and one where a rep was missed on the
 final top set.
+
+## Supplementary dataset import (`import_large_dataset.py`)
+
+A separate, standalone script that merges `exercises_large.json` (118
+exercises) into the database on top of whatever `seed.py` already put
+there. Run it once, after `seed.py`:
+
+```bash
+python import_large_dataset.py
+```
+
+It's additive and safe to re-run — unlike `seed.py`, it never wipes
+anything:
+
+- **Exercises** are matched by exact name against the database; anything
+  already there (28 of the 118, overlapping with the original seed) is
+  skipped with a printed warning, not duplicated.
+- **movement_patterns / muscles / equipment** are resolved by exact name
+  match and only created if missing. Against the seeded data, this run
+  created 0 new movement patterns, 4 new muscles (`Quadriceps`, `Core`,
+  `Shoulders`, `Erectors`), and 9 new equipment types (`Belt Squat
+  Machine`, `Sandbag`, `Trap Bar`, `Cable Machine`, `Band`, `Ab Wheel`,
+  `Stability Ball`, `Ski Erg`, `Rowing Machine`).
+- **`variant_of`** is resolved in two passes — every non-duplicate
+  exercise in the file is inserted first, then `variant_of` is set from a
+  name → id map covering both the pre-existing exercises and everything
+  just inserted. This is what makes e.g. `"Box Squat" -> variant_of:
+  "Barbell Back Squat"` resolve correctly to the *original* seeded
+  exercise (not a new row), and lets a `variant_of` target that's itself
+  skipped as a duplicate (e.g. `"Incline Dumbbell Press" -> "Dumbbell
+  Bench Press"`) still resolve to that pre-existing row.
+- `contraindications: ""` in the dataset is normalized to `NULL` on
+  insert, matching the convention the rest of the database uses for "no
+  contraindications" (the dataset uses empty string instead).
+
+**Flagging, not auto-merging, likely naming duplicates:** four of the new
+muscles and two of the new equipment types are probably the same
+real-world thing as an existing entry under a different label —
+`Quadriceps`/`Quads`, `Core`/`Abs`, `Shoulders`/the existing three delts,
+`Erectors`/`Lower Back`, `Cable Machine`/`Cable`, `Band`/`Resistance
+Band`. The script does **not** guess at merging these (that's a naming
+decision, not something to decide silently) — it creates them as
+separate rows and calls each one out by name in its printed summary. If
+you want them consolidated, rename the new one to match the existing
+one via Manage Lookups in the web UI (or ask for a follow-up script that
+re-points the affected `exercise_muscles`/`exercise_equipment` rows and
+deletes the duplicate).
+
+Also worth noting: the brief's own descriptions of "expected new"
+muscles/equipment didn't fully match what was actually already seeded —
+`Forearms`, `Traps`, `Obliques`, `Hip Flexors`, `Calves`, and `Adductors`
+were already in the `muscles` table from Phase 1, and `Sled` and
+`Pull-Up Bar` were already in `equipment`. The script checks the live
+database rather than that list, so this had no effect on the import —
+flagging it here only because it's the kind of mismatch worth knowing
+about the next time a dataset like this gets prepared.
 
 ## Query examples (`query_examples.py`)
 
