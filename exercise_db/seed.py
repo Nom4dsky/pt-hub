@@ -695,7 +695,7 @@ WORKOUTS = [
                 exercises=[
                     dict(
                         exercise_name="Kettlebell Swing",
-                        sets=[dict(reps_min=15, reps_max=15, load_value=None, load_type=None,
+                        sets=[dict(reps_min=15, reps_max=15, load_value=24, load_type="absolute",
                                    rir_min=None, rir_max=None, rest_seconds=None, tempo=None)] * 4,
                     ),
                     dict(
@@ -731,7 +731,7 @@ WORKOUTS = [
                 exercises=[
                     dict(
                         exercise_name="Kettlebell Swing",
-                        sets=[dict(reps_min=15, reps_max=15, load_value=None, load_type=None,
+                        sets=[dict(reps_min=15, reps_max=15, load_value=24, load_type="absolute",
                                    rir_min=None, rir_max=None, rest_seconds=None, tempo=None)] * 5,
                     ),
                     dict(
@@ -766,7 +766,7 @@ WORKOUTS = [
                     ),
                     dict(
                         exercise_name="Kettlebell Swing",
-                        sets=[dict(reps_min=15, reps_max=15, load_value=None, load_type=None,
+                        sets=[dict(reps_min=15, reps_max=15, load_value=24, load_type="absolute",
                                    rir_min=None, rir_max=None, rest_seconds=None, tempo=None)],
                     ),
                 ],
