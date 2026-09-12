@@ -1,20 +1,35 @@
 """
-Seed the exercise database with a ~50-exercise starter set.
+Seed the exercise + workout builder database with example data.
 
-Covers every movement_pattern, every exercise_type, every tracking_type,
-both compound_or_isolation values, and a spread of equipment (bodyweight
-through barbell/machine/sled) and difficulty levels 1-6. A handful of
-exercises are wired up as variants (variant_of) of a base movement.
+Phase 1: a ~50-exercise starter set covering every movement_pattern, every
+exercise_type, every tracking_type, both compound_or_isolation values, and
+a spread of equipment and difficulty levels 1-6. A handful of exercises
+are wired up as variants (variant_of) of a base movement.
 
-Re-running this script wipes and re-inserts all exercise data (lookup
-tables and join rows included) so it stays idempotent during development.
+Phase 2: a handful of example workouts built from those exercises,
+covering straight_set, superset, circuit, emom and amrap blocks.
+
+Re-running this script wipes and re-inserts everything (lookup tables and
+join rows included) so it stays idempotent during development.
 
 Usage:
     python seed.py
 """
 
 from app.database import engine, get_session
-from app.models import Base, Equipment, Exercise, ExerciseEquipment, ExerciseMuscle, Muscle, MovementPattern
+from app.models import (
+    Base,
+    Equipment,
+    Exercise,
+    ExerciseEquipment,
+    ExerciseMuscle,
+    Muscle,
+    MovementPattern,
+    PrescribedSet,
+    Workout,
+    WorkoutBlock,
+    WorkoutBlockExercise,
+)
 
 MUSCLES = [
     "Chest", "Upper Back", "Lats", "Traps", "Rear Delts", "Front Delts",
@@ -558,7 +573,218 @@ EXERCISES = [
 ]
 
 
+# ------------------------------------------------------------
+# WORKOUTS (Phase 2)
+# ------------------------------------------------------------
+# Each workout is a list of blocks (in order); each block is a list of
+# exercises (in order); each exercise is a list of prescribed sets (in
+# order). order_index / set_number are all derived from list position at
+# insert time, not specified here.
+#
+# rounds / duration_seconds / rest_between_rounds_seconds follow the
+# schema comment: rounds and duration_seconds are only meaningful for
+# circuit/EMOM and EMOM/AMRAP/for_time respectively; leave them None
+# otherwise. Per-round pacing for straight sets/supersets/trisets lives in
+# each prescribed set's own rest_seconds instead.
+
+WORKOUTS = [
+    # ---- 1. Pure straight-set workout: a squat day ----
+    dict(
+        name="Squat Strength Day",
+        notes="Main lift + accessories, straight sets throughout.",
+        blocks=[
+            dict(
+                block_type="straight_set", rounds=None, duration_seconds=None,
+                rest_between_rounds_seconds=None, notes="Main lift — work up to a top set.",
+                exercises=[
+                    dict(
+                        exercise_name="Barbell Back Squat",
+                        sets=[
+                            dict(reps_min=5, reps_max=5, load_value=60, load_type="percent_1rm",
+                                 rir_min=4, rir_max=5, rest_seconds=120, tempo=None),
+                            dict(reps_min=5, reps_max=5, load_value=70, load_type="percent_1rm",
+                                 rir_min=3, rir_max=4, rest_seconds=150, tempo=None),
+                            dict(reps_min=3, reps_max=3, load_value=80, load_type="percent_1rm",
+                                 rir_min=2, rir_max=3, rest_seconds=180, tempo=None),
+                            dict(reps_min=3, reps_max=3, load_value=85, load_type="percent_1rm",
+                                 rir_min=1, rir_max=2, rest_seconds=180, tempo=None),
+                        ],
+                    ),
+                ],
+            ),
+            dict(
+                block_type="straight_set", rounds=None, duration_seconds=None,
+                rest_between_rounds_seconds=None, notes="Unilateral accessory.",
+                exercises=[
+                    dict(
+                        exercise_name="Dumbbell Bulgarian Split Squat",
+                        sets=[
+                            dict(reps_min=8, reps_max=10, load_value=20, load_type="absolute",
+                                 rir_min=2, rir_max=3, rest_seconds=90, tempo="3-1-1-0"),
+                            dict(reps_min=8, reps_max=10, load_value=20, load_type="absolute",
+                                 rir_min=2, rir_max=3, rest_seconds=90, tempo="3-1-1-0"),
+                            dict(reps_min=8, reps_max=10, load_value=22.5, load_type="absolute",
+                                 rir_min=1, rir_max=2, rest_seconds=90, tempo="3-1-1-0"),
+                        ],
+                    ),
+                ],
+            ),
+            dict(
+                block_type="straight_set", rounds=None, duration_seconds=None,
+                rest_between_rounds_seconds=None, notes="Isolation finisher.",
+                exercises=[
+                    dict(
+                        exercise_name="Machine Leg Extension",
+                        sets=[
+                            dict(reps_min=12, reps_max=15, load_value=None, load_type=None,
+                                 rir_min=1, rir_max=2, rest_seconds=60, tempo=None),
+                            dict(reps_min=12, reps_max=15, load_value=None, load_type=None,
+                                 rir_min=0, rir_max=1, rest_seconds=60, tempo=None),
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    ),
+
+    # ---- 2. Superset block: upper body push/pull ----
+    dict(
+        name="Upper Body Push-Pull Superset",
+        notes="A1/A2 superset, rest is after finishing both exercises for the round.",
+        blocks=[
+            dict(
+                block_type="superset", rounds=None, duration_seconds=None,
+                rest_between_rounds_seconds=None, notes="3 rounds, rest ~90s after each pair.",
+                exercises=[
+                    dict(
+                        exercise_name="Barbell Bench Press",
+                        sets=[
+                            dict(reps_min=8, reps_max=8, load_value=65, load_type="percent_1rm",
+                                 rir_min=2, rir_max=3, rest_seconds=0, tempo=None),
+                            dict(reps_min=8, reps_max=8, load_value=65, load_type="percent_1rm",
+                                 rir_min=2, rir_max=3, rest_seconds=0, tempo=None),
+                            dict(reps_min=8, reps_max=8, load_value=65, load_type="percent_1rm",
+                                 rir_min=1, rir_max=2, rest_seconds=0, tempo=None),
+                        ],
+                    ),
+                    dict(
+                        exercise_name="Cable Seated Row",
+                        sets=[
+                            dict(reps_min=10, reps_max=12, load_value=None, load_type=None,
+                                 rir_min=2, rir_max=3, rest_seconds=90, tempo=None),
+                            dict(reps_min=10, reps_max=12, load_value=None, load_type=None,
+                                 rir_min=2, rir_max=3, rest_seconds=90, tempo=None),
+                            dict(reps_min=10, reps_max=12, load_value=None, load_type=None,
+                                 rir_min=1, rir_max=2, rest_seconds=90, tempo=None),
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    ),
+
+    # ---- 3. Circuit block: 4 exercises, fixed rounds ----
+    dict(
+        name="Full Body Circuit",
+        notes="Conditioning day — minimal equipment.",
+        blocks=[
+            dict(
+                block_type="circuit", rounds=4, duration_seconds=None,
+                rest_between_rounds_seconds=60,
+                notes="Move through all 4 exercises back to back, then rest before the next round.",
+                exercises=[
+                    dict(
+                        exercise_name="Kettlebell Swing",
+                        sets=[dict(reps_min=15, reps_max=15, load_value=None, load_type=None,
+                                   rir_min=None, rir_max=None, rest_seconds=None, tempo=None)] * 4,
+                    ),
+                    dict(
+                        exercise_name="Bodyweight Push-Up",
+                        sets=[dict(reps_min=12, reps_max=12, load_value=None, load_type=None,
+                                   rir_min=None, rir_max=None, rest_seconds=None, tempo=None)] * 4,
+                    ),
+                    dict(
+                        exercise_name="TRX Row",
+                        sets=[dict(reps_min=12, reps_max=12, load_value=None, load_type=None,
+                                   rir_min=None, rir_max=None, rest_seconds=None, tempo=None)] * 4,
+                    ),
+                    dict(
+                        exercise_name="Bodyweight Walking Lunge",
+                        sets=[dict(reps_min=20, reps_max=20, load_value=None, load_type=None,
+                                   rir_min=None, rir_max=None, rest_seconds=None, tempo=None)] * 4,
+                    ),
+                ],
+            ),
+        ],
+    ),
+
+    # ---- 4. EMOM block: alternating exercises on the minute ----
+    dict(
+        name="EMOM Conditioning",
+        notes="10-minute EMOM, alternating exercises on the minute.",
+        blocks=[
+            dict(
+                block_type="emom", rounds=10, duration_seconds=600,
+                rest_between_rounds_seconds=None,
+                notes="Odd minutes: kettlebell swings. Even minutes: push-ups. "
+                      "Whatever's left of the minute after the reps is the rest.",
+                exercises=[
+                    dict(
+                        exercise_name="Kettlebell Swing",
+                        sets=[dict(reps_min=15, reps_max=15, load_value=None, load_type=None,
+                                   rir_min=None, rir_max=None, rest_seconds=None, tempo=None)] * 5,
+                    ),
+                    dict(
+                        exercise_name="Bodyweight Push-Up",
+                        sets=[dict(reps_min=10, reps_max=10, load_value=None, load_type=None,
+                                   rir_min=None, rir_max=None, rest_seconds=None, tempo=None)] * 5,
+                    ),
+                ],
+            ),
+        ],
+    ),
+
+    # ---- 5. AMRAP finisher ----
+    dict(
+        name="AMRAP Finisher",
+        notes="As many rounds as possible in the time cap.",
+        blocks=[
+            dict(
+                block_type="amrap", rounds=None, duration_seconds=480,
+                rest_between_rounds_seconds=None,
+                notes="8-minute AMRAP: 10 squats, 10 push-ups, 15 KB swings — repeat as a round.",
+                exercises=[
+                    dict(
+                        exercise_name="Bodyweight Squat",
+                        sets=[dict(reps_min=10, reps_max=10, load_value=None, load_type=None,
+                                   rir_min=None, rir_max=None, rest_seconds=None, tempo=None)],
+                    ),
+                    dict(
+                        exercise_name="Bodyweight Push-Up",
+                        sets=[dict(reps_min=10, reps_max=10, load_value=None, load_type=None,
+                                   rir_min=None, rir_max=None, rest_seconds=None, tempo=None)],
+                    ),
+                    dict(
+                        exercise_name="Kettlebell Swing",
+                        sets=[dict(reps_min=15, reps_max=15, load_value=None, load_type=None,
+                                   rir_min=None, rir_max=None, rest_seconds=None, tempo=None)],
+                    ),
+                ],
+            ),
+        ],
+    ),
+]
+
+
 def wipe_all(session) -> None:
+    # Workout tables first: workout_block_exercises.exercise_id has no
+    # ON DELETE clause, so exercises can't be wiped while blocks still
+    # reference them.
+    session.query(PrescribedSet).delete()
+    session.query(WorkoutBlockExercise).delete()
+    session.query(WorkoutBlock).delete()
+    session.query(Workout).delete()
+
     session.query(ExerciseMuscle).delete()
     session.query(ExerciseEquipment).delete()
     session.query(Exercise).delete()
@@ -622,16 +848,69 @@ def seed(session) -> int:
             )
 
     session.commit()
+
+    seed_workouts(session, by_name)
+
     return len(EXERCISES)
+
+
+def seed_workouts(session, exercises_by_name: dict[str, Exercise]) -> int:
+    for workout_row in WORKOUTS:
+        workout = Workout(name=workout_row["name"], notes=workout_row["notes"])
+        session.add(workout)
+        session.flush()  # need workout.id for the blocks below
+
+        for block_index, block_row in enumerate(workout_row["blocks"]):
+            block = WorkoutBlock(
+                workout_id=workout.id,
+                order_index=block_index,
+                block_type=block_row["block_type"],
+                rounds=block_row["rounds"],
+                duration_seconds=block_row["duration_seconds"],
+                rest_between_rounds_seconds=block_row["rest_between_rounds_seconds"],
+                notes=block_row["notes"],
+            )
+            session.add(block)
+            session.flush()  # need block.id for the block exercises below
+
+            for ex_index, ex_row in enumerate(block_row["exercises"]):
+                block_exercise = WorkoutBlockExercise(
+                    block_id=block.id,
+                    exercise_id=exercises_by_name[ex_row["exercise_name"]].id,
+                    order_index=ex_index,
+                )
+                session.add(block_exercise)
+                session.flush()  # need block_exercise.id for the prescribed sets below
+
+                for set_index, set_row in enumerate(ex_row["sets"], start=1):
+                    session.add(
+                        PrescribedSet(
+                            workout_block_exercise_id=block_exercise.id,
+                            set_number=set_index,
+                            reps_min=set_row["reps_min"],
+                            reps_max=set_row["reps_max"],
+                            load_value=set_row["load_value"],
+                            load_type=set_row["load_type"],
+                            rir_min=set_row["rir_min"],
+                            rir_max=set_row["rir_max"],
+                            rest_seconds=set_row["rest_seconds"],
+                            tempo=set_row["tempo"],
+                        )
+                    )
+
+    session.commit()
+    return len(WORKOUTS)
 
 
 def main() -> None:
     Base.metadata.create_all(engine)  # no-op once alembic has run; safety net for quick starts
     session = get_session()
     try:
-        count = seed(session)
-        print(f"Seeded {count} exercises, {len(MUSCLES)} muscles, "
+        exercise_count = seed(session)
+        print(f"Seeded {exercise_count} exercises, {len(MUSCLES)} muscles, "
               f"{len(EQUIPMENT)} equipment types, {len(MOVEMENT_PATTERNS)} movement patterns.")
+        print(f"Seeded {len(WORKOUTS)} workouts "
+              f"({sum(len(w['blocks']) for w in WORKOUTS)} blocks).")
     finally:
         session.close()
 
