@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Exercise Database</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-title">Exercise Database</div>
+  <nav class="tabs" id="main-nav">
+    <button class="tab-btn active" data-view="browse">Browse</button>
+    <button class="tab-btn" data-view="form">Add / Edit</button>
+    <button class="tab-btn" data-view="lookups">Manage Lookups</button>
+  </nav>
+</header>
+
+<main id="app">
+
+  <!-- ============ BROWSE ============ -->
+  <section id="view-browse" class="view">
+    <div class="filter-bar card">
+      <div class="filter-grid">
+        <label>Movement pattern
+          <select id="f-movement-pattern"><option value="">Any</option></select>
+        </label>
+        <label>Muscle
+          <select id="f-muscle"><option value="">Any</option></select>
+        </label>
+        <label>Equipment
+          <select id="f-equipment"><option value="">Any</option></select>
+        </label>
+        <label>Exercise type
+          <select id="f-exercise-type">
+            <option value="">Any</option>
+            <option value="strength">strength</option>
+            <option value="mobility">mobility</option>
+            <option value="conditioning">conditioning</option>
+            <option value="plyometric">plyometric</option>
+            <option value="stability">stability</option>
+          </select>
+        </label>
+        <label>Compound / isolation
+          <select id="f-compound-or-isolation">
+            <option value="">Any</option>
+            <option value="compound">compound</option>
+            <option value="isolation">isolation</option>
+          </select>
+        </label>
+        <label>Difficulty min
+          <input type="number" id="f-difficulty-min" min="1" max="6" inputmode="numeric">
+        </label>
+        <label>Difficulty max
+          <input type="number" id="f-difficulty-max" min="1" max="6" inputmode="numeric">
+        </label>
+        <label class="filter-search">Search name
+          <input type="text" id="f-search" placeholder="e.g. squat">
+        </label>
+      </div>
+      <div class="filter-actions">
+        <button id="f-apply" class="btn btn-primary">Apply filters</button>
+        <button id="f-clear" class="btn btn-ghost">Clear</button>
+      </div>
+    </div>
+
+    <div class="browse-header">
+      <div id="result-count" class="muted"></div>
+      <button id="add-exercise-btn" class="btn btn-primary btn-add">+ Add Exercise</button>
+    </div>
+
+    <div id="error-banner" class="error-banner hidden"></div>
+
+    <div class="table-wrap card">
+      <table id="exercise-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Pattern</th>
+            <th>Primary muscle</th>
+            <th>Difficulty</th>
+            <th>Type</th>
+          </tr>
+        </thead>
+        <tbody id="exercise-table-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ ADD / EDIT FORM ============ -->
+  <section id="view-form" class="view hidden">
+    <div class="card form-card">
+      <div class="form-header">
+        <h2 id="form-title">Add Exercise</h2>
+        <button id="form-cancel" class="btn btn-ghost">Back to list</button>
+      </div>
+      <div id="form-error" class="error-banner hidden"></div>
+
+      <form id="exercise-form">
+        <input type="hidden" id="ex-id">
+
+        <label>Name
+          <input type="text" id="ex-name" required maxlength="500">
+        </label>
+
+        <label>Movement pattern
+          <select id="ex-movement-pattern" required></select>
+        </label>
+
+        <fieldset>
+          <legend>Muscles</legend>
+          <div class="picker-row">
+            <select id="muscle-picker"></select>
+            <select id="muscle-role-picker">
+              <option value="primary">primary</option>
+              <option value="secondary">secondary</option>
+              <option value="stabilizer">stabilizer</option>
+            </select>
+            <button type="button" id="muscle-add-btn" class="btn btn-secondary">Add</button>
+          </div>
+          <ul id="muscle-chip-list" class="chip-list"></ul>
+        </fieldset>
+
+        <fieldset>
+          <legend>Equipment</legend>
+          <div class="picker-row">
+            <select id="equipment-picker"></select>
+            <label class="inline-checkbox">
+              <input type="checkbox" id="equipment-required-picker" checked> required
+            </label>
+            <button type="button" id="equipment-add-btn" class="btn btn-secondary">Add</button>
+          </div>
+          <ul id="equipment-chip-list" class="chip-list"></ul>
+        </fieldset>
+
+        <label>Exercise type
+          <select id="ex-exercise-type" required>
+            <option value="strength">strength</option>
+            <option value="mobility">mobility</option>
+            <option value="conditioning">conditioning</option>
+            <option value="plyometric">plyometric</option>
+            <option value="stability">stability</option>
+          </select>
+        </label>
+
+        <fieldset>
+          <legend>Compound or isolation</legend>
+          <label class="inline-radio"><input type="radio" name="ex-compound" value="compound" checked> compound</label>
+          <label class="inline-radio"><input type="radio" name="ex-compound" value="isolation"> isolation</label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Difficulty</legend>
+          <select id="ex-difficulty" required>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+          </select>
+          <ul class="rubric">
+            <li><strong>1</strong> = no coordination demand, bodyweight/machine-assisted/fully supported</li>
+            <li><strong>2</strong> = basic bodyweight or fixed-path movement</li>
+            <li><strong>3</strong> = free-weight bilateral, moderate coordination</li>
+            <li><strong>4</strong> = free-weight bilateral, more technical demand</li>
+            <li><strong>5</strong> = unilateral or higher coordination/stability demand</li>
+            <li><strong>6</strong> = high skill/technical/power demand</li>
+          </ul>
+        </fieldset>
+
+        <label class="inline-checkbox-label">
+          <input type="checkbox" id="ex-unilateral"> Unilateral
+        </label>
+
+        <label>Tracking type
+          <select id="ex-tracking-type" required>
+            <option value="reps_weight">reps_weight</option>
+            <option value="reps_only">reps_only</option>
+            <option value="time">time</option>
+            <option value="distance">distance</option>
+            <option value="time_distance">time_distance</option>
+            <option value="reps_time">reps_time</option>
+          </select>
+        </label>
+
+        <label>Contraindications <span class="muted">(comma-separated tags)</span>
+          <input type="text" id="ex-contraindications" placeholder="e.g. lower_back_injury, pregnancy_late_term">
+        </label>
+
+        <label>Cue notes
+          <textarea id="ex-cue-notes" rows="3"></textarea>
+        </label>
+
+        <label>Video URL
+          <input type="url" id="ex-video-url" placeholder="https://...">
+        </label>
+
+        <label>Variant of <span class="muted">(optional)</span>
+          <div class="autocomplete" id="variant-autocomplete">
+            <input type="text" id="ex-variant-search" placeholder="Search exercises…" autocomplete="off">
+            <div class="autocomplete-list hidden" id="variant-autocomplete-list"></div>
+          </div>
+          <input type="hidden" id="ex-variant-of">
+          <div id="variant-selected" class="muted hidden">
+            Selected: <span id="variant-selected-name"></span>
+            <button type="button" id="variant-clear-btn" class="btn-link">clear</button>
+          </div>
+        </label>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Save</button>
+          <button type="button" id="delete-exercise-btn" class="btn btn-danger hidden">Delete</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ MANAGE LOOKUPS ============ -->
+  <section id="view-lookups" class="view hidden">
+    <nav class="tabs sub-tabs" id="lookup-nav">
+      <button class="tab-btn active" data-lookup="movement-patterns">Movement Patterns</button>
+      <button class="tab-btn" data-lookup="muscles">Muscles</button>
+      <button class="tab-btn" data-lookup="equipment">Equipment</button>
+    </nav>
+
+    <div id="lookup-error" class="error-banner hidden"></div>
+
+    <div class="card lookup-card">
+      <div class="picker-row">
+        <input type="text" id="lookup-new-name" placeholder="New entry name…">
+        <button id="lookup-add-btn" class="btn btn-primary">Add</button>
+      </div>
+      <ul id="lookup-list" class="lookup-list"></ul>
+    </div>
+  </section>
+
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

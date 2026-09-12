@@ -6,7 +6,9 @@ Phase 1 (`phase1_schema.sql`) — exercises + lookups; Phase 2
 exercises, prescribed sets); Phase 3 (`phase3_schema.sql`) — the program
 builder (reusable program templates, cloned into independently-editable
 client assignments, with lightweight actuals tracking). Includes a seed
-dataset and example filter/query functions for all three phases.
+dataset and example filter/query functions for all three phases, plus
+(Phase 4a) a FastAPI + vanilla-JS web UI for managing the exercise
+database itself — see **Web UI** below.
 
 SQLite for now; the models avoid anything that would block a later move
 to Postgres (see the `EXERCISE_DB_URL` note below), except the
@@ -19,6 +21,12 @@ syntax on purpose — that matches the source schema exactly.
 app/
   models.py     # SQLAlchemy models — 1:1 with phase1/2/3_schema.sql
   database.py   # engine/session setup
+  schemas.py    # Pydantic request/response schemas for the API (Phase 4a)
+  crud.py       # query building + create/update/delete logic for the API (Phase 4a)
+  deps.py       # FastAPI DB-session dependency (Phase 4a)
+  main.py       # FastAPI app — run this to serve the web UI (Phase 4a)
+  routers/      # one router per resource: exercises, movement_patterns, muscles, equipment
+  static/       # the web UI itself — index.html + app.js + style.css, no build step
 alembic/
   versions/0001_initial_schema.py    # Phase 1: exercises + lookups
   versions/0002_workout_builder.py   # Phase 2: workouts/blocks/block_exercises/prescribed_sets
@@ -52,6 +60,76 @@ By default everything points at `exercises.sqlite3` in this directory.
 Override with `EXERCISE_DB_URL` (e.g. `EXERCISE_DB_URL=sqlite:///:memory:`
 or, later, a Postgres URL) — both `app/database.py` and
 `alembic/env.py` read it.
+
+## Web UI (Phase 4a — exercise database management)
+
+A FastAPI backend + plain HTML/JS frontend for managing the exercise
+database directly, instead of editing `seed.py` by hand. **Scope: exercise
+CRUD only** — workouts, programs, and session logging (Phases 2-3) have no
+UI yet; that's a later phase.
+
+### Run it
+
+```bash
+cd exercise_db          # if you aren't already here
+source .venv/bin/activate
+alembic upgrade head    # if you haven't already
+python seed.py          # if the DB is empty — the UI needs lookup data to populate its dropdowns
+uvicorn app.main:app --reload
+```
+
+Then open **http://127.0.0.1:8000/** in a browser (phone or laptop —
+the layout is responsive). Interactive API docs are at
+http://127.0.0.1:8000/docs if you want to poke the endpoints directly.
+
+### What's there
+
+- **Browse** (landing page) — filter by movement pattern, muscle,
+  equipment, exercise type, compound/isolation, difficulty range, and
+  name search, all combinable. Click a row to edit it. The results table
+  scrolls horizontally on narrow screens rather than wrapping (swipe to
+  see Difficulty/Type columns on a phone) — confirmed working in a
+  420px-wide browser session, screenshots below.
+- **Add / Edit** — one form for both. Muscles and equipment are added via
+  a picker + "Add" button that appends a removable chip (native
+  multi-select listboxes are unusable on touch, so this replaces them);
+  "Variant of" is a custom searchable dropdown rather than `<datalist>`,
+  since iOS Safari's `<datalist>` support is unreliable. The difficulty
+  selector shows the full 1-6 rubric as inline help beneath it. Enum
+  fields (exercise type, tracking type, compound/isolation) are
+  `<select>`/radio inputs with only valid options, so the CHECK
+  constraints can't be violated from the UI; name and movement-pattern
+  presence and the 1-6 difficulty range are checked in JS before
+  submitting, and the same rules are enforced again server-side.
+- **Manage Lookups** — tabbed (Movement Patterns / Muscles / Equipment),
+  each an inline-editable list with add/edit/delete. Deleting any lookup
+  value, or an exercise itself, is blocked with a clear message (a count
+  of referencing exercises, or workout blocks for an exercise) rather
+  than failing with a raw database error or silently orphaning data.
+
+Verified end-to-end with a scripted headless-browser pass (Playwright) at
+a phone-width viewport: load → filter → open an existing exercise → add a
+new one → confirm it appears in the list → Manage Lookups tabs → a
+blocked delete showing its error message. No unexpected console errors
+or failed requests in that pass.
+
+### API endpoints
+
+```
+GET/POST   /api/exercises            filters: movement_pattern_id, muscle_id, equipment_id,
+                                      exercise_type, difficulty_min, difficulty_max,
+                                      compound_or_isolation, search
+GET        /api/exercises/options    minimal {id, name} list, for the "variant of" picker
+GET/PUT/DELETE /api/exercises/{id}
+GET/POST/PUT/DELETE /api/movement-patterns[/{id}]
+GET/POST/PUT/DELETE /api/muscles[/{id}]
+GET/POST/PUT/DELETE /api/equipment[/{id}]
+```
+
+`POST`/`PUT` on `/api/exercises` take muscles/equipment as nested lists
+(`muscles: [{muscle_id, role}]`, `equipment: [{equipment_id, is_required}]`)
+and replace the exercise's existing links wholesale on each save — same
+delete-then-reinsert pattern `seed.py` uses.
 
 ## Seed dataset
 
