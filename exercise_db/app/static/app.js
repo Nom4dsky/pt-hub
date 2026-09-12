@@ -56,6 +56,17 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+// Display-only: movement_pattern values are stored snake_case
+// (e.g. "pull_horizontal") — never reformatted in the DB or API, just
+// rendered readable wherever a movement pattern name shows up in the UI.
+function formatMovementPattern(name) {
+  return (name ?? "")
+    .split("_")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 function showError(id, message) {
   const el = document.getElementById(id);
   el.textContent = message;
@@ -90,14 +101,14 @@ document.querySelectorAll("#main-nav .tab-btn").forEach((btn) => {
 });
 
 // ---------- browse: filter dropdowns + table ----------
-function fillSelect(id, items, hasAnyOption) {
+function fillSelect(id, items, hasAnyOption, formatLabel = (name) => name) {
   const sel = document.getElementById(id);
   const startIdx = hasAnyOption ? 1 : 0;
   while (sel.options.length > startIdx) sel.remove(startIdx);
   for (const item of items) {
     const opt = document.createElement("option");
     opt.value = item.id;
-    opt.textContent = item.name;
+    opt.textContent = formatLabel(item.name);
     sel.appendChild(opt);
   }
 }
@@ -108,10 +119,10 @@ async function loadLookupCaches() {
     api("GET", "/api/muscles"),
     api("GET", "/api/equipment"),
   ]);
-  fillSelect("f-movement-pattern", movementPatterns, true);
+  fillSelect("f-movement-pattern", movementPatterns, true, formatMovementPattern);
   fillSelect("f-muscle", muscles, true);
   fillSelect("f-equipment", equipmentList, true);
-  fillSelect("ex-movement-pattern", movementPatterns, false);
+  fillSelect("ex-movement-pattern", movementPatterns, false, formatMovementPattern);
   fillSelect("muscle-picker", muscles, false);
   fillSelect("equipment-picker", equipmentList, false);
 }
@@ -162,7 +173,7 @@ function renderExerciseTable(list) {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${escapeHtml(ex.name)}</td>
-      <td>${escapeHtml(ex.movement_pattern_name)}</td>
+      <td>${escapeHtml(formatMovementPattern(ex.movement_pattern_name))}</td>
       <td>${escapeHtml(ex.primary_muscle || "—")}</td>
       <td>${ex.difficulty}</td>
       <td>${escapeHtml(ex.exercise_type)}</td>
